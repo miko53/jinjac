@@ -47,6 +47,7 @@ jinja_stmt:
   | jinja_else_stmt
   | jinja_endif_stmt
   | jinja_filtered_expr
+  | %empty
 
 jinja_for_stmt:
   FOR jinja_primary_expr IN jinja_filtered_expr { fprintf(stdout, " a FOR statement\n"); }

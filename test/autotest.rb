@@ -7,6 +7,7 @@ DIFF = "diff"
 LIST_TEST = 
 [
   "test_01",
+  "test_01b",
   "test_02"
 ]
 
@@ -15,8 +16,9 @@ def launch_test(list_test)
   
   list_test.each do |test|
     r = `#{EXE_JINJA} -i #{test}.jinja -o #{test}.result`
-    #puts("#{EXE_JINJA} -i #{test}.jinja -o #{test}.result")
-    if (r.to_i != 0)
+    process_status = $?
+    puts("#{EXE_JINJA} -i #{test}.jinja -o #{test}.result")
+    if (process_status.exitstatus != 0)
       puts("launch test failed for #{test} result = #{r.to_i}")
       exit(-1)
     end
@@ -27,8 +29,10 @@ def launch_test(list_test)
     end
        
     r = `#{DIFF} #{test}.result #{test}.expected`
+    process_status = $?
     #puts("#{DIFF} #{test}.result #{test}.expected")
-    if (r.to_i > 0)
+    p $?.class
+    if (process_status.exitstatus > 0)
       puts("#{test} failed !")
       puts("diff result:\n#{r}")
       exit(-1)
