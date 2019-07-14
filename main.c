@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <assert.h>
+#include "parameter.h"
 
 typedef struct yy_buffer_state* YY_BUFFER_STATE;
 extern int yyparse();
@@ -18,7 +19,7 @@ typedef enum { FALSE, TRUE } BOOL;
 
 STATIC void parse_file(FILE* in, FILE* out);
 STATIC void parse_string(char* string);
-
+STATIC void create_example_parameter(void);
 
 int main(int argc, char* argv[])
 {
@@ -47,30 +48,52 @@ int main(int argc, char* argv[])
     }
   }
 
-  if ((inputFile == NULL) || (outputfile == NULL))
+  if (inputFile == NULL)
   {
     fprintf(stdout, "input or output file not specified\n");
     exit(EXIT_FAILURE);
   }
 
-  FILE* in = fopen(inputFile, "r");
+  FILE* in = NULL;
+  FILE* out = NULL;
+
+  if (outputfile == NULL)
+  {
+    out = stdout;
+  }
+  else
+  {
+    out = fopen(outputfile, "w");
+  }
+
+  in = fopen(inputFile, "r");
   if (in == NULL)
   {
     fprintf(stderr, "unable to open %s file in read mode\n", inputFile);
     exit(EXIT_FAILURE);
   }
 
-  FILE* out = fopen(outputfile, "w");
   if (out == NULL)
   {
     fprintf(stderr, "unable to open %s file in write mode\n", outputfile);
     exit(EXIT_FAILURE);
   }
 
+  create_example_parameter();
+
   parse_file(in, out);
-  
+
   return EXIT_SUCCESS;
 }
+
+STATIC void create_example_parameter(void)
+{
+  insert_parameter("ident", "valeur");
+  insert_parameter("name", "mickael");
+  insert_parameter("data_string", "data_string");
+}
+
+
 
 enum parse_file_mode
 {
@@ -168,8 +191,8 @@ STATIC void parse_file(FILE* in, FILE* out)
             stop = current;
             //launch parsing
             char toParse[LINE_SIZE];
-            strncpy(toParse, start, stop-start);
-            toParse[stop-start-1] = '\0';  //NOTE: -1 to remove previous char i.e }} or #}
+            strncpy(toParse, start, stop - start);
+            toParse[stop - start - 1] = '\0'; //NOTE: -1 to remove previous char i.e }} or #}
             parse_string(toParse);
             mode = COPY_MODE;
 

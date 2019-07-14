@@ -39,6 +39,8 @@
 %type<integerData>  number_exp
 %type<doubleData> mixed_number_exp
 
+%type<stringData> jinja_primary_expr 
+
 %%
 jinja_stmt:
   jinja_for_stmt  
@@ -87,18 +89,18 @@ jinja_arg_list:
    
    
 jinja_array_expr:
-    IDENTIFIER  { fprintf(stdout, "a id %s\n", $1); free($1); }
+    IDENTIFIER  { fprintf(stdout, "1-a id %s\n", $1); free($1); }
   | number_exp { fprintf(stdout, "an int %d\n", $1); }
   
 jinja_primary_expr:
-    IDENTIFIER  { fprintf(stdout, "a id %s\n", $1); free($1); }
+    IDENTIFIER  { fprintf(stdout, "2-a id %s\n", $1); $$ =$1; }
   |
     jinja_constant
 
 jinja_constant:
-    STRING_CST { fprintf(stdout, "string : %s\n", $1); free($1);}
- | mixed_number_exp | number_exp
-
+    STRING_CST { fprintf(stdout, "string : %s\n", $1); free($1); }
+ | mixed_number_exp
+ | number_exp
 
 number_exp:
   INTEGER { $$ = $1; }

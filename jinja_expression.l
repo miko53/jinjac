@@ -15,12 +15,14 @@ HEXCONSTANT ([0][xX][0-9A-Fa-f]+)
 %%
 [ \t]           ;
 \"(\\.|[^"\\])*\" { 
-  yylval.stringData = strdup(yytext);
+  yytext[strlen(yytext)-1] = '\0';
+  yylval.stringData = strdup(yytext+1);
   return STRING_CST;
   }
   
 \'(\\.|[^"\\])*\' { 
-  yylval.stringData = strdup(yytext);
+  yytext[strlen(yytext)-1] = '\0';
+  yylval.stringData = strdup(yytext+1);
   return STRING_CST;
   }
 [|()\[\],+\-/*\.]   { return yytext[0]; }
