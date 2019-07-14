@@ -1,5 +1,8 @@
 all:	jinja_expression
 
+test:	jinja_expression
+	cd test; ./autotest.rb
+
 clean:
 	rm jinja_expression jinja_expression.tab.c jinja_expression.tab.h lex.yy.c
 
