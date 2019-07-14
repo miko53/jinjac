@@ -6,7 +6,8 @@ DIFF = "diff"
 
 LIST_TEST = 
 [
-  "test_01"
+  "test_01",
+  "test_02"
 ]
 
 
@@ -20,9 +21,14 @@ def launch_test(list_test)
       exit(-1)
     end
     
+    if (!File.exist?("#{test}.result") || !File.exist?("#{test}.expected"))
+       puts("File result or expected doesn't exist for #{test}")
+       exit(-1)
+    end
+       
     r = `#{DIFF} #{test}.result #{test}.expected`
     #puts("#{DIFF} #{test}.result #{test}.expected")
-    if (r.to_i != 0)
+    if (r.to_i > 0)
       puts("#{test} failed !")
       puts("diff result:\n#{r}")
       exit(-1)
