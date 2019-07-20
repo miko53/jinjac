@@ -4,6 +4,8 @@
 #include <string.h>
 #include <assert.h>
 #include "parameter.h"
+#include "common.h"
+#include "ast.h"
 
 typedef struct yy_buffer_state* YY_BUFFER_STATE;
 extern int yyparse();
@@ -14,11 +16,8 @@ extern void yy_delete_buffer(YY_BUFFER_STATE buffer);
 #define STATIC      static
 #define ASSERT      assert
 
-typedef enum { FALSE, TRUE } BOOL;
-
-
 STATIC void parse_file(FILE* in, FILE* out);
-STATIC void parse_string(char* string);
+STATIC BOOL parse_string(char* string, FILE* out);
 STATIC void create_example_parameter(void);
 
 int main(int argc, char* argv[])
@@ -82,6 +81,8 @@ int main(int argc, char* argv[])
   create_example_parameter();
 
   parse_file(in, out);
+  fclose(in);
+  fclose(out);
 
   return EXIT_SUCCESS;
 }
@@ -90,7 +91,6 @@ STATIC void create_example_parameter(void)
 {
   insert_parameter("ident", "valeur");
   insert_parameter("name", "mickael");
-  insert_parameter("data_string", "data_string");
 }
 
 
@@ -103,6 +103,12 @@ enum parse_file_mode
   DETECTION_STOP_DELIMITER
 };
 
+static int no_line;
+
+int getLine(void)
+{
+  return no_line;
+}
 
 STATIC void parse_file(FILE* in, FILE* out)
 {
@@ -112,17 +118,20 @@ STATIC void parse_file(FILE* in, FILE* out)
   //first parsing level detect {%, {{ on one line
   char line[LINE_SIZE];
   line[LINE_SIZE - 1] = '\0';
+  BOOL bInError = FALSE;
   int mode;
 
-  while (fgets(line, LINE_SIZE - 1, in) != NULL)
+  no_line = 0;
+
+  while ((fgets(line, LINE_SIZE - 1, in) != NULL) && !bInError)
   {
     //parse line
     char* current;
     char* start = NULL;
     char* stop = NULL;
-    BOOL bInError = FALSE;
     current = line;
     mode = COPY_MODE;
+    no_line++;
 
     while ((*current != '\0') && !bInError)
     {
@@ -193,7 +202,7 @@ STATIC void parse_file(FILE* in, FILE* out)
             char toParse[LINE_SIZE];
             strncpy(toParse, start, stop - start);
             toParse[stop - start - 1] = '\0'; //NOTE: -1 to remove previous char i.e }} or #}
-            parse_string(toParse);
+            bInError = parse_string(toParse, out);
             mode = COPY_MODE;
 
           }
@@ -214,16 +223,37 @@ STATIC void parse_file(FILE* in, FILE* out)
   }
 }
 
-STATIC void parse_string(char* string)
+#include "jinja_expression.tab.h"
+
+STATIC BOOL parse_string(char* string, FILE* out)
 {
   YY_BUFFER_STATE buffer;
+  ast* astRoot;
 
+  astRoot = getAstRoot();
+  astRoot->inError = FALSE;
   fprintf(stdout, "parse = \"%s\"\n", string);
 
   buffer = yy_scan_string ( string );
   yyparse();
+
+  if (!astRoot->inError )
+  {
+    switch (astRoot->type)
+    {
+      case AST_STRING:
+        fputs(yylval.stringData, out);
+        break;
+
+      default:
+        ASSERT(FALSE);
+        break;
+    }
+  }
+
   yy_delete_buffer(buffer);
 
+  return astRoot->inError;
 }
 
 

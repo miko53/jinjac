@@ -38,8 +38,8 @@ is                        { return IS; }
 else                      { return ELSE; }
 elif                      { return ELIF; }
 endif                     { return END_IF; }
-true                      { return TRUE; }
-false                     { return FALSE; }
+true                      { return L_TRUE; }
+false                     { return L_FALSE; }
 block                     { return BLOCK; }
 endblock                  { return END_BLOCK; }
 extends                   { return EXTENDS; }

@@ -1,18 +1,22 @@
 %{
   #include <stdio.h>
   #include <stdlib.h>
+  
+  #include "ast.h"
 
   // Declare stuff from Flex that Bison needs to know about:
   extern int yylex();
   extern int yyparse();
   extern FILE *yyin;
  
-  void yyerror(const char *s);
+  extern int getLine(void);
   
+  void yyerror(const char *s);
+  /*
   typedef struct yy_buffer_state * YY_BUFFER_STATE;
   extern int yyparse();
   extern YY_BUFFER_STATE yy_scan_string(char * str);
-  extern void yy_delete_buffer(YY_BUFFER_STATE buffer);
+  extern void yy_delete_buffer(YY_BUFFER_STATE buffer);*/
  
 %}
 
@@ -33,13 +37,14 @@
 
 %left '+' '-' '*' '/'
 
-%token FOR END_FOR IN IF IS ELSE END_IF ELIF TRUE FALSE BLOCK END_BLOCK EXTENDS RAW END_RAW SET
+%token FOR END_FOR IN IF IS ELSE END_IF ELIF L_TRUE L_FALSE BLOCK END_BLOCK EXTENDS RAW END_RAW SET
 %token EQUAL HIGH_AND_EQUAL_THAN LOWER_AND_EQUAL_THAN DIFFERENT
 
 %type<integerData>  number_exp
 %type<doubleData> mixed_number_exp
 
 %type<stringData> jinja_primary_expr 
+%type<stringData> jinja_constant
 
 %%
 jinja_stmt:
@@ -48,8 +53,7 @@ jinja_stmt:
   | jinja_if_stmt
   | jinja_else_stmt
   | jinja_endif_stmt
-  | jinja_filtered_expr
-  | %empty
+  | jinja_filtered_expr { fprintf(stdout, "a filtered expr\n"); }
 
 jinja_for_stmt:
   FOR jinja_primary_expr IN jinja_filtered_expr { fprintf(stdout, " a FOR statement\n"); }
@@ -67,9 +71,9 @@ jinja_if_stmt:
   IF condition_expr { fprintf(stdout, "a IF statement\n"); }
   
 jinja_filtered_expr:
-  jinja_function_expr
+  jinja_function_expr { fprintf(stdout, "a function expr\n");}
   |
-   jinja_postfix_expr
+   jinja_postfix_expr { fprintf(stdout, "a jpost fix expr\n");}
   |
   jinja_filtered_expr '|' jinja_function_expr { fprintf(stdout, "a jinja filtered expr\n");}
 
@@ -98,7 +102,7 @@ jinja_primary_expr:
     jinja_constant
 
 jinja_constant:
-    STRING_CST { fprintf(stdout, "string : %s\n", $1); free($1); }
+    STRING_CST { fprintf(stdout, "constant string : %s\n", $1); $$=$1; getAstRoot()->type = AST_STRING; }
  | mixed_number_exp
  | number_exp
 
@@ -143,10 +147,9 @@ condition_expr:
   
 %%
 
-
-void yyerror(const char *s) {
-  fprintf(stdout, "%s\n",s);
-  // might as well halt now:
-  exit(-1);
+void yyerror(const char *s) 
+{
+  fprintf(stdout, "error: %s in line %d\n",s, getLine());
+  getAstRoot()->inError = TRUE;
 }
 
