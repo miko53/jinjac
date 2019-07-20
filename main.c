@@ -6,6 +6,7 @@
 #include "parameter.h"
 #include "common.h"
 #include "ast.h"
+#include "jinja_expression.tab.h"
 
 typedef struct yy_buffer_state* YY_BUFFER_STATE;
 extern int yyparse();
@@ -14,7 +15,6 @@ extern void yy_delete_buffer(YY_BUFFER_STATE buffer);
 
 #define LINE_SIZE   (1024)
 #define STATIC      static
-#define ASSERT      assert
 
 STATIC void parse_file(FILE* in, FILE* out);
 STATIC BOOL parse_string(char* string, FILE* out);
@@ -223,7 +223,6 @@ STATIC void parse_file(FILE* in, FILE* out)
   }
 }
 
-#include "jinja_expression.tab.h"
 
 STATIC BOOL parse_string(char* string, FILE* out)
 {
@@ -237,19 +236,25 @@ STATIC BOOL parse_string(char* string, FILE* out)
   buffer = yy_scan_string ( string );
   yyparse();
 
-  if (!astRoot->inError )
+  if (!astRoot->inError)
   {
     switch (astRoot->type)
     {
       case AST_STRING:
-        fputs(yylval.stringData, out);
+        fputs(astRoot->string, out);
+        free(astRoot->string);
         break;
 
+
+      case AST_FUNCTION:
       default:
+        fprintf(stdout, "ast type %d not possible....\n", astRoot->type);
         ASSERT(FALSE);
         break;
     }
   }
+
+  //fprintf(stdout, "yylval = '%s'\n", yylval.stringData);
 
   yy_delete_buffer(buffer);
 

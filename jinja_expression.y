@@ -1,6 +1,7 @@
 %{
   #include <stdio.h>
   #include <stdlib.h>
+  #include "common.h"
   
   #include "ast.h"
 
@@ -44,16 +45,18 @@
 %type<doubleData> mixed_number_exp
 
 %type<stringData> jinja_primary_expr 
+%type<stringData> jinja_postfix_expr
 %type<stringData> jinja_constant
+%type<stringData> jinja_filtered_expr
 
 %%
 jinja_stmt:
-  jinja_for_stmt  
-  | jinja_endfor_stmt
-  | jinja_if_stmt
-  | jinja_else_stmt
-  | jinja_endif_stmt
-  | jinja_filtered_expr { fprintf(stdout, "a filtered expr\n"); }
+  jinja_for_stmt  { }
+  | jinja_endfor_stmt { }
+  | jinja_if_stmt { }
+  | jinja_else_stmt { }
+  | jinja_endif_stmt { }
+  | jinja_filtered_expr { fprintf(stdout, "a filtered expr\n");}
 
 jinja_for_stmt:
   FOR jinja_primary_expr IN jinja_filtered_expr { fprintf(stdout, " a FOR statement\n"); }
@@ -71,20 +74,38 @@ jinja_if_stmt:
   IF condition_expr { fprintf(stdout, "a IF statement\n"); }
   
 jinja_filtered_expr:
-  jinja_function_expr { fprintf(stdout, "a function expr\n");}
+  jinja_function_expr { fprintf(stdout, "a function expr\n"); }
   |
-   jinja_postfix_expr { fprintf(stdout, "a jpost fix expr\n");}
+   jinja_postfix_expr { fprintf(stdout, "a jpost fix expr\n");  }
   |
-  jinja_filtered_expr '|' jinja_function_expr { fprintf(stdout, "a jinja filtered expr\n");}
+  jinja_filtered_expr '|' jinja_function_expr { fprintf(stdout, "a jinja filtered expr\n"); 
+                                                ASSERT(getAstRoot()->type == AST_FUNCTION);
+                                                if (getAstRoot()->fct != NULL)
+                                                {
+                                                  $$ = getAstRoot()->fct($1);
+                                                }
+                                                else
+                                                {
+                                                  fprintf(stdout, "filtered fct not found !\n");
+                                                  getAstRoot()->inError = TRUE;
+                                                  $$ = $1;
+                                                }
+                                                getAstRoot()->type = AST_STRING;
+                                                getAstRoot()->string = $$;
+                                              }
 
 jinja_postfix_expr:
-     jinja_primary_expr 
+     jinja_primary_expr { $$ = $1; }
    | jinja_postfix_expr '[' jinja_array_expr ']' { fprintf(stdout, "an array \n"); } 
    | jinja_postfix_expr  '.' IDENTIFIER { fprintf(stdout, "a dot- identifier\n"); }
 
 
 jinja_function_expr:
-   IDENTIFIER '(' jinja_arg_list ')' { fprintf(stdout, " a fonction \n"); }
+   IDENTIFIER '(' jinja_arg_list ')' { fprintf(stdout, " a fonction '%s'\n", $1); 
+                                       getAstRoot()->type = AST_FUNCTION;
+                                       getAstRoot()->fct = getFunction($1);
+                                       free($1);
+                                     }
 
 jinja_arg_list:
       %empty
@@ -97,14 +118,18 @@ jinja_array_expr:
   | number_exp { fprintf(stdout, "an int %d\n", $1); }
   
 jinja_primary_expr:
-    IDENTIFIER  { fprintf(stdout, "2-a id %s\n", $1); $$ =$1; }
+    IDENTIFIER  { fprintf(stdout, "2-a id %s\n", $1); $$=$1; }
   |
-    jinja_constant
+    jinja_constant { $$ = $1; }
 
 jinja_constant:
-    STRING_CST { fprintf(stdout, "constant string : %s\n", $1); $$=$1; getAstRoot()->type = AST_STRING; }
- | mixed_number_exp
- | number_exp
+   STRING_CST { fprintf(stdout, "constant string : %s\n", $1); 
+                getAstRoot()->type = AST_STRING;
+                getAstRoot()->string = $1;
+                $$=$1; 
+                }
+ | mixed_number_exp { /* TODO convert to string */ }
+ | number_exp { /* TODO convert to string */ }
 
 number_exp:
   INTEGER { $$ = $1; }

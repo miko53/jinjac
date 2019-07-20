@@ -8,7 +8,8 @@ LIST_TEST =
 [
   "test_01",
   "test_01b",
-  "test_02"
+  "test_02",
+  "test_03"
 ]
 
 
@@ -31,7 +32,7 @@ def launch_test(list_test)
     r = `#{DIFF} #{test}.result #{test}.expected`
     process_status = $?
     #puts("#{DIFF} #{test}.result #{test}.expected")
-    p $?.class
+    #p $?.class
     if (process_status.exitstatus > 0)
       puts("#{test} failed !")
       puts("diff result:\n#{r}")
