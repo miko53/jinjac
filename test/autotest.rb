@@ -9,7 +9,8 @@ LIST_TEST =
   "test_02",
   "test_03",
   "test_04",
-  "test_05"
+  "test_05",
+  "test_06"
 ]
 
 

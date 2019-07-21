@@ -21,7 +21,7 @@ typedef struct
   char* identifier;
   parameter_type value;
   filter_fct fct;
-  char* string;
+  char* string; //TODO becareful!! not to be dessaloocation systematically see test_06 extension to set
   ast_type type;
 } ast;
 

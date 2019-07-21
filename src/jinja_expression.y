@@ -87,15 +87,10 @@ jinja_filtered_expr:
                             break;
                             
                           case TYPE_INT:
-                            {
-                            }
-                            break;
-                            
-                          case TYPE_DOUBLE:
                           {
                             int size = 0;
                             char* p = NULL;
-                            size = snprintf(p, size, "%f", (double) param_getValue(getAstRoot()->identifier).type_double);
+                            size = snprintf(p, size, "%d", param_getValue(getAstRoot()->identifier).type_int);
                             if (size < 0)
                             {
                               fprintf(stdout, "ID error\n");
@@ -108,7 +103,30 @@ jinja_filtered_expr:
                               p = malloc(size);
                               ASSERT(p != NULL);
                               fprintf(stdout,"size = %d\n", size);
-                              snprintf(p, size, "%f", (double) param_getValue(getAstRoot()->identifier).type_double);
+                              snprintf(p, size, "%d", param_getValue(getAstRoot()->identifier).type_int);
+                              getAstRoot()->string = p;
+                            }
+                          }
+                            break;
+                            
+                          case TYPE_DOUBLE:
+                          {
+                            int size = 0;
+                            char* p = NULL;
+                            size = snprintf(p, size, "%f", param_getValue(getAstRoot()->identifier).type_double);
+                            if (size < 0)
+                            {
+                              fprintf(stdout, "ID error\n");
+                              getAstRoot()->inError = TRUE;
+                            
+                            }
+                            else
+                            {
+                              size++;
+                              p = malloc(size);
+                              ASSERT(p != NULL);
+                              fprintf(stdout,"size = %d\n", size);
+                              snprintf(p, size, "%f", param_getValue(getAstRoot()->identifier).type_double);
                               getAstRoot()->string = p;
                             }
                           }
@@ -133,7 +151,7 @@ jinja_filtered_expr:
                                                 ASSERT(getAstRoot()->type == AST_FUNCTION);
                                                 if (getAstRoot()->fct != NULL)
                                                 {
-                                                  $$ = getAstRoot()->fct($1);
+                                                  $$ = getAstRoot()->fct(getAstRoot()->string);
                                                 }
                                                 else
                                                 {
