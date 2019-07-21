@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
 
 STATIC void create_example_parameter(void)
 {
-  insert_parameter("ident", "valeur");
+  insert_parameter("a_ident", "TheValeur");
   insert_parameter("name", "mickael");
 }
 
@@ -253,8 +253,6 @@ STATIC BOOL parse_string(char* string, FILE* out)
         break;
     }
   }
-
-  //fprintf(stdout, "yylval = '%s'\n", yylval.stringData);
 
   yy_delete_buffer(buffer);
 

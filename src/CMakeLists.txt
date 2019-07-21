@@ -1,0 +1,17 @@
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+if (BISON_FOUND)
+BISON_TARGET(JinjacBison jinja_expression.y ${CMAKE_CURRENT_BINARY_DIR}/jinja_expression.tab.c
+             COMPILE_FLAGS "-d")
+endif()
+
+if (FLEX_FOUND)
+FLEX_TARGET(JinjacFlex jinja_expression.l ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.c)
+endif()
+
+ADD_FLEX_BISON_DEPENDENCY(JinjacFlex JinjacBison)
+
+add_executable(jinja_expression ast.c main.c parameter.c ${BISON_JinjacBison_OUTPUTS} ${FLEX_JinjacFlex_OUTPUTS})
+target_link_libraries(jinja_expression fl)

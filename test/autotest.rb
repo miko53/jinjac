@@ -1,7 +1,5 @@
 #!/usr/bin/ruby
 
-
-EXE_JINJA="../jinja_expression"
 DIFF = "diff"
 
 LIST_TEST = 
@@ -43,6 +41,7 @@ def launch_test(list_test)
   end
 end
 
-
+EXE_JINJA=ARGV[0]
+Dir.chdir(ARGV[1])
 launch_test(LIST_TEST)
 exit(0)
