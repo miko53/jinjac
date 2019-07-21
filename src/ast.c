@@ -9,6 +9,8 @@ void ast_clean()
 {
   ast_root.inError = FALSE;
   ast_root.type = 0;
+  ast_root.identifier = NULL;
+  ast_root.string = NULL;
 }
 
 ast* getAstRoot(void)

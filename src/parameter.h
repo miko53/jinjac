@@ -18,7 +18,7 @@ typedef union
 
 extern void parameter_init(void);
 extern int insert_parameter(char* key, parameter_type type, parameter_value value);
-extern char* param_getValue(char* key);
+extern parameter_value param_getValue(char* key);
 extern parameter_type param_getType(char* key);
 
 

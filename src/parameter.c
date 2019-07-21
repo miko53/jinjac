@@ -76,6 +76,7 @@ int insert_parameter(char* key, parameter_type type, parameter_value value)
 static void add_param_in_array(char* key, parameter_type type, parameter_value value)
 {
   item_array[item_nb].key = strdup(key);
+  item_array[item_nb].type = type;
   switch (type)
   {
     case TYPE_DOUBLE:
@@ -96,17 +97,21 @@ static void add_param_in_array(char* key, parameter_type type, parameter_value v
   item_nb++;
 }
 
-char* param_getValue(char* key)
+parameter_value param_getValue(char* key)
 {
   int i;
+  parameter_value v;
   for (i = 0; i < item_nb; i++)
   {
     if (strcmp(key, item_array[i].key) == 0)
     {
-      return item_array[i].value.type_string;
+      return item_array[i].value;
     }
   }
-  return NULL;
+
+  ASSERT(FALSE);
+  v.type_string = NULL;
+  return v;
 }
 
 parameter_type param_getType(char* key)

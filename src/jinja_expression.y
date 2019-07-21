@@ -83,18 +83,41 @@ jinja_filtered_expr:
                         switch(type)
                         {
                           case TYPE_STRING:
-                            getAstRoot()->string = param_getValue(getAstRoot()->identifier);
+                            getAstRoot()->string = (char*) param_getValue(getAstRoot()->identifier).type_string;
                             break;
                             
                           case TYPE_INT:
+                            {
+                            }
                             break;
                             
                           case TYPE_DOUBLE:
+                          {
+                            int size = 0;
+                            char* p = NULL;
+                            size = snprintf(p, size, "%f", (double) param_getValue(getAstRoot()->identifier).type_double);
+                            if (size < 0)
+                            {
+                              fprintf(stdout, "ID error\n");
+                              getAstRoot()->inError = TRUE;
+                            
+                            }
+                            else
+                            {
+                              size++;
+                              p = malloc(size);
+                              ASSERT(p != NULL);
+                              fprintf(stdout,"size = %d\n", size);
+                              snprintf(p, size, "%f", (double) param_getValue(getAstRoot()->identifier).type_double);
+                              getAstRoot()->string = p;
+                            }
+                          }
                             break;
                             
                           default:
                             getAstRoot()->inError = TRUE;
                             fprintf(stdout, "unknown '%s'\n", getAstRoot()->identifier);
+                            ASSERT(FALSE);
                           break;
                         }
                         }

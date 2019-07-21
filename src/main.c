@@ -92,6 +92,7 @@ STATIC void create_example_parameter(void)
   insert_parameter("a_ident", TYPE_STRING, (parameter_value) "TheValeur");
   insert_parameter("name", TYPE_STRING, (parameter_value) "mickael");
   insert_parameter("gre", TYPE_INT, (parameter_value) 547);
+  insert_parameter("myNiceDouble", TYPE_DOUBLE, (parameter_value) 0.156844);
 }
 
 
@@ -230,6 +231,7 @@ STATIC BOOL parse_string(char* string, FILE* out)
   YY_BUFFER_STATE buffer;
   ast* astRoot;
 
+  ast_clean();
   astRoot = getAstRoot();
   astRoot->inError = FALSE;
   fprintf(stdout, "parse = \"%s\"\n", string);
@@ -240,7 +242,15 @@ STATIC BOOL parse_string(char* string, FILE* out)
   if (!astRoot->inError)
   {
     fputs(astRoot->string, out);
-    free(astRoot->string);
+
+    if (astRoot->string != NULL)
+    {
+      free(astRoot->string);
+    }
+    if (astRoot->identifier != NULL)
+    {
+      free(astRoot->identifier);
+    }
     /*switch (astRoot->type)
     {
       case AST_STRING:
