@@ -3,24 +3,26 @@
 #define _AST_H
 
 #include "common.h"
+#include "parameter.h"
 
 typedef char* (*filter_fct)(char*, ...);
 
 typedef enum
 {
+  AST_CONSTANTE,
+  AST_IDENTIFIER,
   AST_STRING,
-  AST_FUNCTION
+  AST_FUNCTION,
 } ast_type;
 
 typedef struct
 {
   BOOL inError;
+  char* identifier;
+  parameter_type value;
+  filter_fct fct;
   char* string;
   ast_type type;
-  union
-  {
-    filter_fct fct;
-  };
 } ast;
 
 extern ast* getAstRoot(void);

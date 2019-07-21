@@ -3,16 +3,21 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include "common.h"
 
 typedef struct
 {
   char* key;
-  char* value;
+  parameter_type type;
+  parameter_value value;
 } param_item;
 
 static param_item* item_array = NULL;
 static int item_nb = 0;
 static int item_allocated = 0;
+
+
+static void add_param_in_array(char* key, parameter_type type, parameter_value value);
 
 void parameter_init(void)
 {
@@ -23,10 +28,20 @@ void parameter_init(void)
 }
 
 
-int insert_parameter(char* key, char* value)
+
+int insert_parameter(char* key, parameter_type type, parameter_value value)
 {
   assert(key != NULL);
-  assert(value != NULL);
+
+  switch (type)
+  {
+    case TYPE_STRING:
+      assert(value.type_string != NULL);
+      break;
+    default:
+      break;
+  }
+
   int status;
   status = 1;
 
@@ -37,9 +52,7 @@ int insert_parameter(char* key, char* value)
 
   if (item_nb < item_allocated)
   {
-    item_array[item_nb].key = strdup(key);
-    item_array[item_nb].value = strdup(value);
-    item_nb++;
+    add_param_in_array(key, type, value);
   }
   else
   {
@@ -49,9 +62,7 @@ int insert_parameter(char* key, char* value)
       free(item_array);
       item_array = temp;
       item_allocated = item_allocated * 2;
-      item_array[item_nb].key = strdup(key);
-      item_array[item_nb].value = strdup(value);
-      item_nb++;
+      add_param_in_array(key, type, value);
     }
     else
     {
@@ -62,6 +73,28 @@ int insert_parameter(char* key, char* value)
   return status;
 }
 
+static void add_param_in_array(char* key, parameter_type type, parameter_value value)
+{
+  item_array[item_nb].key = strdup(key);
+  switch (type)
+  {
+    case TYPE_DOUBLE:
+      item_array[item_nb].value.type_double = value.type_double;
+      break;
+
+    case TYPE_INT:
+      item_array[item_nb].value.type_int = value.type_int;
+      break;
+
+    case TYPE_STRING:
+      item_array[item_nb].value.type_string = strdup(value.type_string);
+      break;
+
+    default:
+      ASSERT(FALSE);
+  }
+  item_nb++;
+}
 
 char* param_getValue(char* key)
 {
@@ -70,9 +103,21 @@ char* param_getValue(char* key)
   {
     if (strcmp(key, item_array[i].key) == 0)
     {
-      return item_array[i].value;
+      return item_array[i].value.type_string;
     }
   }
   return NULL;
 }
 
+parameter_type param_getType(char* key)
+{
+  int i;
+  for (i = 0; i < item_nb; i++)
+  {
+    if (strcmp(key, item_array[i].key) == 0)
+    {
+      return item_array[i].type;
+    }
+  }
+  return TYPE_UNKOWN;
+}

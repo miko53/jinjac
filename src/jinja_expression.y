@@ -2,8 +2,8 @@
   #include <stdio.h>
   #include <stdlib.h>
   #include "common.h"
-  
   #include "ast.h"
+  #include "parameter.h"
 
   // Declare stuff from Flex that Bison needs to know about:
   extern int yylex();
@@ -74,9 +74,37 @@ jinja_if_stmt:
   IF condition_expr { fprintf(stdout, "a IF statement\n"); }
   
 jinja_filtered_expr:
-  jinja_function_expr { fprintf(stdout, "a function expr\n"); }
+  jinja_function_expr 
   |
-   jinja_postfix_expr { fprintf(stdout, "a jpost fix expr\n");  }
+   jinja_postfix_expr { //convert id to string
+                        if (getAstRoot()->type == AST_IDENTIFIER)
+                        {
+                        parameter_type type = param_getType(getAstRoot()->identifier); 
+                        switch(type)
+                        {
+                          case TYPE_STRING:
+                            getAstRoot()->string = param_getValue(getAstRoot()->identifier);
+                            break;
+                            
+                          case TYPE_INT:
+                            break;
+                            
+                          case TYPE_DOUBLE:
+                            break;
+                            
+                          default:
+                            getAstRoot()->inError = TRUE;
+                            fprintf(stdout, "unknown '%s'\n", getAstRoot()->identifier);
+                          break;
+                        }
+                        }
+                        else if (getAstRoot()->type == AST_CONSTANTE)
+                        {
+                          //do noting
+                        }
+                        
+                        
+                      }
   |
   jinja_filtered_expr '|' jinja_function_expr { fprintf(stdout, "a jinja filtered expr\n"); 
                                                 ASSERT(getAstRoot()->type == AST_FUNCTION);
@@ -90,12 +118,11 @@ jinja_filtered_expr:
                                                   getAstRoot()->inError = TRUE;
                                                   $$ = $1;
                                                 }
-                                                getAstRoot()->type = AST_STRING;
                                                 getAstRoot()->string = $$;
                                               }
 
 jinja_postfix_expr:
-     jinja_primary_expr { $$ = $1; }
+     jinja_primary_expr { }
    | jinja_postfix_expr '[' jinja_array_expr ']' { fprintf(stdout, "an array \n"); } 
    | jinja_postfix_expr  '.' IDENTIFIER { fprintf(stdout, "a dot- identifier\n"); }
 
@@ -118,13 +145,16 @@ jinja_array_expr:
   | number_exp { fprintf(stdout, "an int %d\n", $1); }
   
 jinja_primary_expr:
-    IDENTIFIER  { fprintf(stdout, "2-a id %s\n", $1); $$=$1; }
+    IDENTIFIER  { fprintf(stdout, "2-a id '%s'\n", $1); 
+                  getAstRoot()->type = AST_IDENTIFIER;
+                  getAstRoot()->identifier = $1;
+                }
   |
     jinja_constant { $$ = $1; }
 
 jinja_constant:
    STRING_CST { fprintf(stdout, "constant string : %s\n", $1); 
-                getAstRoot()->type = AST_STRING;
+                getAstRoot()->type = AST_CONSTANTE;
                 getAstRoot()->string = $1;
                 $$=$1; 
                 }

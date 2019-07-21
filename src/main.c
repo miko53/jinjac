@@ -89,8 +89,9 @@ int main(int argc, char* argv[])
 
 STATIC void create_example_parameter(void)
 {
-  insert_parameter("a_ident", "TheValeur");
-  insert_parameter("name", "mickael");
+  insert_parameter("a_ident", TYPE_STRING, (parameter_value) "TheValeur");
+  insert_parameter("name", TYPE_STRING, (parameter_value) "mickael");
+  insert_parameter("gre", TYPE_INT, (parameter_value) 547);
 }
 
 
@@ -238,7 +239,9 @@ STATIC BOOL parse_string(char* string, FILE* out)
 
   if (!astRoot->inError)
   {
-    switch (astRoot->type)
+    fputs(astRoot->string, out);
+    free(astRoot->string);
+    /*switch (astRoot->type)
     {
       case AST_STRING:
         fputs(astRoot->string, out);
@@ -251,7 +254,7 @@ STATIC BOOL parse_string(char* string, FILE* out)
         fprintf(stdout, "ast type %d not possible....\n", astRoot->type);
         ASSERT(FALSE);
         break;
-    }
+    }*/
   }
 
   yy_delete_buffer(buffer);
