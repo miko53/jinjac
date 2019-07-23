@@ -27,9 +27,9 @@ HEXCONSTANT ([0][xX][0-9A-Fa-f]+)
   }
 [|()\[\],+\-/*\.]   { return yytext[0]; }
 
+({HEXCONSTANT}|{OCTALCONSTANT}|{DECIMALCONSTANT}){INTEGERSUFFIX}?  { yylval.integerData = strtol(yytext, NULL, 0); return INTEGER; }
 ([0-9]+\.[0-9]*){FLOATINGSUFFI}?                                   { yylval.doubleData = atof(yytext); return FLOAT; }
 ({DECIMALCONSTANT}){FLOATINGSUFFI}?                                { yylval.doubleData = atof(yytext); return FLOAT; }
-({HEXCONSTANT}|{OCTALCONSTANT}|{DECIMALCONSTANT}){INTEGERSUFFIX}?  { yylval.integerData = strtol(yytext, NULL, 0); return INTEGER; }
 for                       { return FOR;}
 in                        { return IN; }
 endfor                    { return END_FOR; }

@@ -30,5 +30,8 @@ extern void ast_clean(void);
 
 filter_fct getFunction(char* fctName);
 
+extern char* intToStr(int value);
+extern char* doubleToStr(double value);
+
 
 #endif /* _AST_H */
