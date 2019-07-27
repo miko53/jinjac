@@ -16,21 +16,12 @@ typedef enum
   J_ARRAY,
   J_FUNCTION_ARGS,
   J_FUNCTION,
-  
-  AST_CONSTANTE,
-  AST_IDENTIFIER,
-  AST_STRING,
-  AST_FUNCTION,
 } ast_type;
 
 typedef struct
 {
   BOOL inError;
-  char* identifier;
-  parameter_type value;
-  filter_fct fct;
-  char* string; //TODO be careful!! not to desallocate systematically see test_06 extension
-  ast_type type;
+  char* currentStringValue;
 } ast;
 
 typedef struct
@@ -81,12 +72,21 @@ typedef struct
 {
   JObject base;
   filter_fct function;
-  JArgs argList;  
+  JArgs* argList;
 } JFunction;
 
 extern ast* getAstRoot(void);
 extern void ast_clean(void);
+//extern filter_fct getFunction(char* fctName);
 
-filter_fct getFunction(char* fctName);
+
+extern int ast_insert_constante(char* name);
+extern int ast_insert_identifier(char* name);
+extern int ast_insert_integer(int i);
+extern int ast_insert_double(double d);
+extern int ast_insert_function(char* fct);
+
+extern char* ast_convert_to_string(void);
+extern char* ast_apply_filtering(void);
 
 #endif /* _AST_H */

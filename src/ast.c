@@ -5,15 +5,13 @@
 #include <ctype.h>
 #include "ast.h"
 #include "common.h"
+#include "convert.h"
 
 ast ast_root;
 
 void ast_clean()
 {
   ast_root.inError = FALSE;
-  ast_root.type = 0;
-  ast_root.identifier = NULL;
-  ast_root.string = NULL;
 }
 
 ast* getAstRoot(void)
@@ -62,3 +60,247 @@ filter_fct getFunction(char* fctName)
 
   return NULL;
 }
+
+#define MAX_OBJECT (50)
+#define NEW(obj)  malloc(sizeof(obj))
+
+
+JObject* ast_list[MAX_OBJECT];
+unsigned int ast_nb_object;
+
+
+
+int ast_insert(JObject* o)
+{
+  int rc;
+  rc = -1;
+
+  if (ast_nb_object < MAX_OBJECT)
+  {
+    ast_list[ast_nb_object] = o;
+    ast_nb_object++;
+    rc = 0;
+  }
+
+  return rc;
+}
+
+JObject* JStringConstante_new(char* name)
+{
+  JStringConstante* o = NEW(JStringConstante);
+  o->base.type = J_STR_CONSTANTE;
+  o->str_constant = name;
+  return (JObject*) o;
+}
+
+JObject* JIdentifier_new(char* name)
+{
+  JIdentifier* o = NEW(JIdentifier);
+  o->base.type = J_IDENTIFIER;
+  o->identifier = name;
+  return (JObject*) o;
+}
+
+
+JObject* JInteger_new(int i)
+{
+  JInteger* o = NEW(JInteger);
+  o->base.type = J_INTEGER;
+  o->value = i;
+  return (JObject*) o;
+}
+
+JObject* JDouble_new(double d)
+{
+  JDouble* o = NEW(JDouble);
+  o->base.type = J_DOUBLE;
+  o->value = d;
+  return (JObject*) o;
+}
+
+JObject* JFunction_new(char* fct)
+{
+  filter_fct function = getFunction(fct);
+  if (function != NULL)
+  {
+    JFunction* o = NEW(JFunction);
+    o->base.type = J_FUNCTION;
+    o->argList = NULL;
+    o->function = getFunction(fct);
+    return (JObject*) o;
+  }
+  else
+  {
+    fprintf(stdout, "filtered fct not found !\n");
+  }
+
+  return NULL;
+}
+
+int ast_insert_constante(char* name)
+{
+  JObject* o = JStringConstante_new(name);
+  return ast_insert(o);
+}
+
+int ast_insert_identifier(char* name)
+{
+  JObject* o = JIdentifier_new(name);
+  return ast_insert(o);
+}
+
+int ast_insert_integer(int i)
+{
+  JObject* o = JInteger_new(i);
+  return ast_insert(o);
+}
+
+int ast_insert_double(double d)
+{
+  JObject* o = JDouble_new(d);
+  return ast_insert(o);
+}
+
+int ast_insert_function(char* fct)
+{
+  JObject* o = JFunction_new(fct);
+  if (o != NULL)
+  {
+    return ast_insert(o);
+  }
+
+  return -1;
+}
+
+
+char* JObject_toString(JObject* pObject)
+{
+  ASSERT(pObject != NULL);
+  char* s;
+  s = NULL;
+
+  switch (pObject->type)
+  {
+    case J_STR_CONSTANTE:
+      s = strdup(((JStringConstante*) pObject)->str_constant);
+      break;
+
+    case J_INTEGER:
+      s = intToStr(((JInteger*) pObject)->value);
+      break;
+
+    case J_DOUBLE:
+      s = doubleToStr(((JDouble*) pObject)->value);
+      break;
+
+    case J_IDENTIFIER:
+      {
+        JIdentifier* pIdent;
+        pIdent = (JIdentifier*) pObject;
+        parameter_type type = param_getType(pIdent->identifier);
+        switch (type)
+        {
+          case TYPE_STRING:
+            s = (char*) param_getValue(pIdent->identifier).type_string;
+            break;
+
+          case TYPE_INT:
+            s = intToStr(param_getValue(pIdent->identifier).type_int);
+            if (s == NULL)
+            {
+              fprintf(stdout, "ID error\n");
+              getAstRoot()->inError = TRUE;
+            }
+            break;
+
+          case TYPE_DOUBLE:
+            s = doubleToStr(param_getValue(pIdent->identifier).type_double);
+            if (s == NULL)
+            {
+              fprintf(stdout, "ID error\n");
+              getAstRoot()->inError = TRUE;
+            }
+            break;
+
+          default:
+            getAstRoot()->inError = TRUE;
+            fprintf(stdout, "unknown '%s' identifier \n", pIdent->identifier);
+            ASSERT(FALSE);
+            break;
+        }
+      }
+
+      break;
+
+    default:
+      fprintf(stdout, "not yet implemented...(%d)\n", pObject->type);
+      break;
+  }
+
+  return s;
+}
+
+void JObject_delete(JObject* pObject)
+{
+  switch (pObject->type)
+  {
+    case J_STR_CONSTANTE:
+      free (((JStringConstante*) pObject)->str_constant);
+      break;
+
+    case J_IDENTIFIER:
+      free (((JIdentifier*) pObject)->identifier);
+      break;
+
+    case J_INTEGER:
+    case J_DOUBLE:
+      break;
+
+    default:
+      break;
+  }
+
+  free(pObject);
+}
+
+
+void ast_remove_last()
+{
+  JObject_delete(ast_list[ast_nb_object - 1]);
+  ast_list[ast_nb_object - 1] = NULL;
+  ast_nb_object--;
+}
+
+
+char* ast_convert_to_string()
+{
+  char* s;
+  s = NULL;
+  if (ast_nb_object != 0)
+  {
+    s = JObject_toString(ast_list[ast_nb_object - 1]);
+    ast_remove_last();
+  }
+
+  return s;
+}
+
+
+char* ast_apply_filtering()
+{
+  char* s;
+  s = NULL;
+  if (ast_nb_object != 0)
+  {
+    ASSERT(ast_list[ast_nb_object - 1]->type == J_FUNCTION);
+
+    JFunction* f = (JFunction*) ast_list[ast_nb_object - 1];
+    s = f->function(getAstRoot()->currentStringValue); //TODO add argument
+    ast_remove_last();
+  }
+
+  return s;
+}
+
+
+

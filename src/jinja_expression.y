@@ -45,11 +45,6 @@
 %type<integerData>  number_exp
 %type<doubleData> mixed_number_exp
 
-%type<stringData> jinja_primary_expr 
-%type<stringData> jinja_postfix_expr
-%type<stringData> jinja_constant
-%type<stringData> jinja_filtered_expr
-
 %%
 jinja_stmt:
   jinja_for_stmt  { }
@@ -78,74 +73,25 @@ jinja_filtered_expr:
   jinja_function_expr 
   |
    jinja_postfix_expr { //convert id to string
-                        if (getAstRoot()->type == AST_IDENTIFIER)
-                        {
-                        parameter_type type = param_getType(getAstRoot()->identifier); 
-                        switch(type)
-                        {
-                          case TYPE_STRING:
-                            getAstRoot()->string = (char*) param_getValue(getAstRoot()->identifier).type_string;
-                            break;
-                            
-                          case TYPE_INT:
-                            getAstRoot()->string = intToStr(param_getValue(getAstRoot()->identifier).type_int);
-                            if (getAstRoot()->string == NULL)
-                            {
-                              fprintf(stdout, "ID error\n");
-                              getAstRoot()->inError = TRUE;
-                            }
-                            break;
-                            
-                          case TYPE_DOUBLE:
-                            getAstRoot()->string = doubleToStr(param_getValue(getAstRoot()->identifier).type_double);
-                            if (getAstRoot()->string == NULL)
-                            {
-                              fprintf(stdout, "ID error\n");
-                              getAstRoot()->inError = TRUE;
-                            }
-                            break;
-                            
-                          default:
-                            getAstRoot()->inError = TRUE;
-                            fprintf(stdout, "unknown '%s' identifier \n", getAstRoot()->identifier);
-                            ASSERT(FALSE);
-                          break;
-                        }
-                        }
-                        else if (getAstRoot()->type == AST_CONSTANTE)
-                        {
-                          //do nothing already done
-                        }
-                        
-                        
+                        getAstRoot()->currentStringValue = ast_convert_to_string();
                       }
   |
   jinja_filtered_expr '|' jinja_function_expr { fprintf(stdout, "a jinja filtered expr\n"); 
-                                                ASSERT(getAstRoot()->type == AST_FUNCTION);
-                                                if (getAstRoot()->fct != NULL)
-                                                {
-                                                  $$ = getAstRoot()->fct(getAstRoot()->string);
-                                                }
-                                                else
-                                                {
-                                                  fprintf(stdout, "filtered fct not found !\n");
-                                                  getAstRoot()->inError = TRUE;
-                                                  $$ = $1;
-                                                }
-                                                getAstRoot()->string = $$;
+                                                ast_apply_filtering();
                                               }
 
 jinja_postfix_expr:
      jinja_primary_expr { }
-   | jinja_postfix_expr '[' jinja_array_offset_expr ']' { fprintf(stdout, "an array \n"); } 
+   | IDENTIFIER '[' jinja_array_offset_expr ']' {
+                                                  fprintf(stdout, "an array \n"); 
+                                                } 
 /*   | jinja_postfix_expr  '.' IDENTIFIER { fprintf(stdout, "a dot- identifier\n"); }*/ //Plus tard...
 
 
 jinja_function_expr:
-   IDENTIFIER '(' jinja_arg_list ')' { fprintf(stdout, " a fonction '%s'\n", $1); 
-                                       getAstRoot()->type = AST_FUNCTION;
-                                       getAstRoot()->fct = getFunction($1);
-                                       free($1);
+   IDENTIFIER '(' jinja_arg_list ')' { 
+                                        ast_insert_function($1);
+                                        free($1);
                                      }
 
 jinja_arg_list:
@@ -155,25 +101,26 @@ jinja_arg_list:
    
    
 jinja_array_offset_expr:
-    IDENTIFIER  { fprintf(stdout, "1-a id %s\n", $1); free($1); /*prendre la valeur entiere */ } 
-  | number_exp { fprintf(stdout, "an int %d\n", $1); }
+    IDENTIFIER  { fprintf(stdout, "1-a id %s\n", $1);  ast_insert_identifier($1); } 
+  | number_exp { fprintf(stdout, "an int %d\n", $1); ast_insert_integer($1); }
   
 jinja_primary_expr:
-    IDENTIFIER  { fprintf(stdout, "2-a id '%s'\n", $1); 
-                  getAstRoot()->type = AST_IDENTIFIER;
-                  getAstRoot()->identifier = $1;
+    IDENTIFIER  { 
+                  ast_insert_identifier($1);
                 }
   |
-    jinja_constant { $$ = $1; }
+    jinja_constant
 
 jinja_constant:
-   STRING_CST { fprintf(stdout, "constant string : %s\n", $1); 
-                getAstRoot()->type = AST_CONSTANTE;
-                getAstRoot()->string = $1;
-                $$=$1; 
+   STRING_CST { 
+                ast_insert_constante($1);
                 }
- | mixed_number_exp { getAstRoot()->string = doubleToStr($1); }
- | number_exp { getAstRoot()->string = intToStr($1); }
+ | mixed_number_exp {  
+                      ast_insert_double($1);
+                    }
+ | number_exp { 
+                ast_insert_integer($1);
+              }
 
 number_exp:
   INTEGER { $$ = $1; }

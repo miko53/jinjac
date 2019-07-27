@@ -241,30 +241,7 @@ STATIC BOOL parse_string(char* string, FILE* out)
 
   if (!astRoot->inError)
   {
-    fputs(astRoot->string, out);
-
-    if (astRoot->string != NULL)
-    {
-      free(astRoot->string);
-    }
-    if (astRoot->identifier != NULL)
-    {
-      free(astRoot->identifier);
-    }
-    /*switch (astRoot->type)
-    {
-      case AST_STRING:
-        fputs(astRoot->string, out);
-        free(astRoot->string);
-        break;
-
-
-      case AST_FUNCTION:
-      default:
-        fprintf(stdout, "ast type %d not possible....\n", astRoot->type);
-        ASSERT(FALSE);
-        break;
-    }*/
+    fputs(astRoot->currentStringValue, out);
   }
 
   yy_delete_buffer(buffer);
