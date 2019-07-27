@@ -4,6 +4,7 @@
   #include "common.h"
   #include "ast.h"
   #include "parameter.h"
+  #include "convert.h"
 
   // Declare stuff from Flex that Bison needs to know about:
   extern int yylex();
@@ -59,7 +60,7 @@ jinja_stmt:
   | jinja_filtered_expr { fprintf(stdout, "a filtered expr\n");}
 
 jinja_for_stmt:
-  FOR jinja_primary_expr IN jinja_filtered_expr { fprintf(stdout, " a FOR statement\n"); }
+  FOR IDENTIFIER IN jinja_filtered_expr { fprintf(stdout, " a FOR statement\n"); }
 
 jinja_endfor_stmt:
   END_FOR { fprintf(stdout, "a ENDFOR stmt\n"); }
@@ -106,7 +107,7 @@ jinja_filtered_expr:
                             
                           default:
                             getAstRoot()->inError = TRUE;
-                            fprintf(stdout, "unknown '%s'\n", getAstRoot()->identifier);
+                            fprintf(stdout, "unknown '%s' identifier \n", getAstRoot()->identifier);
                             ASSERT(FALSE);
                           break;
                         }
@@ -136,8 +137,8 @@ jinja_filtered_expr:
 
 jinja_postfix_expr:
      jinja_primary_expr { }
-   | jinja_postfix_expr '[' jinja_array_expr ']' { fprintf(stdout, "an array \n"); } 
-   | jinja_postfix_expr  '.' IDENTIFIER { fprintf(stdout, "a dot- identifier\n"); }
+   | jinja_postfix_expr '[' jinja_array_offset_expr ']' { fprintf(stdout, "an array \n"); } 
+/*   | jinja_postfix_expr  '.' IDENTIFIER { fprintf(stdout, "a dot- identifier\n"); }*/ //Plus tard...
 
 
 jinja_function_expr:
@@ -153,8 +154,8 @@ jinja_arg_list:
    |  jinja_arg_list ',' jinja_postfix_expr { fprintf(stdout, "arg list\n"); }
    
    
-jinja_array_expr:
-    IDENTIFIER  { fprintf(stdout, "1-a id %s\n", $1); free($1); }
+jinja_array_offset_expr:
+    IDENTIFIER  { fprintf(stdout, "1-a id %s\n", $1); free($1); /*prendre la valeur entiere */ } 
   | number_exp { fprintf(stdout, "an int %d\n", $1); }
   
 jinja_primary_expr:
