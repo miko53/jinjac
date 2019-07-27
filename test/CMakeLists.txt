@@ -1,9 +1,9 @@
 
-
-add_test(autotest ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} )
-
-#add_test(test_01 )
-#add_test(test_01b )
-
-#add_test(test_02 )
-#add_test(test_03 )
+add_test(simple_test_without_template ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_01)
+add_test(simple_test_with_empty_template ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_01b)
+add_test(test_with_constant_string ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_02)
+add_test(constant_string_and_filter_fct ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_03)
+add_test(with_an_identifier_string ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_04)
+add_test(with_an_identifier_double ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_05)
+add_test(three_id_with_filtering ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_06)
+add_test(template_do_computation ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_07)
