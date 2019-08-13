@@ -7,11 +7,31 @@
 #include "common.h"
 #include "convert.h"
 
-ast ast_root;
+#define MAX_OBJECT (50)
+#define NEW(obj)  malloc(sizeof(obj))
+
+static ast ast_root;
+
+static JObject* ast_list[MAX_OBJECT];
+static unsigned int ast_nb_object;
+
+void JObject_delete(JObject* pObject);
 
 void ast_clean()
 {
   ast_root.inError = FALSE;
+  if (ast_root.currentStringValue != NULL)
+  {
+    free(ast_root.currentStringValue );
+    ast_root.currentStringValue = NULL;
+  }
+
+  for (unsigned int i = 0; i < ast_nb_object; i++)
+  {
+    JObject_delete(ast_list[i]);
+    ast_list[i] = NULL;
+  }
+  ast_nb_object = 0;
 }
 
 ast* getAstRoot(void)
@@ -60,15 +80,6 @@ filter_fct getFunction(char* fctName)
 
   return NULL;
 }
-
-#define MAX_OBJECT (50)
-#define NEW(obj)  malloc(sizeof(obj))
-
-
-static JObject* ast_list[MAX_OBJECT];
-static unsigned int ast_nb_object;
-
-
 
 int ast_insert(JObject* o)
 {
@@ -263,7 +274,7 @@ char* JObject_toString(JObject* pObject)
           switch (type)
           {
             case TYPE_STRING:
-              s = (char*) v.type_string;
+              s = strdup((char*) v.type_string);
               break;
 
             case TYPE_DOUBLE:
@@ -319,7 +330,23 @@ void JObject_delete(JObject* pObject)
     case J_DOUBLE:
       break;
 
+    case J_FUNCTION:
+      {
+        JFunction* fct = ((JFunction*) pObject);
+        if (fct->argList != NULL)
+        {
+          JObject_delete((JObject*) fct->argList);
+        }
+      }
+      break;
+
+    case J_ARRAY:
+      free (((JArray*) pObject)->identifier);
+      break;
+
     default:
+      fprintf(stdout, "type = %d\n", pObject->type);
+      ASSERT(FALSE);
       break;
   }
 

@@ -208,7 +208,6 @@ STATIC void parse_file(FILE* in, FILE* out)
             toParse[stop - start - 1] = '\0'; //NOTE: -1 to remove previous char i.e }} or #}
             bInError = parse_string(toParse, out);
             mode = COPY_MODE;
-
           }
           else
           {
@@ -232,23 +231,25 @@ STATIC BOOL parse_string(char* string, FILE* out)
 {
   YY_BUFFER_STATE buffer;
   ast* astRoot;
+  BOOL inError;
 
   ast_clean();
   astRoot = getAstRoot();
-  astRoot->inError = FALSE;
   fprintf(stdout, "parse = \"%s\"\n", string);
 
   buffer = yy_scan_string ( string );
   yyparse();
 
-  if ((!astRoot->inError) && (astRoot->currentStringValue != NULL))
+  inError = astRoot->inError;
+  if ((!inError) && (astRoot->currentStringValue != NULL))
   {
     fputs(astRoot->currentStringValue, out);
   }
 
   yy_delete_buffer(buffer);
+  ast_clean();
 
-  return astRoot->inError;
+  return inError;
 }
 
 
