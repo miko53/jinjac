@@ -93,6 +93,9 @@ STATIC void create_example_parameter(void)
   insert_parameter("name", TYPE_STRING, (parameter_value) "mickael");
   insert_parameter("gre", TYPE_INT, (parameter_value) 547);
   insert_parameter("myNiceDouble", TYPE_DOUBLE, (parameter_value) 0.156844);
+  insert_array_parameter("data_value", TYPE_INT, 3, 10, 20, 15);
+  insert_array_parameter("data_value_dbl", TYPE_DOUBLE, 4, 0.586, 10.45, 159.546, 3.145561);
+  insert_array_parameter("data_value_str", TYPE_STRING, 3, "DES", "GTRV", "AADDEGG");
 }
 
 
@@ -239,7 +242,7 @@ STATIC BOOL parse_string(char* string, FILE* out)
   buffer = yy_scan_string ( string );
   yyparse();
 
-  if (!astRoot->inError)
+  if ((!astRoot->inError) && (astRoot->currentStringValue != NULL))
   {
     fputs(astRoot->currentStringValue, out);
   }

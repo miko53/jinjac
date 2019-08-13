@@ -65,8 +65,8 @@ filter_fct getFunction(char* fctName)
 #define NEW(obj)  malloc(sizeof(obj))
 
 
-JObject* ast_list[MAX_OBJECT];
-unsigned int ast_nb_object;
+static JObject* ast_list[MAX_OBJECT];
+static unsigned int ast_nb_object;
 
 
 
@@ -137,6 +137,15 @@ JObject* JFunction_new(char* fct)
   return NULL;
 }
 
+JObject* JArray_new(char* name, int offset)
+{
+  JArray* o = NEW(JArray);
+  o->base.type = J_ARRAY;
+  o->identifier = name;
+  o->offset = offset;
+  return (JObject*) o;
+}
+
 int ast_insert_constante(char* name)
 {
   JObject* o = JStringConstante_new(name);
@@ -172,6 +181,16 @@ int ast_insert_function(char* fct)
   return -1;
 }
 
+int ast_insert_array(char* name, int offset)
+{
+  JObject* o = JArray_new(name, offset);
+  if (o != NULL)
+  {
+    return ast_insert(o);
+  }
+
+  return -1;
+}
 
 char* JObject_toString(JObject* pObject)
 {
@@ -224,16 +243,60 @@ char* JObject_toString(JObject* pObject)
 
           default:
             getAstRoot()->inError = TRUE;
-            fprintf(stdout, "unknown '%s' identifier \n", pIdent->identifier);
+            fprintf(stdout, "unknown '%s' identifier\n", pIdent->identifier);
             ASSERT(FALSE);
             break;
         }
       }
+      break;
 
+    case J_ARRAY:
+      {
+        JArray* pArray;
+        pArray = (JArray*) pObject;
+        BOOL bOk;
+        parameter_value v;
+        parameter_type type = param_getType(pArray->identifier);
+        bOk = param_array_getValue(pArray->identifier, pArray->offset, &v);
+        if (bOk)
+        {
+          switch (type)
+          {
+            case TYPE_STRING:
+              s = (char*) v.type_string;
+              break;
+
+            case TYPE_DOUBLE:
+              s = doubleToStr(v.type_double);
+              if (s == NULL)
+              {
+                fprintf(stdout, "array conversion error\n");
+                getAstRoot()->inError = TRUE;
+              }
+              break;
+
+            case TYPE_INT:
+              s = intToStr(v.type_int);
+              if (s == NULL)
+              {
+                fprintf(stdout, "array conversion error\n");
+                getAstRoot()->inError = TRUE;
+              }
+              break;
+
+            default:
+              getAstRoot()->inError = TRUE;
+              fprintf(stdout, "unknown '%s' array\n", pArray->identifier);
+              ASSERT(FALSE);
+              break;
+          }
+        }
+
+      }
       break;
 
     default:
-      fprintf(stdout, "not yet implemented...(%d)\n", pObject->type);
+      fprintf(stdout, "not yet implemented...(type = %d)\n", pObject->type);
       break;
   }
 
@@ -302,5 +365,70 @@ char* ast_apply_filtering()
   return s;
 }
 
+BOOL ast_get_offset(JObject* pObject, int* pOffset)
+{
+  ASSERT(pObject != NULL);
+  ASSERT(pOffset != NULL);
+  BOOL  b;
+  b = FALSE;
 
+  switch (pObject->type)
+  {
+    case J_IDENTIFIER:
+      {
+        JIdentifier* pIdent;
+        pIdent = (JIdentifier*) pObject;
+        parameter_type type = param_getType(pIdent->identifier);
+        switch (type)
+        {
+          case TYPE_INT:
+            *pOffset = param_getValue(pIdent->identifier).type_int;
+            b = TRUE;
+            break;
+
+          case TYPE_STRING:
+          case TYPE_DOUBLE:
+          default:
+            fprintf(stdout, "error: type '%s' can't be convert to integer\n", pIdent->identifier);
+            break;
+        }
+      }
+
+      break;
+
+    case J_INTEGER:
+      *pOffset = ((JInteger*) pObject)->value;
+      b = TRUE;
+      break;
+
+    default:
+      fprintf(stdout, "this object can give offset array\n");
+      break;
+  }
+
+  if (b)
+  {
+    fprintf(stdout, "offset of array is %d\n", *pOffset);
+  }
+
+  return b;
+}
+
+
+int ast_create_array_on_top(char* name)
+{
+  if (ast_nb_object != 0)
+  {
+    int offset;
+    BOOL b;
+    b = ast_get_offset(ast_list[ast_nb_object - 1], &offset);
+    if (b)
+    {
+      ast_remove_last();
+      return ast_insert_array(name, offset);
+    }
+  }
+
+  return -1;
+}
 

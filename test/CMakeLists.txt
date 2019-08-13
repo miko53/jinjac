@@ -7,3 +7,4 @@ add_test(with_an_identifier_string ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMA
 add_test(with_an_identifier_double ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_05)
 add_test(three_id_with_filtering ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_06)
 add_test(template_do_computation ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_07)
+add_test(work_with_array ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_08)

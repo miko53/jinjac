@@ -85,6 +85,7 @@ extern int ast_insert_identifier(char* name);
 extern int ast_insert_integer(int i);
 extern int ast_insert_double(double d);
 extern int ast_insert_function(char* fct);
+extern int ast_create_array_on_top(char* name);
 
 extern char* ast_convert_to_string(void);
 extern char* ast_apply_filtering(void);

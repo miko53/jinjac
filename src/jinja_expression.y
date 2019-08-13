@@ -76,14 +76,17 @@ jinja_filtered_expr:
                         getAstRoot()->currentStringValue = ast_convert_to_string();
                       }
   |
-  jinja_filtered_expr '|' jinja_function_expr { fprintf(stdout, "a jinja filtered expr\n"); 
+  jinja_filtered_expr '|' jinja_function_expr {
+                                                fprintf(stdout, "a jinja filtered expr\n"); 
                                                 ast_apply_filtering();
                                               }
 
 jinja_postfix_expr:
      jinja_primary_expr { }
    | IDENTIFIER '[' jinja_array_offset_expr ']' {
-                                                  fprintf(stdout, "an array \n"); 
+                                                  fprintf(stdout, "an array '%s' \n", $1); 
+                                                  ast_create_array_on_top($1);
+                                                  
                                                 } 
 /*   | jinja_postfix_expr  '.' IDENTIFIER { fprintf(stdout, "a dot- identifier\n"); }*/ //Plus tard...
 
@@ -101,8 +104,8 @@ jinja_arg_list:
    
    
 jinja_array_offset_expr:
-    IDENTIFIER  { fprintf(stdout, "1-a id %s\n", $1);  ast_insert_identifier($1); } 
-  | number_exp { fprintf(stdout, "an int %d\n", $1); ast_insert_integer($1); }
+    IDENTIFIER  { fprintf(stdout, "1-a id '%s'\n", $1);  ast_insert_identifier($1); } 
+  | number_exp { fprintf(stdout, "an int '%d'\n", $1); ast_insert_integer($1); }
   
 jinja_primary_expr:
     IDENTIFIER  { 
@@ -165,7 +168,7 @@ condition_expr:
 
 void yyerror(const char *s) 
 {
-  fprintf(stdout, "error: %s in line %d\n",s, getLine());
+  fprintf(stdout, "line %d: error: '%s'\n",getLine(), s);
   getAstRoot()->inError = TRUE;
 }
 
