@@ -98,10 +98,14 @@ jinja_function_expr:
 
 jinja_arg_list:
       %empty
-   |  jinja_postfix_expr { fprintf(stdout, "arg \n"); }
-   |  jinja_arg_list ',' jinja_postfix_expr { fprintf(stdout, "arg list\n"); }
-   
-   
+   |  jinja_postfix_expr { 
+                           fprintf(stdout, "arg \n"); 
+                         }
+   |  jinja_arg_list ',' jinja_postfix_expr { 
+                                               fprintf(stdout, "arg list\n");
+                                            }
+
+                                            
 jinja_array_offset_expr:
     IDENTIFIER  { fprintf(stdout, "1-a id '%s'\n", $1);  ast_insert_identifier($1); } 
   | number_exp { fprintf(stdout, "an int '%d'\n", $1); ast_insert_integer($1); }

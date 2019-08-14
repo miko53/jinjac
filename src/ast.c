@@ -120,6 +120,46 @@ char* trim(char* s)
   return n;
 }
 
+char* truncate(char* origin, unsigned int truncSize, BOOL killwords, char* endSentence, unsigned int tolerateMargin)
+{
+  unsigned int lenString;
+  unsigned int lenEndSentence;
+  char* r;
+
+  r = origin;
+  lenString = strlen(origin);
+  lenEndSentence = strlen(endSentence);
+
+  if (lenString > (truncSize + tolerateMargin))
+  {
+    if (killwords == TRUE)
+    {
+      r = calloc(truncSize + 1, 1);
+      ASSERT(r != NULL);
+      strncpy(r, origin, truncSize - lenEndSentence);
+      strncat(r, endSentence, lenEndSentence);
+      free(origin);
+    }
+    else
+    {
+      r = calloc(truncSize + 1, 1);
+      ASSERT(r != NULL);
+      strncpy(r, origin, truncSize - lenEndSentence);
+      char* sp = rindex(r, ' ');
+      if (sp != NULL)
+      {
+        *sp = '\0';
+      }
+
+      strncat(r, endSentence, lenEndSentence);
+      free(origin);
+    }
+  }
+
+  return r;
+}
+
+
 typedef struct
 {
   filter_fct fct;
@@ -132,6 +172,7 @@ fct_converter tab_fct_converter[] =
   { .fct = (filter_fct) lower, .name = "lower" },
   { .fct = (filter_fct) upper, .name = "upper" },
   { .fct = (filter_fct) trim, .name = "trim" },
+  { .fct = (filter_fct) truncate, .name = "truncate" },
 };
 
 
