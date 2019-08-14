@@ -78,7 +78,7 @@ jinja_filtered_expr:
   |
   jinja_filtered_expr '|' jinja_function_expr {
                                                 fprintf(stdout, "a jinja filtered expr\n"); 
-                                                ast_apply_filtering();
+                                                getAstRoot()->currentStringValue = ast_apply_filtering();
                                               }
 
 jinja_postfix_expr:

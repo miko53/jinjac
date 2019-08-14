@@ -11,7 +11,7 @@ List of build-in function implemented
 |abs()|| not necc.
 |attr()|| not necc.
 |batch()|| not necc.
-|capitalize()|| TODO
+|capitalize()| first char in upper case another in lower | [OK]
 |center()| center the value center(s, width=80) | TODO
 |default()| default value if undefined | low prio
 |dictsort()|| not necc.
@@ -28,7 +28,7 @@ List of build-in function implemented
 |last()|| low prio
 |length()|| low prio
 |list()|| not necc.
-|lower()|| TODO
+|lower()|put string in lower case| [OK]
 |map()|| not necc.
 |max()|| not necc.
 |min()|| not necc.
@@ -49,10 +49,10 @@ List of build-in function implemented
 |sum()|| not necc.
 |title()|| TODO
 |tojson()|| not necc.
-|trim()|| TODO
+|trim()|remove space at begin and end of the string| [OK]
 |truncate()|| TODO
 |unique()|| not necc.
-|upper()|set string to upper case | [x]
+|upper()|set string to upper case | [OK]
 |urlencode()|| not necc.
 |urlize()|| not necc.
 |wordcount()|| not necc.

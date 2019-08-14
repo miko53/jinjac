@@ -1,0 +1,6 @@
+TEST BUILD-IN FUNCTION
+=> capitalize
+{{ ' TOCAPITALIZE' | capitalize() }} must be displayed to " Tocapitalize"
+{{ 'LOWER DATA' | lower() }} must be displayed "lower data"
+-- test with trim
+'{{ '   data with space in begin and end    ' | trim() }}' must be equal to 'data with space in begin and end'

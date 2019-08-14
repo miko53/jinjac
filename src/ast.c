@@ -52,6 +52,74 @@ char* upper(char* s)
   return s;
 }
 
+char* lower(char* s)
+{
+  char* current;
+  current = s;
+
+  while (*current != '\0')
+  {
+    *current = tolower(*current);
+    current++;
+  }
+  return s;
+}
+
+char* capitalize(char* s)
+{
+  char* current;
+  current = s;
+
+  while ((*current != '\0') && (isspace(*current)))
+  {
+    current++;
+  }
+
+  if (*current != '\0')
+  {
+    *current = toupper(*current);
+    current++;
+  }
+
+  while (*current != '\0')
+  {
+    *current = tolower(*current);
+    current++;
+  }
+
+  return s;
+}
+
+char* trim(char* s)
+{
+  char* begin;
+  char* end;
+  char* n;
+
+  n = s; //by default return the first string
+  begin = s;
+  while ((*begin != '\0') && (isspace(*begin)))
+  {
+    begin++;
+  }
+
+  if (*begin != '\0')
+  {
+    end = begin + strlen(begin) - 1;
+    while ((end > begin) && (isspace(*end)))
+    {
+      end--;
+    }
+
+    *(end + 1) = '\0';
+
+    n = strdup(begin);
+    free(s);
+  }
+
+  return n;
+}
+
 typedef struct
 {
   filter_fct fct;
@@ -60,7 +128,10 @@ typedef struct
 
 fct_converter tab_fct_converter[] =
 {
-  { .fct = upper, .name = "upper" }
+  { .fct = (filter_fct) capitalize, .name = "capitalize" },
+  { .fct = (filter_fct) lower, .name = "lower" },
+  { .fct = (filter_fct) upper, .name = "upper" },
+  { .fct = (filter_fct) trim, .name = "trim" },
 };
 
 
