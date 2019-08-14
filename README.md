@@ -52,7 +52,7 @@ List of build-in function implemented
 |trim()|| TODO
 |truncate()|| TODO
 |unique()|| not necc.
-|upper()|set string to upper case | done
+|upper()|set string to upper case | [x]
 |urlencode()|| not necc.
 |urlize()|| not necc.
 |wordcount()|| not necc.
