@@ -1,13 +1,13 @@
-
-#jinjac
+# jinjac
 
 Jinja template adapted with C langage (for C based software)
 
-##build-in function
+## build-in function
 
 List of build-in function implemented
 
 |function|description|status|
+|--------|-----------|------|
 |abs()|
 |float()|
 |lower()|
