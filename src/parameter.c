@@ -335,3 +335,25 @@ int insert_array_parameter(char* key, parameter_type type, int nbValue, ...)
   return status;
 
 }
+
+void param_delete_all()
+{
+  for (int i = 0; i < item_nb; i++)
+  {
+    if (item_array[i].isArray)
+    {
+      free(item_array[i].pArrayValue);
+    }
+    else if (item_array[i].type == TYPE_STRING)
+    {
+      free(item_array[i].value.type_string);
+    }
+
+    free(item_array[i].key);
+  }
+
+  free(item_array);
+  item_nb = 0;
+  item_allocated = 0;
+  item_array = NULL;
+}

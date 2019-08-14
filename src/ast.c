@@ -231,7 +231,7 @@ char* JObject_toString(JObject* pObject)
         switch (type)
         {
           case TYPE_STRING:
-            s = (char*) param_getValue(pIdent->identifier).type_string;
+            s = strdup((char*) param_getValue(pIdent->identifier).type_string);
             break;
 
           case TYPE_INT:

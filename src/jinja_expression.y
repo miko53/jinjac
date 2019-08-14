@@ -86,7 +86,6 @@ jinja_postfix_expr:
    | IDENTIFIER '[' jinja_array_offset_expr ']' {
                                                   fprintf(stdout, "an array '%s' \n", $1); 
                                                   ast_create_array_on_top($1);
-                                                  
                                                 } 
 /*   | jinja_postfix_expr  '.' IDENTIFIER { fprintf(stdout, "a dot- identifier\n"); }*/ //Plus tard...
 

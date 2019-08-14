@@ -12,6 +12,8 @@ typedef struct yy_buffer_state* YY_BUFFER_STATE;
 extern int yyparse();
 extern YY_BUFFER_STATE yy_scan_string(char* str);
 extern void yy_delete_buffer(YY_BUFFER_STATE buffer);
+extern int yylex_destroy(void);
+
 
 #define LINE_SIZE   (1024)
 #define STATIC      static
@@ -19,6 +21,7 @@ extern void yy_delete_buffer(YY_BUFFER_STATE buffer);
 STATIC void parse_file(FILE* in, FILE* out);
 STATIC BOOL parse_string(char* string, FILE* out);
 STATIC void create_example_parameter(void);
+STATIC void delete_example_parameter(void);
 
 int main(int argc, char* argv[])
 {
@@ -84,6 +87,8 @@ int main(int argc, char* argv[])
   fclose(in);
   fclose(out);
 
+  delete_example_parameter();
+
   return EXIT_SUCCESS;
 }
 
@@ -97,6 +102,11 @@ STATIC void create_example_parameter(void)
   insert_array_parameter("data_value", TYPE_INT, 3, 10, 20, 15);
   insert_array_parameter("data_value_dbl", TYPE_DOUBLE, 4, 0.586, 10.45, 159.546, 3.145561);
   insert_array_parameter("data_value_str", TYPE_STRING, 3, "DES", "GTRV", "AADDEGG");
+}
+
+STATIC void delete_example_parameter(void)
+{
+  param_delete_all();
 }
 
 enum parse_file_mode
@@ -247,6 +257,7 @@ STATIC BOOL parse_string(char* string, FILE* out)
   }
 
   yy_delete_buffer(buffer);
+  yylex_destroy();
   ast_clean();
 
   return inError;
