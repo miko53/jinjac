@@ -725,7 +725,10 @@ int ast_dump_stack()
         display_function_args((JArgs*) ast_list[i]);
         break;
       case J_FUNCTION:
-        display_function_args(((JFunction*) ast_list[i])->argList);
+        if (((JFunction*) ast_list[i])->argList != NULL)
+          display_function_args(((JFunction*) ast_list[i])->argList);
+        else 
+          fprintf(stdout, "none\n");
         break;
         
       default:
