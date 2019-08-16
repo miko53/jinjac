@@ -92,17 +92,22 @@ jinja_postfix_expr:
 
 jinja_function_expr:
    IDENTIFIER '(' jinja_arg_list ')' { 
+                                        fprintf(stdout, "a Function '%s'\n", $1);
                                         ast_insert_function($1);
                                         free($1);
+                                        ast_dump_stack();
                                      }
 
 jinja_arg_list:
       %empty
    |  jinja_postfix_expr { 
                            fprintf(stdout, "arg \n"); 
+                           ast_create_function_args_from_top();
+                           ast_dump_stack();
                          }
    |  jinja_arg_list ',' jinja_postfix_expr { 
                                                fprintf(stdout, "arg list\n");
+                                               ast_dump_stack();
                                             }
 
                                             

@@ -64,6 +64,7 @@ typedef struct
 
 typedef struct
 {
+  JObject base;
   JObject* listArgs[NB_MAX_ARGS];
   int nb_args;
 } JArgs;
@@ -86,6 +87,9 @@ extern int ast_insert_integer(int i);
 extern int ast_insert_double(double d);
 extern int ast_insert_function(char* fct);
 extern int ast_create_array_on_top(char* name);
+extern int ast_create_function_args_from_top(void);
+
+extern int ast_dump_stack(void);
 
 extern char* ast_convert_to_string(void);
 extern char* ast_apply_filtering(void);

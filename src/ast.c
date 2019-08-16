@@ -15,7 +15,8 @@ static ast ast_root;
 static JObject* ast_list[MAX_OBJECT];
 static unsigned int ast_nb_object;
 
-void JObject_delete(JObject* pObject);
+static void JObject_delete(JObject* pObject);
+static void ast_remove_last(BOOL toDelete);
 
 void ast_clean()
 {
@@ -260,6 +261,14 @@ JObject* JFunction_new(char* fct)
   return NULL;
 }
 
+JObject* JArgs_new(void)
+{
+  JArgs* o = NEW(JArgs);
+  o->base.type = J_FUNCTION_ARGS;
+  o->nb_args = 0;
+  return (JObject*) o;
+}
+
 JObject* JArray_new(char* name, int offset)
 {
   JArray* o = NEW(JArray);
@@ -295,9 +304,27 @@ int ast_insert_double(double d)
 
 int ast_insert_function(char* fct)
 {
+  JObject* top;
+  top = NULL;
+  
+  if (ast_nb_object >= 1)
+  {
+    top = ast_list[ast_nb_object-1];
+    if (top->type != J_FUNCTION_ARGS)
+    {
+       top = NULL;
+    }
+  }
+  
   JObject* o = JFunction_new(fct);
   if (o != NULL)
   {
+    if (top != NULL)
+    {
+      //it is a argument, put in function first and remove from top
+      ast_remove_last(FALSE);
+    }
+    ((JFunction*) o)->argList = (JArgs*) top;
     return ast_insert(o);
   }
 
@@ -455,6 +482,19 @@ void JObject_delete(JObject* pObject)
     case J_ARRAY:
       free (((JArray*) pObject)->identifier);
       break;
+      
+    case J_FUNCTION_ARGS:
+    {
+      JArgs* args = ((JArgs*) pObject);
+      int i;
+      for (i = 0; i < args->nb_args; i++)
+      {
+        JObject_delete(args->listArgs[i]);
+        args->listArgs[i] = NULL;
+      }
+      args->nb_args = 0;
+    }
+      break;
 
     default:
       fprintf(stdout, "type = %d\n", pObject->type);
@@ -466,9 +506,11 @@ void JObject_delete(JObject* pObject)
 }
 
 
-void ast_remove_last()
+static void ast_remove_last(BOOL toDelete)
 {
-  JObject_delete(ast_list[ast_nb_object - 1]);
+  if (toDelete)
+    JObject_delete(ast_list[ast_nb_object - 1]);
+  
   ast_list[ast_nb_object - 1] = NULL;
   ast_nb_object--;
 }
@@ -481,12 +523,20 @@ char* ast_convert_to_string()
   if (ast_nb_object != 0)
   {
     s = JObject_toString(ast_list[ast_nb_object - 1]);
-    ast_remove_last();
+    ast_remove_last(TRUE);
   }
 
   return s;
 }
 
+char* JFunction_execute(JFunction* f, char* currentStringValue)
+{
+  char* s;
+  
+  
+  s = f->function(currentStringValue);
+  return s;
+}
 
 char* ast_apply_filtering()
 {
@@ -497,8 +547,9 @@ char* ast_apply_filtering()
     ASSERT(ast_list[ast_nb_object - 1]->type == J_FUNCTION);
 
     JFunction* f = (JFunction*) ast_list[ast_nb_object - 1];
-    s = f->function(getAstRoot()->currentStringValue); //TODO add argument
-    ast_remove_last();
+    s = JFunction_execute(f, getAstRoot()->currentStringValue);
+    //s = f->function(getAstRoot()->currentStringValue); //TODO add argument
+    ast_remove_last(TRUE);
   }
 
   return s;
@@ -563,11 +614,133 @@ int ast_create_array_on_top(char* name)
     b = ast_get_offset(ast_list[ast_nb_object - 1], &offset);
     if (b)
     {
-      ast_remove_last();
+      ast_remove_last(TRUE);
       return ast_insert_array(name, offset);
     }
   }
 
   return -1;
 }
+
+int JArgs_insert_args(JArgs* obj, JObject* argToInsert)
+{
+  ASSERT(obj != NULL);
+  ASSERT(argToInsert != NULL);
+  int rc;
+  
+  if (obj->nb_args > NB_MAX_ARGS)
+    rc = -1;
+  else
+  {
+    obj->listArgs[obj->nb_args] = argToInsert;
+    obj->nb_args++;
+    rc = 0;
+  }
+  
+  return rc;
+}
+
+// function called when a argument is detected by yacc, the first argument is in
+// stack, it must be removed and inserted in a special JArgs object
+int ast_create_function_args_from_top(void)
+{
+  JObject* firstArgs;
+  ASSERT(ast_nb_object >= 1);
+  firstArgs = ast_list[ast_nb_object - 1];
+  ast_remove_last(FALSE); // top object will be inserted in JArgs object that's why not deleted
+  
+  JArgs* args = (JArgs*) JArgs_new();
+  JArgs_insert_args(args, firstArgs);
+  
+  return ast_insert((JObject*) args);
+}
+
+
+char* ast_getTypeString(ast_type type)
+{
+  char* s = NULL;
+  
+  switch (type)
+  {
+    case J_STR_CONSTANTE:
+      s = "String";
+      break;
+      
+    case J_INTEGER:
+      s = "Integer";
+      break;
+      
+    case J_DOUBLE:
+      s = "Double";
+      break;
+      
+    case J_IDENTIFIER:
+      s = "Identifier";
+      break;
+      
+    case J_ARRAY:
+      s = "Array";
+      break;
+      
+    case J_FUNCTION_ARGS:
+      s = "Function Argument";
+      break;
+      
+    case J_FUNCTION:
+      s = "Function";
+      break;
+      
+    default:
+      ASSERT(FALSE);
+      break;
+
+  }
+  return s;
+}
+
+void display_function_args(JArgs* argsObj)
+{
+  int indexArgs;
+  for (indexArgs = 0; indexArgs < argsObj->nb_args; indexArgs++)
+  {
+    fprintf(stdout, ">> object type = %s (%d)\n", 
+            ast_getTypeString(argsObj->listArgs[indexArgs]->type), 
+            argsObj->listArgs[indexArgs]->type);
+  }
+}
+
+
+int ast_dump_stack()
+{
+  unsigned int i;
+  
+  fprintf(stdout, "dump_ast\n----------\n");
+  fprintf(stdout, "nb item %d\n", ast_nb_object);
+  for(i = 0;i < ast_nb_object; i++)
+  {
+    fprintf(stdout, "> object type = %s (%d)\n", ast_getTypeString(ast_list[i]->type), ast_list[i]->type);
+    switch (ast_list[i]->type)
+    {
+      case J_FUNCTION_ARGS:
+        display_function_args((JArgs*) ast_list[i]);
+        break;
+      case J_FUNCTION:
+        display_function_args(((JFunction*) ast_list[i])->argList);
+        break;
+        
+      default:
+        break;
+    }
+  }
+  
+  fprintf(stdout, "----------\n");
+  return 0;
+}
+
+
+
+
+
+
+
 
