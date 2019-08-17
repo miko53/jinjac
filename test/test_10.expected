@@ -4,4 +4,6 @@ truncate simple avec argument par default:
 ==> 'Ab dsfl smdflk ef fef' Doit donner "Ab dsfl smdflk ef fef"
 ==> 'Ab...' Doit donner "Ab..."
 ==> 'Ab dsfl...' Doit donner "Ab dsfl..."
-
+==> 'Ab dsfl sm' Doit donner "Ab dsfl sm"
+==> 'Ab dsfl smdflk ef fef' Doit donner "Ab dsfl smdflk ef fef"
+==> 'Ab dsfl smdflk ef fef' Doit donner "Ab dsfl smdflk ef fef"

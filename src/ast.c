@@ -591,6 +591,7 @@ int JObject_getIntValue(JObject* obj)
   return r;
 }
 
+
 char* JFunction_execute(JFunction* f, char* currentStringValue)
 {
   char* s;
@@ -633,6 +634,7 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
             break;
             
           case STRING:
+            a[i] = (void*) JObject_toString(f->argList->listArgs[i]);
             break;
             
           default:
@@ -649,39 +651,26 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
       
       s = fct_item->fct(currentStringValue, a[0], a[1], a[2], a[3]);
       
+      //dessallocate the allocated string argument after execution
+      for(int i = 0; i < minNbArgs; i++)
+      {
+        switch (fct_item->args_type[i])
+        {
+         case STRING:
+            free(a[i]);
+            break;
+            
+          default:
+            break;
+        }
+      }
     }
       break;
       
     default:
       ASSERT(FALSE);
       break;
-#if 0
-    case 0: //default case and the first argument is the current string so no args are expected
-      if ((f->argList != NULL) && (f->argList->nb_args != 0))
-        fprintf(stdout, "warning! unexpected number of arguments for function %s\n", fct_item->name);
-      else
-        s = fct_item->fct(currentStringValue);
-      break;
-      
-    case 4:
-    {
-      for(int i = 0; i < f->argList->nb_args; i++)
-      {
-        
-      }
-      s = fct_item->fct(currentStringValue, a[0], a[1], a[2], a[3]);
-    }
-      break;
-      
-    default:
-      if (f->argList != NULL)
-        fprintf(stdout, "nb args expected: %d, nb argument: %d\n", fct_item->nb_args, f->argList->nb_args);
-      else
-        fprintf(stdout, "nb args expected: %d, nb argument: 0\n", fct_item->nb_args);
-      break;
-#endif 
   }
-  
   
   return s;
 }

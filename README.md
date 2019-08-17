@@ -50,7 +50,7 @@ List of build-in function implemented
 |title()|| TODO
 |tojson()|| not necc.
 |trim()|remove space at begin and end of the string| [OK]
-|truncate()|| TODO
+|truncate()| truncate a string at a specified offset plus extras options| [OK]
 |unique()|| not necc.
 |upper()|set string to upper case | [OK]
 |urlencode()|| not necc.
