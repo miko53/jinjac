@@ -10,3 +10,4 @@ add_test(template_do_computation ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE
 add_test(work_with_array ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_08)
 add_test(buildin_functions ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_09)
 add_test(truncate_buildins_functions ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_10)
+add_test(center_buildins_functions ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_11)

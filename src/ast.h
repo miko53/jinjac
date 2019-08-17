@@ -79,6 +79,7 @@ typedef struct
 typedef enum
 {
     FCT_CAPITALIZE,
+    FCT_CENTER,
     FCT_LOWER,
     FCT_UPPER,
     FCT_TRIM,

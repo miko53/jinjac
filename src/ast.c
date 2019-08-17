@@ -160,6 +160,30 @@ char* truncate(char* origin, unsigned int truncSize, BOOL killwords, char* endSe
   return r;
 }
 
+char* center(char* origin, unsigned int width)
+{
+  unsigned int lenString;
+  unsigned int offset;
+  char* r;
+  lenString = strlen(origin);
+  r = origin;
+  
+  if (width > lenString)
+  {
+    offset = (width - lenString) / 2;
+    r = malloc(width+1);
+    ASSERT(r != NULL);
+
+    memset(r, ' ', width);
+    r[width] = '\0';
+    
+    memcpy(r+offset, origin, lenString);
+    free(origin);
+  }
+  
+  return r;
+}
+
 typedef enum
 {
   INT,
@@ -181,6 +205,9 @@ typedef struct
 fct_converter tab_fct_converter[] =
 {
   { .fct = (filter_fct) capitalize, .name = "capitalize", .nb_args = 0 },
+  { .fct = (filter_fct) center, .name = "center", .nb_args = 1,
+                                                  .args_type = { INT},
+                                                  .args_default = { (void*) 80 }},
   { .fct = (filter_fct) lower, .name = "lower", .nb_args = 0 },
   { .fct = (filter_fct) upper, .name = "upper", .nb_args = 0 },
   { .fct = (filter_fct) trim, .name = "trim", .nb_args = 0},
@@ -650,6 +677,62 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
       }
       
       s = fct_item->fct(currentStringValue, a[0], a[1], a[2], a[3]);
+      
+      //dessallocate the allocated string argument after execution
+      for(int i = 0; i < minNbArgs; i++)
+      {
+        switch (fct_item->args_type[i])
+        {
+         case STRING:
+            free(a[i]);
+            break;
+            
+          default:
+            break;
+        }
+      }
+    }
+      break;
+      
+    case FCT_CENTER:
+    {
+      int minNbArgs=0;
+      void* a[1];
+      
+      if (f->argList != NULL)
+      {
+          minNbArgs = f->argList->nb_args > fct_item->nb_args ? fct_item->nb_args : f->argList->nb_args;
+      }
+      
+      for(int i = 0; i < minNbArgs; i++)
+      {
+        switch (fct_item->args_type[i])
+        {
+          case DOUBLE:
+            break;
+            
+          case INT:
+          case BOOLEAN:
+            a[i] = (void*) (long) JObject_getIntValue(f->argList->listArgs[i]);
+            break;
+            
+          case STRING:
+            a[i] = (void*) JObject_toString(f->argList->listArgs[i]);
+            break;
+            
+          default:
+            ASSERT(FALSE);
+            break;
+        }
+      }
+      
+      //set default value now.
+      for(int i = minNbArgs; i < fct_item->nb_args; i++)
+      {
+        a[i] = fct_item->args_default[i];
+      }
+      
+      s = fct_item->fct(currentStringValue, a[0]);
       
       //dessallocate the allocated string argument after execution
       for(int i = 0; i < minNbArgs; i++)

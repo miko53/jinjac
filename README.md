@@ -12,7 +12,7 @@ List of build-in function implemented
 |attr()|| not necc.
 |batch()|| not necc.
 |capitalize()| first char in upper case another in lower | [OK]
-|center()| center the value center(s, width=80) | TODO
+|center()| center the value center(s, width=80) | [OK]
 |default()| default value if undefined | low prio
 |dictsort()|| not necc.
 |escape()|| low prio
