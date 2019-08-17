@@ -91,6 +91,11 @@ char* capitalize(char* s)
   return s;
 }
 
+char* title(char * s)
+{
+  return s;
+}
+
 char* trim(char* s)
 {
   char* begin;
@@ -210,6 +215,7 @@ fct_converter tab_fct_converter[] =
                                                   .args_default = { (void*) 80 }},
   { .fct = (filter_fct) lower, .name = "lower", .nb_args = 0 },
   { .fct = (filter_fct) upper, .name = "upper", .nb_args = 0 },
+  { .fct = (filter_fct) upper, .name = "title", .nb_args = 0 },
   { .fct = (filter_fct) trim, .name = "trim", .nb_args = 0},
   { .fct = (filter_fct) truncate, .name = "truncate", .nb_args = 4, 
                                   .args_type = { INT, BOOLEAN, STRING, INT},
@@ -628,9 +634,11 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
   
   switch (f->functionID)
   {
+    //function with no argument (except filtering string)
     case FCT_CAPITALIZE:
     case FCT_LOWER:
     case FCT_UPPER:
+    case FCT_TITLE:
     case FCT_TRIM:
       if ((f->argList != NULL) && (f->argList->nb_args != 0))
         fprintf(stdout, "warning! unexpected number of arguments for function %s\n", fct_item->name);
@@ -638,6 +646,7 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
         s = fct_item->fct(currentStringValue);
       break;
       
+    //function with 4 arguments 
     case FCT_TRUNCATE:
     {
       int minNbArgs=0;
@@ -693,7 +702,8 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
       }
     }
       break;
-      
+    
+    //function with one argument
     case FCT_CENTER:
     {
       int minNbArgs=0;

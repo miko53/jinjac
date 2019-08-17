@@ -82,6 +82,7 @@ typedef enum
     FCT_CENTER,
     FCT_LOWER,
     FCT_UPPER,
+    FCT_TITLE,
     FCT_TRIM,
     FCT_TRUNCATE
 } fct_id;
