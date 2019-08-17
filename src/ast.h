@@ -69,10 +69,19 @@ typedef struct
   int nb_args;
 } JArgs;
 
+typedef enum
+{
+    FCT_CAPITALIZE,
+    FCT_LOWER,
+    FCT_UPPER,
+    FCT_TRIM,
+    FCT_TRUNCATE
+} fct_id;
+
 typedef struct
 {
   JObject base;
-  filter_fct function;
+  fct_id functionID;
   JArgs* argList;
 } JFunction;
 

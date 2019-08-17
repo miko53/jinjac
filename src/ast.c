@@ -160,24 +160,36 @@ char* truncate(char* origin, unsigned int truncSize, BOOL killwords, char* endSe
   return r;
 }
 
+typedef enum
+{
+  INT,
+  DOUBLE,
+  STRING
+} args_type;
 
 typedef struct
 {
   filter_fct fct;
   const char* name;
+  int nb_args;
+  args_type args_type[NB_MAX_ARGS];
+  void* args_default[NB_MAX_ARGS];
 } fct_converter;
+
 
 fct_converter tab_fct_converter[] =
 {
-  { .fct = (filter_fct) capitalize, .name = "capitalize" },
-  { .fct = (filter_fct) lower, .name = "lower" },
-  { .fct = (filter_fct) upper, .name = "upper" },
-  { .fct = (filter_fct) trim, .name = "trim" },
-  { .fct = (filter_fct) truncate, .name = "truncate" },
+  { .fct = (filter_fct) capitalize, .name = "capitalize", .nb_args = 0 },
+  { .fct = (filter_fct) lower, .name = "lower", .nb_args = 0 },
+  { .fct = (filter_fct) upper, .name = "upper", .nb_args = 0 },
+  { .fct = (filter_fct) trim, .name = "trim", .nb_args = 0},
+  { .fct = (filter_fct) truncate, .name = "truncate", .nb_args = 4, 
+                                  .args_type = { INT, INT, STRING, INT},
+                                  .args_default = { (void*) 255,  (void*) FALSE, "...", 0 }  },
 };
 
 
-filter_fct getFunction(char* fctName)
+int getFunction(char* fctName)
 {
   int sizeMax = sizeof(tab_fct_converter) / sizeof(fct_converter);
   int i;
@@ -186,12 +198,11 @@ filter_fct getFunction(char* fctName)
   {
     if (strcmp(tab_fct_converter[i].name, fctName) == 0)
     {
-      return tab_fct_converter[i].fct;
+      return i;
     }
   }
 
-
-  return NULL;
+  return -1;
 }
 
 int ast_insert(JObject* o)
@@ -244,13 +255,13 @@ JObject* JDouble_new(double d)
 
 JObject* JFunction_new(char* fct)
 {
-  filter_fct function = getFunction(fct);
-  if (function != NULL)
+  int functionID = getFunction(fct);
+  if (functionID != -1)
   {
-    JFunction* o = NEW(JFunction);
+    JFunction* o = NEW(functionID);
     o->base.type = J_FUNCTION;
     o->argList = NULL;
-    o->function = getFunction(fct);
+    o->functionID = functionID;
     return (JObject*) o;
   }
   else
@@ -467,6 +478,7 @@ void JObject_delete(JObject* pObject)
 
     case J_INTEGER:
     case J_DOUBLE:
+      //do nothing
       break;
 
     case J_FUNCTION:
@@ -529,12 +541,126 @@ char* ast_convert_to_string()
   return s;
 }
 
+int JObject_getIntValue(JObject* obj)
+{
+  ASSERT(obj != NULL);
+  int r;
+  r = 0;
+  
+  switch (obj->type)
+  {
+    case J_ARRAY:
+      fprintf(stdout, "Not yet implemented...\n"); //TODO
+      break;
+      
+    case J_INTEGER:
+      r = ((JInteger*) obj)->value;
+      break;
+      
+    case J_DOUBLE:
+    case J_IDENTIFIER:
+      fprintf(stdout, "Not yet implemented...\n"); //TODO
+      break;
+      
+    default:
+      fprintf(stdout, "warning: incompatible type is %d, expected %d\n", obj->type, J_INTEGER);
+      break;
+  }
+  
+  return r;
+}
+
 char* JFunction_execute(JFunction* f, char* currentStringValue)
 {
   char* s;
+  s = currentStringValue;
+  fct_converter* fct_item;
+  fct_item = &tab_fct_converter[f->functionID]; 
+  
+  switch (f->functionID)
+  {
+    case FCT_CAPITALIZE:
+    case FCT_LOWER:
+    case FCT_UPPER:
+    case FCT_TRIM:
+      if ((f->argList != NULL) && (f->argList->nb_args != 0))
+        fprintf(stdout, "warning! unexpected number of arguments for function %s\n", fct_item->name);
+      else
+        s = fct_item->fct(currentStringValue);
+      break;
+      
+    case FCT_TRUNCATE:
+    {
+      int minNbArgs=0;
+      void* a[4];
+      
+      if (f->argList != NULL)
+      {
+          minNbArgs = f->argList->nb_args > fct_item->nb_args ? fct_item->nb_args : f->argList->nb_args;
+      }
+      
+      for(int i = 0; i < minNbArgs; i++)
+      {
+        switch (fct_item->args_type[i])
+        {
+          case DOUBLE:
+            break;
+            
+          case INT:
+            a[i] = (void*) (long) JObject_getIntValue(f->argList->listArgs[i]);
+            break;
+            
+          case STRING:
+            break;
+            
+          default:
+            ASSERT(FALSE);
+            break;
+        }
+      }
+      
+      //set default value now.
+      for(int i = minNbArgs; i < fct_item->nb_args; i++)
+      {
+        a[i] = fct_item->args_default[i];
+      }
+      
+      s = fct_item->fct(currentStringValue, a[0], a[1], a[2], a[3]);
+      
+    }
+      break;
+      
+    default:
+      ASSERT(FALSE);
+      break;
+#if 0
+    case 0: //default case and the first argument is the current string so no args are expected
+      if ((f->argList != NULL) && (f->argList->nb_args != 0))
+        fprintf(stdout, "warning! unexpected number of arguments for function %s\n", fct_item->name);
+      else
+        s = fct_item->fct(currentStringValue);
+      break;
+      
+    case 4:
+    {
+      for(int i = 0; i < f->argList->nb_args; i++)
+      {
+        
+      }
+      s = fct_item->fct(currentStringValue, a[0], a[1], a[2], a[3]);
+    }
+      break;
+      
+    default:
+      if (f->argList != NULL)
+        fprintf(stdout, "nb args expected: %d, nb argument: %d\n", fct_item->nb_args, f->argList->nb_args);
+      else
+        fprintf(stdout, "nb args expected: %d, nb argument: 0\n", fct_item->nb_args);
+      break;
+#endif 
+  }
   
   
-  s = f->function(currentStringValue);
   return s;
 }
 
@@ -726,9 +852,13 @@ int ast_dump_stack()
         break;
       case J_FUNCTION:
         if (((JFunction*) ast_list[i])->argList != NULL)
+        {
+          fprintf(stdout, "Begin inner args:\n");
           display_function_args(((JFunction*) ast_list[i])->argList);
+          fprintf(stdout, "End inner args\n");
+        }
         else 
-          fprintf(stdout, "none\n");
+          fprintf(stdout, ">> no args\n");
         break;
         
       default:

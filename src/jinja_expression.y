@@ -103,11 +103,11 @@ jinja_arg_list:
    |  jinja_postfix_expr { 
                            fprintf(stdout, "arg \n"); 
                            ast_create_function_args_from_top();
-                           ast_dump_stack();
+                           //ast_dump_stack();
                          }
    |  jinja_arg_list ',' jinja_postfix_expr { 
                                                fprintf(stdout, "arg list\n");
-                                               ast_dump_stack();
+                                               //ast_dump_stack();
                                             }
 
                                             
