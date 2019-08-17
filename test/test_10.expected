@@ -1,0 +1,7 @@
+TEST BUILD-IN TRUNCATE FUNCTION
+truncate simple avec argument par default:
+==> 'Ab...' Doit donner "Ab..."
+==> 'Ab dsfl smdflk ef fef' Doit donner "Ab dsfl smdflk ef fef"
+==> 'Ab...' Doit donner "Ab..."
+==> 'Ab dsfl...' Doit donner "Ab dsfl..."
+

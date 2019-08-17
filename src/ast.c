@@ -164,7 +164,8 @@ typedef enum
 {
   INT,
   DOUBLE,
-  STRING
+  STRING,
+  BOOLEAN
 } args_type;
 
 typedef struct
@@ -184,7 +185,7 @@ fct_converter tab_fct_converter[] =
   { .fct = (filter_fct) upper, .name = "upper", .nb_args = 0 },
   { .fct = (filter_fct) trim, .name = "trim", .nb_args = 0},
   { .fct = (filter_fct) truncate, .name = "truncate", .nb_args = 4, 
-                                  .args_type = { INT, INT, STRING, INT},
+                                  .args_type = { INT, BOOLEAN, STRING, INT},
                                   .args_default = { (void*) 255,  (void*) FALSE, "...", 0 }  },
 };
 
@@ -253,12 +254,21 @@ JObject* JDouble_new(double d)
   return (JObject*) o;
 }
 
+JObject* JBoolean_new(BOOL b)
+{
+  JBoolean* o = NEW(JBoolean);
+  o->base.type = J_BOOLEAN;
+  o->value = b;
+  return (JObject*) o;
+}
+
+
 JObject* JFunction_new(char* fct)
 {
   int functionID = getFunction(fct);
   if (functionID != -1)
   {
-    JFunction* o = NEW(functionID);
+    JFunction* o = NEW(JFunction);
     o->base.type = J_FUNCTION;
     o->argList = NULL;
     o->functionID = functionID;
@@ -312,6 +322,13 @@ int ast_insert_double(double d)
   JObject* o = JDouble_new(d);
   return ast_insert(o);
 }
+
+int ast_insert_boolean(BOOL b)
+{
+  JObject* o = JBoolean_new(b);
+  return ast_insert(o);
+}
+
 
 int ast_insert_function(char* fct)
 {
@@ -478,6 +495,7 @@ void JObject_delete(JObject* pObject)
 
     case J_INTEGER:
     case J_DOUBLE:
+    case J_BOOLEAN:
       //do nothing
       break;
 
@@ -556,6 +574,9 @@ int JObject_getIntValue(JObject* obj)
     case J_INTEGER:
       r = ((JInteger*) obj)->value;
       break;
+    case J_BOOLEAN:
+      r = ((JBoolean*) obj)->value;
+      break;
       
     case J_DOUBLE:
     case J_IDENTIFIER:
@@ -607,6 +628,7 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
             break;
             
           case INT:
+          case BOOLEAN:
             a[i] = (void*) (long) JObject_getIntValue(f->argList->listArgs[i]);
             break;
             
@@ -781,6 +803,19 @@ int ast_create_function_args_from_top(void)
   return ast_insert((JObject*) args);
 }
 
+int ast_insert_function_args()
+{
+  JObject* arg;
+  ASSERT(ast_nb_object >= 2);
+  arg = ast_list[ast_nb_object - 1];
+  
+  ASSERT(ast_list[ast_nb_object - 2]->type == J_FUNCTION_ARGS);
+  JArgs* args = (JArgs*) ast_list[ast_nb_object - 2];
+  ast_remove_last(FALSE); // top object will be inserted in JArgs object that's why not deleted
+  
+  return JArgs_insert_args(args, arg);
+}
+
 
 char* ast_getTypeString(ast_type type)
 {
@@ -814,6 +849,10 @@ char* ast_getTypeString(ast_type type)
       
     case J_FUNCTION:
       s = "Function";
+      break;
+      
+    case J_BOOLEAN:
+      s = "Boolean";
       break;
       
     default:
@@ -853,9 +892,9 @@ int ast_dump_stack()
       case J_FUNCTION:
         if (((JFunction*) ast_list[i])->argList != NULL)
         {
-          fprintf(stdout, "Begin inner args:\n");
+          fprintf(stdout, "> Begin inner args:\n");
           display_function_args(((JFunction*) ast_list[i])->argList);
-          fprintf(stdout, "End inner args\n");
+          fprintf(stdout, "> End inner args\n");
         }
         else 
           fprintf(stdout, ">> no args\n");

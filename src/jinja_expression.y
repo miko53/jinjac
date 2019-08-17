@@ -107,6 +107,7 @@ jinja_arg_list:
                          }
    |  jinja_arg_list ',' jinja_postfix_expr { 
                                                fprintf(stdout, "arg list\n");
+                                               ast_insert_function_args();
                                                //ast_dump_stack();
                                             }
 
@@ -132,6 +133,14 @@ jinja_constant:
  | number_exp { 
                 ast_insert_integer($1);
               }
+ | L_TRUE {
+            ast_insert_boolean(TRUE);
+            //fprintf(stdout, "True\n");
+          };
+ | L_FALSE {
+            ast_insert_boolean(FALSE);
+            //fprintf(stdout, "False\n");
+            };
 
 number_exp:
   INTEGER { $$ = $1; }

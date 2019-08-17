@@ -2,6 +2,6 @@ TEST BUILD-IN TRUNCATE FUNCTION
 truncate simple avec argument par default:
 ==> '{{ 'Ab dsfl smdflk ef fef' | truncate(10) }}' Doit donner "Ab..."
 ==> '{{ 'Ab dsfl smdflk ef fef' | truncate() }}' Doit donner "Ab dsfl smdflk ef fef"
-==> '{{ 'Ab dsfl smdflk ef fef' | truncate(10, True) }}' Doit donner "Ab..."
-==> '{{ 'Ab dsfl smdflk ef fef' | truncate(10, False) }}' Doit donner "Ab dsfl..."
+==> '{{ 'Ab dsfl smdflk ef fef' | truncate(10, False) }}' Doit donner "Ab..."
+==> '{{ 'Ab dsfl smdflk ef fef' | truncate(10, True) }}' Doit donner "Ab dsfl..."
 
