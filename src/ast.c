@@ -93,6 +93,31 @@ char* capitalize(char* s)
 
 char* title(char * s)
 {
+  char* current;
+  current = s;
+  BOOL bFirstChar;
+  
+  bFirstChar = TRUE;
+  
+  while (*current != '\0')
+  {
+    if (isspace(*current))
+    {
+      bFirstChar = TRUE;
+    }
+    else if (bFirstChar)
+    {
+      bFirstChar = FALSE;
+      *current = toupper(*current);
+    }
+    else
+    {
+      *current = tolower(*current);
+    }
+    
+    current++;
+  }
+  
   return s;
 }
 
@@ -215,7 +240,7 @@ fct_converter tab_fct_converter[] =
                                                   .args_default = { (void*) 80 }},
   { .fct = (filter_fct) lower, .name = "lower", .nb_args = 0 },
   { .fct = (filter_fct) upper, .name = "upper", .nb_args = 0 },
-  { .fct = (filter_fct) upper, .name = "title", .nb_args = 0 },
+  { .fct = (filter_fct) title, .name = "title", .nb_args = 0 },
   { .fct = (filter_fct) trim, .name = "trim", .nb_args = 0},
   { .fct = (filter_fct) truncate, .name = "truncate", .nb_args = 4, 
                                   .args_type = { INT, BOOLEAN, STRING, INT},
@@ -236,6 +261,7 @@ int getFunction(char* fctName)
     }
   }
 
+  fprintf(stdout, "error: function %s not found !", fctName);
   return -1;
 }
 

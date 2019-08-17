@@ -47,7 +47,7 @@ List of build-in function implemented
 |string()|| not necc.
 |striptags()|| not necc.
 |sum()|| not necc.
-|title()|| TODO
+|title()|set first char of word in upper case, othersiwe in lower case| [OK]
 |tojson()|| not necc.
 |trim()|remove space at begin and end of the string| [OK]
 |truncate()| truncate a string at a specified offset plus extras options| [OK]
