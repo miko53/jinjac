@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdarg.h>
 #include "ast.h"
 #include "common.h"
 #include "convert.h"
@@ -91,14 +92,14 @@ char* capitalize(char* s)
   return s;
 }
 
-char* title(char * s)
+char* title(char* s)
 {
   char* current;
   current = s;
   BOOL bFirstChar;
-  
+
   bFirstChar = TRUE;
-  
+
   while (*current != '\0')
   {
     if (isspace(*current))
@@ -114,10 +115,10 @@ char* title(char * s)
     {
       *current = tolower(*current);
     }
-    
+
     current++;
   }
-  
+
   return s;
 }
 
@@ -197,22 +198,276 @@ char* center(char* origin, unsigned int width)
   char* r;
   lenString = strlen(origin);
   r = origin;
-  
+
   if (width > lenString)
   {
     offset = (width - lenString) / 2;
-    r = malloc(width+1);
+    r = malloc(width + 1);
     ASSERT(r != NULL);
 
     memset(r, ' ', width);
     r[width] = '\0';
-    
-    memcpy(r+offset, origin, lenString);
+
+    memcpy(r + offset, origin, lenString);
     free(origin);
   }
-  
+
   return r;
 }
+
+typedef struct
+{
+  char* s;
+  int size;
+  int allocatedSize;
+} str_obj;
+
+void str_obj_create(str_obj* obj)
+{
+  obj->s = malloc(10);
+  ASSERT(obj->s != NULL);
+  obj->s[0] = '\0';
+  obj->allocatedSize = 10;
+  obj->size = 0;
+}
+
+void str_obj_free(str_obj* obj)
+{
+  if (obj->s)
+  {
+    free(obj->s);
+  }
+
+  obj->s = NULL;
+  obj->size = 0;
+  obj->allocatedSize = 0;
+}
+
+void str_obj_realloc(str_obj* obj, int newSize)
+{
+  ASSERT(obj != NULL);
+  char* n = realloc(obj->s, newSize);
+  ASSERT(n != NULL);
+  obj->s = n;
+  obj->allocatedSize = newSize;
+}
+
+
+void str_obj_insertChar(str_obj* obj, char src)
+{
+  ASSERT(obj != NULL);
+  ASSERT(obj->s != NULL);
+
+  if ((obj->size + 1) >= obj->allocatedSize)
+  {
+    str_obj_realloc(obj, obj->allocatedSize * 2);
+  }
+
+  int size = obj->size;
+  obj->s[size] = src;
+  size++;
+  obj->s[size] = '\0';
+  obj->size = size;
+}
+
+void str_obj_insert(str_obj* obj, char* src)
+{
+  int s = strlen(src);
+  if (obj->size + s + 1 >= obj->allocatedSize)
+  {
+    str_obj_realloc(obj, obj->allocatedSize * 2);
+  }
+
+  strncat(obj->s, src, s);
+  obj->size += s;
+  obj->s[obj->size] = '\0';
+}
+
+char* format(char* origin, int nbParameter, parameter_value* param, parameter_type* type)
+{
+  int currentParameterIndex = 0;
+  char* src;
+  char* pModifierBegin;
+  char* pModifierEnd;
+  str_obj dst;
+  str_obj_create(&dst);
+  src = origin;
+  BOOL isModifier;
+
+  isModifier = FALSE;
+
+  while (*src != '\0')
+  {
+    if (isModifier == FALSE)
+    {
+      if (*src != '%')
+      {
+        str_obj_insertChar(&dst, *src);
+      }
+      else
+      {
+        isModifier = TRUE;
+        pModifierBegin = src;
+      }
+      src++;
+    }
+    else
+    {
+      if (*src == '%')
+      {
+        str_obj_insertChar(&dst, *src);
+        src++;
+      }
+      else
+      {
+        //find end modifier
+        BOOL bEndFound = FALSE;
+        parameter_type type;
+        while ((*src != '\0') && (bEndFound == FALSE))
+        {
+          switch (*src)
+          {
+            //int
+            case 'd':
+            case 'i':
+            case 'o':
+            case 'u':
+            case 'x':
+            case 'X':
+            case 'c':
+            case 'p':
+              pModifierEnd = src;
+              bEndFound = TRUE;
+              type = TYPE_INT;
+              break;
+
+            //double
+            case 'e':
+            case 'E':
+            case 'f':
+            case 'F':
+            case 'g':
+            case 'G':
+            case 'a':
+            case 'A':
+              pModifierEnd = src;
+              bEndFound = TRUE;
+              type = TYPE_DOUBLE;
+              break;
+
+            //string
+            case 's':
+              pModifierEnd = src;
+              bEndFound = TRUE;
+              type = TYPE_STRING;
+              break;
+
+            //no arg
+            case 'm':
+              pModifierEnd = src;
+              bEndFound = TRUE;
+              type = TYPE_UNKOWN;
+              break;
+
+            case 'n':
+              ASSERT(FALSE);
+              break;
+
+            default:
+              src++;
+              break;
+          }
+        }
+
+        if (bEndFound)
+        {
+          int size = pModifierEnd + 1 - pModifierBegin;
+          fprintf(stdout, "modifier (%d) ==> %.*s\n", size, size, pModifierBegin);
+          char* modifierString = malloc(size + 1);
+          strncpy(modifierString, pModifierBegin, size);
+          modifierString[size] = '\0';
+          fprintf(stdout, "modifier (%s)\n", modifierString);
+
+          int addedSize = 0;
+          char* extraStringToAdd;
+          switch (type)
+          {
+            case TYPE_INT:
+              addedSize = snprintf(NULL, addedSize, modifierString, param[currentParameterIndex].type_int);
+              addedSize++;
+              extraStringToAdd = malloc(addedSize);
+              snprintf(extraStringToAdd, addedSize, modifierString, param[currentParameterIndex].type_int);
+              break;
+
+            case TYPE_DOUBLE:
+              addedSize = snprintf(NULL, addedSize, modifierString, param[currentParameterIndex].type_double);
+              addedSize++;
+              extraStringToAdd = malloc(addedSize);
+              snprintf(extraStringToAdd, addedSize, modifierString, param[currentParameterIndex].type_double);
+              break;
+
+            case TYPE_STRING:
+              addedSize = snprintf(NULL, addedSize, modifierString, param[currentParameterIndex].type_string);
+              addedSize++;
+              extraStringToAdd = malloc(addedSize);
+              snprintf(extraStringToAdd, addedSize, modifierString, param[currentParameterIndex].type_string);
+              break;
+
+            case TYPE_UNKOWN:
+              addedSize = snprintf(NULL, addedSize, modifierString);
+              addedSize++;
+              extraStringToAdd = malloc(addedSize);
+              snprintf(extraStringToAdd, addedSize, modifierString);
+              break;
+
+            default:
+              ASSERT(FALSE);
+              break;
+          }
+
+          str_obj_insert(&dst, extraStringToAdd);
+          free(extraStringToAdd);
+          free(modifierString);
+          extraStringToAdd = NULL;
+        }
+        else
+        {
+          //error
+          goto error;
+        }
+
+        src = pModifierEnd + 1;
+        isModifier = FALSE;
+        currentParameterIndex++;
+      }
+    }
+  }
+
+  //   size = snprintf(r, size, origin);
+  //
+  //   fprintf(stdout, "size = %d\n", size);
+  //sprintf(r, origin, a1.type_double, a2.type_double);
+  /*va_list args;
+
+  va_start (args, origin);
+  nbChar = vsnprintf(NULL, 0, origin, args);
+  va_end(args);
+
+  r = malloc(nbChar + 1);
+  r[nbChar] = '\0';
+
+  va_start (args, origin);
+  nbChar = vsnprintf(r, nbChar, origin, args);
+  va_end (args);
+  */
+  free(origin);
+  return dst.s;
+
+error:
+  str_obj_free(&dst);
+  return origin;
+}
+
 
 typedef enum
 {
@@ -235,16 +490,21 @@ typedef struct
 fct_converter tab_fct_converter[] =
 {
   { .fct = (filter_fct) capitalize, .name = "capitalize", .nb_args = 0 },
-  { .fct = (filter_fct) center, .name = "center", .nb_args = 1,
-                                                  .args_type = { INT},
-                                                  .args_default = { (void*) 80 }},
+  {
+    .fct = (filter_fct) center, .name = "center", .nb_args = 1,
+    .args_type = { INT},
+    .args_default = { (void*) 80 }
+  },
+  { .fct = (filter_fct) format, .name = "format", .nb_args = NB_MAX_ARGS,  .args_type = { INT },  .args_default = { NULL } },
   { .fct = (filter_fct) lower, .name = "lower", .nb_args = 0 },
   { .fct = (filter_fct) upper, .name = "upper", .nb_args = 0 },
   { .fct = (filter_fct) title, .name = "title", .nb_args = 0 },
   { .fct = (filter_fct) trim, .name = "trim", .nb_args = 0},
-  { .fct = (filter_fct) truncate, .name = "truncate", .nb_args = 4, 
-                                  .args_type = { INT, BOOLEAN, STRING, INT},
-                                  .args_default = { (void*) 255,  (void*) FALSE, "...", 0 }  },
+  {
+    .fct = (filter_fct) truncate, .name = "truncate", .nb_args = 4,
+    .args_type = { INT, BOOLEAN, STRING, INT},
+    .args_default = { (void*) 255,  (void*) FALSE, "...", 0 }
+  },
 };
 
 
@@ -393,16 +653,16 @@ int ast_insert_function(char* fct)
 {
   JObject* top;
   top = NULL;
-  
+
   if (ast_nb_object >= 1)
   {
-    top = ast_list[ast_nb_object-1];
+    top = ast_list[ast_nb_object - 1];
     if (top->type != J_FUNCTION_ARGS)
     {
-       top = NULL;
+      top = NULL;
     }
   }
-  
+
   JObject* o = JFunction_new(fct);
   if (o != NULL)
   {
@@ -540,6 +800,112 @@ char* JObject_toString(JObject* pObject)
   return s;
 }
 
+
+parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
+{
+  ASSERT(pObject != NULL);
+  parameter_value s;
+  s.type_string = NULL;
+
+  switch (pObject->type)
+  {
+    case J_STR_CONSTANTE:
+      s.type_string = strdup(((JStringConstante*) pObject)->str_constant);
+      if (pType)
+      {
+        *pType = TYPE_STRING;
+      }
+      break;
+
+    case J_INTEGER:
+      s.type_int = (((JInteger*) pObject)->value);
+      if (pType)
+      {
+        *pType = TYPE_INT;
+      }
+      break;
+
+    case J_DOUBLE:
+      s.type_double = (((JDouble*) pObject)->value);
+      if (pType)
+      {
+        *pType = TYPE_DOUBLE;
+      }
+      break;
+
+    case J_IDENTIFIER:
+      {
+        JIdentifier* pIdent;
+        pIdent = (JIdentifier*) pObject;
+        parameter_type type = param_getType(pIdent->identifier);
+        switch (type)
+        {
+          case TYPE_STRING:
+            s.type_string = strdup((char*) param_getValue(pIdent->identifier).type_string);
+            break;
+
+          case TYPE_INT:
+          case TYPE_DOUBLE:
+            s =  param_getValue(pIdent->identifier);
+            break;
+
+          default:
+            getAstRoot()->inError = TRUE;
+            fprintf(stdout, "unknown '%s' identifier\n", pIdent->identifier);
+            ASSERT(FALSE);
+            break;
+        }
+        if (pType)
+        {
+          *pType = type;
+        }
+      }
+      break;
+
+    case J_ARRAY:
+      {
+        JArray* pArray;
+        pArray = (JArray*) pObject;
+        BOOL bOk;
+        parameter_value v;
+        parameter_type type = param_getType(pArray->identifier);
+        bOk = param_array_getValue(pArray->identifier, pArray->offset, &v);
+        if (bOk)
+        {
+          switch (type)
+          {
+            case TYPE_STRING:
+              s.type_string = strdup((char*) v.type_string);
+              break;
+
+            case TYPE_DOUBLE:
+            case TYPE_INT:
+              s = v;
+              break;
+
+            default:
+              getAstRoot()->inError = TRUE;
+              fprintf(stdout, "unknown '%s' array\n", pArray->identifier);
+              ASSERT(FALSE);
+              break;
+          }
+          if (pType)
+          {
+            *pType = type;
+          }
+        }
+
+      }
+      break;
+
+    default:
+      fprintf(stdout, "not yet implemented...(type = %d)\n", pObject->type);
+      break;
+  }
+
+  return s;
+}
+
 void JObject_delete(JObject* pObject)
 {
   switch (pObject->type)
@@ -571,18 +937,18 @@ void JObject_delete(JObject* pObject)
     case J_ARRAY:
       free (((JArray*) pObject)->identifier);
       break;
-      
+
     case J_FUNCTION_ARGS:
-    {
-      JArgs* args = ((JArgs*) pObject);
-      int i;
-      for (i = 0; i < args->nb_args; i++)
       {
-        JObject_delete(args->listArgs[i]);
-        args->listArgs[i] = NULL;
+        JArgs* args = ((JArgs*) pObject);
+        int i;
+        for (i = 0; i < args->nb_args; i++)
+        {
+          JObject_delete(args->listArgs[i]);
+          args->listArgs[i] = NULL;
+        }
+        args->nb_args = 0;
       }
-      args->nb_args = 0;
-    }
       break;
 
     default:
@@ -598,8 +964,10 @@ void JObject_delete(JObject* pObject)
 static void ast_remove_last(BOOL toDelete)
 {
   if (toDelete)
+  {
     JObject_delete(ast_list[ast_nb_object - 1]);
-  
+  }
+
   ast_list[ast_nb_object - 1] = NULL;
   ast_nb_object--;
 }
@@ -623,30 +991,30 @@ int JObject_getIntValue(JObject* obj)
   ASSERT(obj != NULL);
   int r;
   r = 0;
-  
+
   switch (obj->type)
   {
     case J_ARRAY:
       fprintf(stdout, "Not yet implemented...\n"); //TODO
       break;
-      
+
     case J_INTEGER:
       r = ((JInteger*) obj)->value;
       break;
     case J_BOOLEAN:
       r = ((JBoolean*) obj)->value;
       break;
-      
+
     case J_DOUBLE:
     case J_IDENTIFIER:
       fprintf(stdout, "Not yet implemented...\n"); //TODO
       break;
-      
+
     default:
       fprintf(stdout, "warning: incompatible type is %d, expected %d\n", obj->type, J_INTEGER);
       break;
   }
-  
+
   return r;
 }
 
@@ -656,8 +1024,8 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
   char* s;
   s = currentStringValue;
   fct_converter* fct_item;
-  fct_item = &tab_fct_converter[f->functionID]; 
-  
+  fct_item = &tab_fct_converter[f->functionID];
+
   switch (f->functionID)
   {
     //function with no argument (except filtering string)
@@ -667,130 +1035,192 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
     case FCT_TITLE:
     case FCT_TRIM:
       if ((f->argList != NULL) && (f->argList->nb_args != 0))
+      {
         fprintf(stdout, "warning! unexpected number of arguments for function %s\n", fct_item->name);
+      }
       else
+      {
         s = fct_item->fct(currentStringValue);
+      }
       break;
-      
-    //function with 4 arguments 
+
+    //function with 4 arguments
     case FCT_TRUNCATE:
-    {
-      int minNbArgs=0;
-      void* a[4];
-      
-      if (f->argList != NULL)
       {
+        int minNbArgs = 0;
+        void* a[4];
+
+        if (f->argList != NULL)
+        {
           minNbArgs = f->argList->nb_args > fct_item->nb_args ? fct_item->nb_args : f->argList->nb_args;
-      }
-      
-      for(int i = 0; i < minNbArgs; i++)
-      {
-        switch (fct_item->args_type[i])
+        }
+
+        for (int i = 0; i < minNbArgs; i++)
         {
-          case DOUBLE:
-            break;
-            
-          case INT:
-          case BOOLEAN:
-            a[i] = (void*) (long) JObject_getIntValue(f->argList->listArgs[i]);
-            break;
-            
-          case STRING:
-            a[i] = (void*) JObject_toString(f->argList->listArgs[i]);
-            break;
-            
-          default:
-            ASSERT(FALSE);
-            break;
+          switch (fct_item->args_type[i])
+          {
+            case DOUBLE:
+              break;
+
+            case INT:
+            case BOOLEAN:
+              a[i] = (void*) (long) JObject_getIntValue(f->argList->listArgs[i]);
+              break;
+
+            case STRING:
+              a[i] = (void*) JObject_toString(f->argList->listArgs[i]);
+              break;
+
+            default:
+              ASSERT(FALSE);
+              break;
+          }
+        }
+
+        //set default value now.
+        for (int i = minNbArgs; i < fct_item->nb_args; i++)
+        {
+          a[i] = fct_item->args_default[i];
+        }
+
+        s = fct_item->fct(currentStringValue, a[0], a[1], a[2], a[3]);
+
+        //dessallocate the allocated string argument after execution
+        for (int i = 0; i < minNbArgs; i++)
+        {
+          switch (fct_item->args_type[i])
+          {
+            case STRING:
+              free(a[i]);
+              break;
+
+            default:
+              break;
+          }
         }
       }
-      
-      //set default value now.
-      for(int i = minNbArgs; i < fct_item->nb_args; i++)
-      {
-        a[i] = fct_item->args_default[i];
-      }
-      
-      s = fct_item->fct(currentStringValue, a[0], a[1], a[2], a[3]);
-      
-      //dessallocate the allocated string argument after execution
-      for(int i = 0; i < minNbArgs; i++)
-      {
-        switch (fct_item->args_type[i])
-        {
-         case STRING:
-            free(a[i]);
-            break;
-            
-          default:
-            break;
-        }
-      }
-    }
       break;
-    
+
     //function with one argument
     case FCT_CENTER:
-    {
-      int minNbArgs=0;
-      void* a[1];
-      
-      if (f->argList != NULL)
       {
+        int minNbArgs = 0;
+        void* a[1];
+
+        if (f->argList != NULL)
+        {
           minNbArgs = f->argList->nb_args > fct_item->nb_args ? fct_item->nb_args : f->argList->nb_args;
-      }
-      
-      for(int i = 0; i < minNbArgs; i++)
-      {
-        switch (fct_item->args_type[i])
+        }
+
+        for (int i = 0; i < minNbArgs; i++)
         {
-          case DOUBLE:
-            break;
-            
-          case INT:
-          case BOOLEAN:
-            a[i] = (void*) (long) JObject_getIntValue(f->argList->listArgs[i]);
-            break;
-            
-          case STRING:
-            a[i] = (void*) JObject_toString(f->argList->listArgs[i]);
-            break;
-            
-          default:
-            ASSERT(FALSE);
-            break;
+          switch (fct_item->args_type[i])
+          {
+            case DOUBLE:
+              break;
+
+            case INT:
+            case BOOLEAN:
+              a[i] = (void*) (long) JObject_getIntValue(f->argList->listArgs[i]);
+              break;
+
+            case STRING:
+              a[i] = (void*) JObject_toString(f->argList->listArgs[i]);
+              break;
+
+            default:
+              ASSERT(FALSE);
+              break;
+          }
+        }
+
+        //set default value now.
+        for (int i = minNbArgs; i < fct_item->nb_args; i++)
+        {
+          a[i] = fct_item->args_default[i];
+        }
+
+        s = fct_item->fct(currentStringValue, a[0]);
+
+        //dessallocate the allocated string argument after execution
+        for (int i = 0; i < minNbArgs; i++)
+        {
+          switch (fct_item->args_type[i])
+          {
+            case STRING:
+              free(a[i]);
+              break;
+
+            default:
+              break;
+          }
         }
       }
-      
-      //set default value now.
-      for(int i = minNbArgs; i < fct_item->nb_args; i++)
-      {
-        a[i] = fct_item->args_default[i];
-      }
-      
-      s = fct_item->fct(currentStringValue, a[0]);
-      
-      //dessallocate the allocated string argument after execution
-      for(int i = 0; i < minNbArgs; i++)
-      {
-        switch (fct_item->args_type[i])
-        {
-         case STRING:
-            free(a[i]);
-            break;
-            
-          default:
-            break;
-        }
-      }
-    }
       break;
-      
+
+    case FCT_FORMAT:
+      {
+        int nbArgs = 0;
+        parameter_value a[NB_MAX_ARGS];
+        parameter_type t[NB_MAX_ARGS];
+
+        if (f->argList != NULL)
+        {
+          nbArgs = f->argList->nb_args;
+        }
+        if (nbArgs > 10)
+        {
+          nbArgs = 10;
+        }
+
+        for (int i = 0; i < nbArgs; i++)
+        {
+          parameter_value v;
+          parameter_type type;
+          v = JObject_getValue(f->argList->listArgs[i], &type);
+          a[i] = v;
+          t[i] = type;
+          if (type == TYPE_DOUBLE)
+          {
+            fprintf(stdout, "double value = %f\n", v.type_double);
+          }
+          //memcpy(&a[i], &v, sizeof(parameter_value));
+
+          if (type == TYPE_DOUBLE)
+          {
+            fprintf(stdout, "a[%d] ==> double value = %.12f\n", i, a[i]);
+          }
+        }
+
+        for (int i = nbArgs; i < NB_MAX_ARGS; i++)
+        {
+          a[i].type_string = NULL;
+          t[i] = TYPE_STRING;
+        }
+
+        s = format(currentStringValue, nbArgs, a, t);
+
+        //dessallocate the allocated string argument after execution
+        for (int i = 0; i < nbArgs; i++)
+        {
+          switch (t[i])
+          {
+            case TYPE_STRING:
+              free(a[i].type_string);
+              break;
+
+            default:
+              break;
+          }
+        }
+      }
+      break;
+
     default:
       ASSERT(FALSE);
       break;
   }
-  
+
   return s;
 }
 
@@ -883,16 +1313,18 @@ int JArgs_insert_args(JArgs* obj, JObject* argToInsert)
   ASSERT(obj != NULL);
   ASSERT(argToInsert != NULL);
   int rc;
-  
+
   if (obj->nb_args > NB_MAX_ARGS)
+  {
     rc = -1;
+  }
   else
   {
     obj->listArgs[obj->nb_args] = argToInsert;
     obj->nb_args++;
     rc = 0;
   }
-  
+
   return rc;
 }
 
@@ -904,10 +1336,10 @@ int ast_create_function_args_from_top(void)
   ASSERT(ast_nb_object >= 1);
   firstArgs = ast_list[ast_nb_object - 1];
   ast_remove_last(FALSE); // top object will be inserted in JArgs object that's why not deleted
-  
+
   JArgs* args = (JArgs*) JArgs_new();
   JArgs_insert_args(args, firstArgs);
-  
+
   return ast_insert((JObject*) args);
 }
 
@@ -916,11 +1348,11 @@ int ast_insert_function_args()
   JObject* arg;
   ASSERT(ast_nb_object >= 2);
   arg = ast_list[ast_nb_object - 1];
-  
+
   ASSERT(ast_list[ast_nb_object - 2]->type == J_FUNCTION_ARGS);
   JArgs* args = (JArgs*) ast_list[ast_nb_object - 2];
   ast_remove_last(FALSE); // top object will be inserted in JArgs object that's why not deleted
-  
+
   return JArgs_insert_args(args, arg);
 }
 
@@ -928,41 +1360,41 @@ int ast_insert_function_args()
 char* ast_getTypeString(ast_type type)
 {
   char* s = NULL;
-  
+
   switch (type)
   {
     case J_STR_CONSTANTE:
       s = "String";
       break;
-      
+
     case J_INTEGER:
       s = "Integer";
       break;
-      
+
     case J_DOUBLE:
       s = "Double";
       break;
-      
+
     case J_IDENTIFIER:
       s = "Identifier";
       break;
-      
+
     case J_ARRAY:
       s = "Array";
       break;
-      
+
     case J_FUNCTION_ARGS:
       s = "Function Argument";
       break;
-      
+
     case J_FUNCTION:
       s = "Function";
       break;
-      
+
     case J_BOOLEAN:
       s = "Boolean";
       break;
-      
+
     default:
       ASSERT(FALSE);
       break;
@@ -976,8 +1408,8 @@ void display_function_args(JArgs* argsObj)
   int indexArgs;
   for (indexArgs = 0; indexArgs < argsObj->nb_args; indexArgs++)
   {
-    fprintf(stdout, ">> object type = %s (%d)\n", 
-            ast_getTypeString(argsObj->listArgs[indexArgs]->type), 
+    fprintf(stdout, ">> object type = %s (%d)\n",
+            ast_getTypeString(argsObj->listArgs[indexArgs]->type),
             argsObj->listArgs[indexArgs]->type);
   }
 }
@@ -986,10 +1418,10 @@ void display_function_args(JArgs* argsObj)
 int ast_dump_stack()
 {
   unsigned int i;
-  
+
   fprintf(stdout, "dump_ast\n----------\n");
   fprintf(stdout, "nb item %d\n", ast_nb_object);
-  for(i = 0;i < ast_nb_object; i++)
+  for (i = 0; i < ast_nb_object; i++)
   {
     fprintf(stdout, "> object type = %s (%d)\n", ast_getTypeString(ast_list[i]->type), ast_list[i]->type);
     switch (ast_list[i]->type)
@@ -1004,15 +1436,17 @@ int ast_dump_stack()
           display_function_args(((JFunction*) ast_list[i])->argList);
           fprintf(stdout, "> End inner args\n");
         }
-        else 
+        else
+        {
           fprintf(stdout, ">> no args\n");
+        }
         break;
-        
+
       default:
         break;
     }
   }
-  
+
   fprintf(stdout, "----------\n");
   return 0;
 }

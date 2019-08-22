@@ -78,13 +78,14 @@ typedef struct
 
 typedef enum
 {
-    FCT_CAPITALIZE,
-    FCT_CENTER,
-    FCT_LOWER,
-    FCT_UPPER,
-    FCT_TITLE,
-    FCT_TRIM,
-    FCT_TRUNCATE
+  FCT_CAPITALIZE,
+  FCT_CENTER,
+  FCT_FORMAT,
+  FCT_LOWER,
+  FCT_UPPER,
+  FCT_TITLE,
+  FCT_TRIM,
+  FCT_TRUNCATE
 } fct_id;
 
 typedef struct
