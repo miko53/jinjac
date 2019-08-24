@@ -1,99 +1,13 @@
-
 #ifndef _AST_H
 #define _AST_H
 
 #include "common.h"
-#include "parameter.h"
-
-typedef char* (*filter_fct)(char*, ...);
-
-typedef enum
-{
-  J_STR_CONSTANTE,
-  J_INTEGER,
-  J_DOUBLE,
-  J_BOOLEAN,
-  J_IDENTIFIER,
-  J_ARRAY,
-  J_FUNCTION_ARGS,
-  J_FUNCTION,
-} ast_type;
 
 typedef struct
 {
   BOOL inError;
   char* currentStringValue;
 } ast;
-
-typedef struct
-{
-  ast_type type;
-} JObject;
-
-typedef struct
-{
-  JObject base;
-  char* str_constant;
-} JStringConstante;
-
-typedef struct
-{
-  JObject base;
-  int value;
-} JInteger;
-
-typedef struct
-{
-  JObject base;
-  double value;
-} JDouble;
-
-typedef struct
-{
-  JObject base;
-  BOOL value;
-} JBoolean;
-
-typedef struct
-{
-  JObject base;
-  char* identifier;
-} JIdentifier;
-
-typedef struct
-{
-  JObject base;
-  char* identifier;
-  int offset;
-} JArray;
-
-#define NB_MAX_ARGS   (10)
-
-typedef struct
-{
-  JObject base;
-  JObject* listArgs[NB_MAX_ARGS];
-  int nb_args;
-} JArgs;
-
-typedef enum
-{
-  FCT_CAPITALIZE,
-  FCT_CENTER,
-  FCT_FORMAT,
-  FCT_LOWER,
-  FCT_UPPER,
-  FCT_TITLE,
-  FCT_TRIM,
-  FCT_TRUNCATE
-} fct_id;
-
-typedef struct
-{
-  JObject base;
-  fct_id functionID;
-  JArgs* argList;
-} JFunction;
 
 extern ast* getAstRoot(void);
 extern void ast_clean(void);
