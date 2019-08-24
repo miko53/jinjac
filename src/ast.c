@@ -1,12 +1,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdarg.h>
 #include "ast.h"
 #include "common.h"
-#include "convert.h"
 #include "buildin.h"
 #include "jobject.h"
 
@@ -24,7 +20,7 @@ void ast_clean()
   ast_root.inError = FALSE;
   if (ast_root.currentStringValue != NULL)
   {
-    free(ast_root.currentStringValue );
+    free(ast_root.currentStringValue);
     ast_root.currentStringValue = NULL;
   }
 
