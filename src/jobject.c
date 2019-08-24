@@ -47,7 +47,7 @@ fct_converter tab_fct_converter[] =
 };
 
 
-int getFunction(char* fctName)
+static int getFunctionID(char* fctName)
 {
   int sizeMax = sizeof(tab_fct_converter) / sizeof(fct_converter);
   int i;
@@ -109,7 +109,7 @@ JObject* JBoolean_new(BOOL b)
 
 JObject* JFunction_new(char* fct)
 {
-  int functionID = getFunction(fct);
+  int functionID = getFunctionID(fct);
   if (functionID != -1)
   {
     JFunction* o = NEW(JFunction);
