@@ -263,7 +263,7 @@ char* getModifierString(char* pModifierBegin, char* pModifierEnd)
 
 BOOL appendParameterToString(char* pModifierString, parameter_type typeToInsert,
                              str_obj* strDestination, int currentParameterIndex,
-                             int nbParameter, parameter_value* param, parameter_type* type
+                             int nbParameters, parameter_value* param, parameter_type* type
                             )
 {
   ASSERT(pModifierString != NULL);
@@ -276,49 +276,57 @@ BOOL appendParameterToString(char* pModifierString, parameter_type typeToInsert,
   BOOL bOk;
   bOk = TRUE;
 
-  switch (typeToInsert)
+  if (currentParameterIndex < nbParameters)
   {
-    case TYPE_INT:
-      addedSize = snprintf(NULL, addedSize, pModifierString, param[currentParameterIndex].type_int);
-      addedSize++;
-      extraStringToAdd = malloc(addedSize);
-      snprintf(extraStringToAdd, addedSize, pModifierString, param[currentParameterIndex].type_int);
-      break;
+    switch (typeToInsert)
+    {
+      case TYPE_INT:
+        addedSize = snprintf(NULL, addedSize, pModifierString, param[currentParameterIndex].type_int);
+        addedSize++;
+        extraStringToAdd = malloc(addedSize);
+        snprintf(extraStringToAdd, addedSize, pModifierString, param[currentParameterIndex].type_int);
+        break;
 
-    case TYPE_DOUBLE:
-      addedSize = snprintf(NULL, addedSize, pModifierString, param[currentParameterIndex].type_double);
-      addedSize++;
-      extraStringToAdd = malloc(addedSize);
-      snprintf(extraStringToAdd, addedSize, pModifierString, param[currentParameterIndex].type_double);
-      break;
+      case TYPE_DOUBLE:
+        addedSize = snprintf(NULL, addedSize, pModifierString, param[currentParameterIndex].type_double);
+        addedSize++;
+        extraStringToAdd = malloc(addedSize);
+        snprintf(extraStringToAdd, addedSize, pModifierString, param[currentParameterIndex].type_double);
+        break;
 
-    case TYPE_STRING:
-      addedSize = snprintf(NULL, addedSize, pModifierString, param[currentParameterIndex].type_string);
-      addedSize++;
-      extraStringToAdd = malloc(addedSize);
-      snprintf(extraStringToAdd, addedSize, pModifierString, param[currentParameterIndex].type_string);
-      break;
+      case TYPE_STRING:
+        addedSize = snprintf(NULL, addedSize, pModifierString, param[currentParameterIndex].type_string);
+        addedSize++;
+        extraStringToAdd = malloc(addedSize);
+        snprintf(extraStringToAdd, addedSize, pModifierString, param[currentParameterIndex].type_string);
+        break;
 
-    case TYPE_UNKOWN:
-      addedSize = snprintf(NULL, addedSize, pModifierString);
-      addedSize++;
-      extraStringToAdd = malloc(addedSize);
-      snprintf(extraStringToAdd, addedSize, pModifierString);
-      break;
+      case TYPE_UNKOWN:
+        addedSize = snprintf(NULL, addedSize, pModifierString);
+        addedSize++;
+        extraStringToAdd = malloc(addedSize);
+        snprintf(extraStringToAdd, addedSize, pModifierString);
+        break;
 
-    default:
-      ASSERT(FALSE);
-      break;
+      default:
+        ASSERT(FALSE);
+        break;
+    }
+
+    str_obj_insert(strDestination, extraStringToAdd);
+    free(extraStringToAdd);
   }
-
-  str_obj_insert(strDestination, extraStringToAdd);
-  free(extraStringToAdd);
-  extraStringToAdd = NULL;
+  else
+  {
+    fprintf(stdout, "inconsistency number of parameter for format function (%d versus max %d)\n",
+            currentParameterIndex, nbParameters);
+    bOk = FALSE;
+  }
 
   return bOk;
 }
 
-char* format(char* origin, int nbParameter, parameter_value* param, parameter_type* type)
+char* format(char* origin, int nbParameters, parameter_value* param, parameter_type* type)
 {
   int currentParameterIndex = 0;
   char* src;
@@ -365,7 +373,7 @@ char* format(char* origin, int nbParameter, parameter_value* param, parameter_ty
           modifierString = getModifierString(pModifierBegin, pModifierEnd);
 
           appendParameterToString(modifierString, typeToInsert, &dst, currentParameterIndex,
-                                  nbParameter, param, type);
+                                  nbParameters, param, type);
           free(modifierString);
         }
         else
