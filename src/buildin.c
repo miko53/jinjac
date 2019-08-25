@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
+#include "str_obj.h"
 
 char* upper(char* s)
 {
@@ -178,72 +179,143 @@ char* center(char* origin, unsigned int width)
   return r;
 }
 
-typedef struct
-{
-  char* s;
-  int size;
-  int allocatedSize;
-} str_obj;
 
-void str_obj_create(str_obj* obj)
+BOOL findModifier(char* src, parameter_type* type, char** pModifierEnd)
 {
-  obj->s = malloc(10);
-  ASSERT(obj->s != NULL);
-  obj->s[0] = '\0';
-  obj->allocatedSize = 10;
-  obj->size = 0;
+  ASSERT(type != NULL);
+  ASSERT(src != NULL);
+  ASSERT(pModifierEnd != NULL);
+
+  //find end modifier
+  BOOL bEndFound = FALSE;
+  while ((*src != '\0') && (bEndFound == FALSE))
+  {
+    switch (*src)
+    {
+      //int
+      case 'd':
+      case 'i':
+      case 'o':
+      case 'u':
+      case 'x':
+      case 'X':
+      case 'c':
+      case 'p':
+        *pModifierEnd = src;
+        bEndFound = TRUE;
+        *type = TYPE_INT;
+        break;
+
+      //double
+      case 'e':
+      case 'E':
+      case 'f':
+      case 'F':
+      case 'g':
+      case 'G':
+      case 'a':
+      case 'A':
+        *pModifierEnd = src;
+        bEndFound = TRUE;
+        *type = TYPE_DOUBLE;
+        break;
+
+      //string
+      case 's':
+        *pModifierEnd = src;
+        bEndFound = TRUE;
+        *type = TYPE_STRING;
+        break;
+
+      //no arg
+      case 'm':
+        *pModifierEnd = src;
+        bEndFound = TRUE;
+        *type = TYPE_UNKOWN;
+        break;
+
+      case 'n':
+        ASSERT(FALSE);
+        break;
+
+      default:
+        src++;
+        break;
+    }
+  }
+  return bEndFound;
 }
 
-void str_obj_free(str_obj* obj)
+
+char* getModifierString(char* pModifierBegin, char* pModifierEnd)
 {
-  if (obj->s)
+  int size = pModifierEnd + 1 - pModifierBegin;
+  fprintf(stdout, "modifier (%d) ==> %.*s\n", size, size, pModifierBegin);
+
+  char* modifierString = malloc(size + 1);
+  strncpy(modifierString, pModifierBegin, size);
+  modifierString[size] = '\0';
+
+  fprintf(stdout, "modifier (%s)\n", modifierString);
+
+  return modifierString;
+}
+
+BOOL appendParameterToString(char* pModifierString, parameter_type typeToInsert,
+                             str_obj* strDestination, int currentParameterIndex,
+                             int nbParameter, parameter_value* param, parameter_type* type
+                            )
+{
+  ASSERT(pModifierString != NULL);
+  ASSERT(strDestination != NULL);
+  ASSERT(param != NULL);
+  ASSERT(type != NULL);
+
+  int addedSize = 0;
+  char* extraStringToAdd;
+  BOOL bOk;
+  bOk = TRUE;
+
+  switch (typeToInsert)
   {
-    free(obj->s);
+    case TYPE_INT:
+      addedSize = snprintf(NULL, addedSize, pModifierString, param[currentParameterIndex].type_int);
+      addedSize++;
+      extraStringToAdd = malloc(addedSize);
+      snprintf(extraStringToAdd, addedSize, pModifierString, param[currentParameterIndex].type_int);
+      break;
+
+    case TYPE_DOUBLE:
+      addedSize = snprintf(NULL, addedSize, pModifierString, param[currentParameterIndex].type_double);
+      addedSize++;
+      extraStringToAdd = malloc(addedSize);
+      snprintf(extraStringToAdd, addedSize, pModifierString, param[currentParameterIndex].type_double);
+      break;
+
+    case TYPE_STRING:
+      addedSize = snprintf(NULL, addedSize, pModifierString, param[currentParameterIndex].type_string);
+      addedSize++;
+      extraStringToAdd = malloc(addedSize);
+      snprintf(extraStringToAdd, addedSize, pModifierString, param[currentParameterIndex].type_string);
+      break;
+
+    case TYPE_UNKOWN:
+      addedSize = snprintf(NULL, addedSize, pModifierString);
+      addedSize++;
+      extraStringToAdd = malloc(addedSize);
+      snprintf(extraStringToAdd, addedSize, pModifierString);
+      break;
+
+    default:
+      ASSERT(FALSE);
+      break;
   }
 
-  obj->s = NULL;
-  obj->size = 0;
-  obj->allocatedSize = 0;
-}
+  str_obj_insert(strDestination, extraStringToAdd);
+  free(extraStringToAdd);
+  extraStringToAdd = NULL;
 
-void str_obj_realloc(str_obj* obj, int newSize)
-{
-  ASSERT(obj != NULL);
-  char* n = realloc(obj->s, newSize);
-  ASSERT(n != NULL);
-  obj->s = n;
-  obj->allocatedSize = newSize;
-}
-
-
-void str_obj_insertChar(str_obj* obj, char src)
-{
-  ASSERT(obj != NULL);
-  ASSERT(obj->s != NULL);
-
-  if ((obj->size + 1) >= obj->allocatedSize)
-  {
-    str_obj_realloc(obj, obj->allocatedSize * 2);
-  }
-
-  int size = obj->size;
-  obj->s[size] = src;
-  size++;
-  obj->s[size] = '\0';
-  obj->size = size;
-}
-
-void str_obj_insert(str_obj* obj, char* src)
-{
-  int s = strlen(src);
-  if (obj->size + s + 1 >= obj->allocatedSize)
-  {
-    str_obj_realloc(obj, obj->allocatedSize * 2);
-  }
-
-  strncat(obj->s, src, s);
-  obj->size += s;
-  obj->s[obj->size] = '\0';
+  return bOk;
 }
 
 char* format(char* origin, int nbParameter, parameter_value* param, parameter_type* type)
@@ -253,10 +325,10 @@ char* format(char* origin, int nbParameter, parameter_value* param, parameter_ty
   char* pModifierBegin;
   char* pModifierEnd;
   str_obj dst;
+
   str_obj_create(&dst);
   src = origin;
   BOOL isModifier;
-
   isModifier = FALSE;
 
   while (*src != '\0')
@@ -283,115 +355,18 @@ char* format(char* origin, int nbParameter, parameter_value* param, parameter_ty
       }
       else
       {
+        BOOL bEndFound;
+        parameter_type typeToInsert;
         //find end modifier
-        BOOL bEndFound = FALSE;
-        parameter_type type;
-        while ((*src != '\0') && (bEndFound == FALSE))
-        {
-          switch (*src)
-          {
-            //int
-            case 'd':
-            case 'i':
-            case 'o':
-            case 'u':
-            case 'x':
-            case 'X':
-            case 'c':
-            case 'p':
-              pModifierEnd = src;
-              bEndFound = TRUE;
-              type = TYPE_INT;
-              break;
-
-            //double
-            case 'e':
-            case 'E':
-            case 'f':
-            case 'F':
-            case 'g':
-            case 'G':
-            case 'a':
-            case 'A':
-              pModifierEnd = src;
-              bEndFound = TRUE;
-              type = TYPE_DOUBLE;
-              break;
-
-            //string
-            case 's':
-              pModifierEnd = src;
-              bEndFound = TRUE;
-              type = TYPE_STRING;
-              break;
-
-            //no arg
-            case 'm':
-              pModifierEnd = src;
-              bEndFound = TRUE;
-              type = TYPE_UNKOWN;
-              break;
-
-            case 'n':
-              ASSERT(FALSE);
-              break;
-
-            default:
-              src++;
-              break;
-          }
-        }
-
+        bEndFound = findModifier(src, &typeToInsert, &pModifierEnd);
         if (bEndFound)
         {
-          int size = pModifierEnd + 1 - pModifierBegin;
-          fprintf(stdout, "modifier (%d) ==> %.*s\n", size, size, pModifierBegin);
-          char* modifierString = malloc(size + 1);
-          strncpy(modifierString, pModifierBegin, size);
-          modifierString[size] = '\0';
-          fprintf(stdout, "modifier (%s)\n", modifierString);
+          char* modifierString;
+          modifierString = getModifierString(pModifierBegin, pModifierEnd);
 
-          int addedSize = 0;
-          char* extraStringToAdd;
-          switch (type)
-          {
-            case TYPE_INT:
-              addedSize = snprintf(NULL, addedSize, modifierString, param[currentParameterIndex].type_int);
-              addedSize++;
-              extraStringToAdd = malloc(addedSize);
-              snprintf(extraStringToAdd, addedSize, modifierString, param[currentParameterIndex].type_int);
-              break;
-
-            case TYPE_DOUBLE:
-              addedSize = snprintf(NULL, addedSize, modifierString, param[currentParameterIndex].type_double);
-              addedSize++;
-              extraStringToAdd = malloc(addedSize);
-              snprintf(extraStringToAdd, addedSize, modifierString, param[currentParameterIndex].type_double);
-              break;
-
-            case TYPE_STRING:
-              addedSize = snprintf(NULL, addedSize, modifierString, param[currentParameterIndex].type_string);
-              addedSize++;
-              extraStringToAdd = malloc(addedSize);
-              snprintf(extraStringToAdd, addedSize, modifierString, param[currentParameterIndex].type_string);
-              break;
-
-            case TYPE_UNKOWN:
-              addedSize = snprintf(NULL, addedSize, modifierString);
-              addedSize++;
-              extraStringToAdd = malloc(addedSize);
-              snprintf(extraStringToAdd, addedSize, modifierString);
-              break;
-
-            default:
-              ASSERT(FALSE);
-              break;
-          }
-
-          str_obj_insert(&dst, extraStringToAdd);
-          free(extraStringToAdd);
+          appendParameterToString(modifierString, typeToInsert, &dst, currentParameterIndex,
+                                  nbParameter, param, type);
           free(modifierString);
-          extraStringToAdd = NULL;
         }
         else
         {
@@ -406,23 +381,6 @@ char* format(char* origin, int nbParameter, parameter_value* param, parameter_ty
     }
   }
 
-  //   size = snprintf(r, size, origin);
-  //
-  //   fprintf(stdout, "size = %d\n", size);
-  //sprintf(r, origin, a1.type_double, a2.type_double);
-  /*va_list args;
-
-  va_start (args, origin);
-  nbChar = vsnprintf(NULL, 0, origin, args);
-  va_end(args);
-
-  r = malloc(nbChar + 1);
-  r[nbChar] = '\0';
-
-  va_start (args, origin);
-  nbChar = vsnprintf(r, nbChar, origin, args);
-  va_end (args);
-  */
   free(origin);
   return dst.s;
 

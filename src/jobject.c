@@ -608,16 +608,6 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
           v = JObject_getValue(f->argList->listArgs[i], &type);
           a[i] = v;
           t[i] = type;
-          if (type == TYPE_DOUBLE)
-          {
-            fprintf(stdout, "double value = %f\n", v.type_double);
-          }
-          //memcpy(&a[i], &v, sizeof(parameter_value));
-
-          if (type == TYPE_DOUBLE)
-          {
-            fprintf(stdout, "a[%d] ==> double value = %.12f\n", i, a[i]);
-          }
         }
 
         for (int i = nbArgs; i < NB_MAX_ARGS; i++)
