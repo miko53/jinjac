@@ -20,7 +20,7 @@ List of build-in function implemented
 |first()||not necc.
 |float()|| not necc.
 |forceescape()|| not necc.
-|format()|| TODO
+|format()| format string according to parameter (equivalent to printf) | [OK]
 |groupby()|| not necc.
 |indent()|| low prio
 |int()|| not necc.
