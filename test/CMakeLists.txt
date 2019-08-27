@@ -13,3 +13,4 @@ add_test(truncate_buildins_functions ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${C
 add_test(center_buildins_functions ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_11)
 add_test(title_buildins_functions ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_12)
 add_test(format_buildins_functions ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_13)
+add_test(format_buildins_error_mngt ${CMAKE_CURRENT_SOURCE_DIR}/autotest.rb ${CMAKE_BINARY_DIR}/src/jinja_expression ${CMAKE_CURRENT_SOURCE_DIR} test_14)

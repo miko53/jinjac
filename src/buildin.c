@@ -261,6 +261,50 @@ char* getModifierString(char* pModifierBegin, char* pModifierEnd)
   return modifierString;
 }
 
+
+BOOL setFormatConsistency(parameter_type* typeToInsert, parameter_value currentParameterValue,
+                          parameter_type currentParameterType, char* pModifierString, parameter_value* paramDataToInsert)
+{
+  BOOL bOk;
+  bOk = TRUE;
+
+  ASSERT(paramDataToInsert != NULL);
+  ASSERT(pModifierString != NULL);
+  ASSERT(typeToInsert != NULL);
+
+  if ((*typeToInsert == TYPE_STRING) && (currentParameterType == TYPE_INT))
+  {
+    *typeToInsert = TYPE_INT;
+    pModifierString[strlen(pModifierString) - 1] = 'd';
+    *paramDataToInsert = currentParameterValue;
+  }
+  else if ((*typeToInsert == TYPE_STRING) && (currentParameterType == TYPE_DOUBLE))
+  {
+    *typeToInsert = TYPE_DOUBLE;
+    pModifierString[strlen(pModifierString) - 1] = 'f';
+    *paramDataToInsert = currentParameterValue;
+  }
+  else if ((*typeToInsert == TYPE_DOUBLE) && (currentParameterType == TYPE_INT))
+  {
+    (*paramDataToInsert).type_double = (double) currentParameterValue.type_int;
+  }
+  else if ((*typeToInsert == TYPE_DOUBLE) && (currentParameterType == TYPE_STRING))
+  {
+    fprintf(stdout, "error in input, a float is required instead of a string\n");
+    bOk = FALSE;
+  }
+  else if ((*typeToInsert == TYPE_INT) && (currentParameterType == TYPE_DOUBLE))
+  {
+    (*paramDataToInsert).type_int = (int) currentParameterValue.type_double;
+  }
+  else if ((*typeToInsert == TYPE_INT) && (currentParameterType == TYPE_STRING))
+  {
+    fprintf(stdout, "error in input, a int is required instead of a string\n");
+    bOk = FALSE;
+  }
+  return bOk;
+}
+
 BOOL appendParameterToString(char* pModifierString, parameter_type typeToInsert,
                              str_obj* strDestination, int currentParameterIndex,
                              int nbParameters, parameter_value* param, parameter_type* type
@@ -274,51 +318,68 @@ BOOL appendParameterToString(char* pModifierString, parameter_type typeToInsert,
   int addedSize = 0;
   char* extraStringToAdd;
   BOOL bOk;
+  extraStringToAdd = NULL;
   bOk = TRUE;
+  parameter_value paramDataToInsert;
 
   if (currentParameterIndex < nbParameters)
   {
-    switch (typeToInsert)
+    if (type[currentParameterIndex] != typeToInsert)
     {
-      case TYPE_INT:
-        addedSize = snprintf(NULL, addedSize, pModifierString, param[currentParameterIndex].type_int);
-        addedSize++;
-        extraStringToAdd = malloc(addedSize);
-        snprintf(extraStringToAdd, addedSize, pModifierString, param[currentParameterIndex].type_int);
-        break;
+      fprintf(stdout, "warning: parameter type inconsistency %d versus %d\n", type[currentParameterIndex], typeToInsert);
 
-      case TYPE_DOUBLE:
-        addedSize = snprintf(NULL, addedSize, pModifierString, param[currentParameterIndex].type_double);
-        addedSize++;
-        extraStringToAdd = malloc(addedSize);
-        snprintf(extraStringToAdd, addedSize, pModifierString, param[currentParameterIndex].type_double);
-        break;
-
-      case TYPE_STRING:
-        addedSize = snprintf(NULL, addedSize, pModifierString, param[currentParameterIndex].type_string);
-        addedSize++;
-        extraStringToAdd = malloc(addedSize);
-        snprintf(extraStringToAdd, addedSize, pModifierString, param[currentParameterIndex].type_string);
-        break;
-
-      case TYPE_UNKOWN:
-        addedSize = snprintf(NULL, addedSize, pModifierString);
-        addedSize++;
-        extraStringToAdd = malloc(addedSize);
-        snprintf(extraStringToAdd, addedSize, pModifierString);
-        break;
-
-      default:
-        ASSERT(FALSE);
-        break;
+      bOk = setFormatConsistency(&typeToInsert, param[currentParameterIndex],
+                                 type[currentParameterIndex], pModifierString, &paramDataToInsert);
+    }
+    else
+    {
+      paramDataToInsert = param[currentParameterIndex];
     }
 
-    str_obj_insert(strDestination, extraStringToAdd);
-    free(extraStringToAdd);
+    if (bOk)
+    {
+      switch (typeToInsert)
+      {
+        case TYPE_INT:
+          addedSize = snprintf(NULL, addedSize, pModifierString, paramDataToInsert.type_int);
+          addedSize++;
+          extraStringToAdd = malloc(addedSize);
+          snprintf(extraStringToAdd, addedSize, pModifierString, paramDataToInsert.type_int);
+          break;
+
+        case TYPE_DOUBLE:
+          addedSize = snprintf(NULL, addedSize, pModifierString, paramDataToInsert.type_double);
+          addedSize++;
+          extraStringToAdd = malloc(addedSize);
+          snprintf(extraStringToAdd, addedSize, pModifierString, paramDataToInsert.type_double);
+          break;
+
+        case TYPE_STRING:
+          addedSize = snprintf(NULL, addedSize, pModifierString, paramDataToInsert.type_string);
+          addedSize++;
+          extraStringToAdd = malloc(addedSize);
+          snprintf(extraStringToAdd, addedSize, pModifierString, paramDataToInsert.type_string);
+          break;
+
+        case TYPE_UNKOWN:
+          addedSize = snprintf(NULL, addedSize, pModifierString);
+          addedSize++;
+          extraStringToAdd = malloc(addedSize);
+          snprintf(extraStringToAdd, addedSize, pModifierString);
+          break;
+
+        default:
+          ASSERT(FALSE);
+          break;
+      }
+
+      str_obj_insert(strDestination, extraStringToAdd);
+      free(extraStringToAdd);
+    }
   }
   else
   {
-    fprintf(stdout, "inconsistency number of parameter for format function (%d versus max %d)\n",
+    fprintf(stdout, "error: inconsistency number of parameter for format function (%d versus max %d)\n",
             currentParameterIndex, nbParameters);
     bOk = FALSE;
   }
@@ -339,7 +400,10 @@ char* format(char* origin, int nbParameters, parameter_value* param, parameter_t
   BOOL isModifier;
   isModifier = FALSE;
 
-  while (*src != '\0')
+  BOOL isInError;
+  isInError = FALSE;
+
+  while ((*src != '\0') && (isInError == FALSE))
   {
     if (isModifier == FALSE)
     {
@@ -379,7 +443,7 @@ char* format(char* origin, int nbParameters, parameter_value* param, parameter_t
         else
         {
           //error
-          goto error;
+          isInError = TRUE;
         }
 
         src = pModifierEnd + 1;
@@ -389,10 +453,12 @@ char* format(char* origin, int nbParameters, parameter_value* param, parameter_t
     }
   }
 
+  if (isInError)
+  {
+    str_obj_free(&dst);
+    return origin;
+  }
+
   free(origin);
   return dst.s;
-
-error:
-  str_obj_free(&dst);
-  return origin;
 }
