@@ -34,7 +34,7 @@ fct_converter tab_fct_converter[] =
     .args_type = { INT},
     .args_default = { (void*) 80 }
   },
-  { .fct = (filter_fct) format, .name = "format", .nb_args = NB_MAX_ARGS,  .args_type = { INT },  .args_default = { NULL } },
+  { .fct = (filter_fct) format, .name = "format", .nb_args = NB_MAX_ARGS },
   { .fct = (filter_fct) lower, .name = "lower", .nb_args = 0 },
   { .fct = (filter_fct) upper, .name = "upper", .nb_args = 0 },
   { .fct = (filter_fct) title, .name = "title", .nb_args = 0 },
