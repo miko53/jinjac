@@ -59,7 +59,7 @@ void str_obj_insert(str_obj* obj, char* src)
     str_obj_realloc(obj, obj->allocatedSize * 2);
   }
 
-  strncat(obj->s, src, s);
+  strncpy(&obj->s[obj->size], src, s + 1);
   obj->size += s;
   obj->s[obj->size] = '\0';
 }
