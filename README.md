@@ -8,53 +8,53 @@ List of build-in function implemented
 
 |function|description|status|
 |--------|-----------|------|
-|abs()|| not necc.
-|attr()|| not necc.
-|batch()|| not necc.
+|abs()|| not implemented
+|attr()|| not implemented
+|batch()|| not implemented
 |capitalize()| first char in upper case another in lower | [OK]
 |center()| center the value center(s, width=80) | [OK]
 |default()| default value if undefined | low prio
-|dictsort()|| not necc.
+|dictsort()|| not implemented
 |escape()|| low prio
-|filesizeformat()|| not necc.
-|first()||not necc.
-|float()|| not necc.
-|forceescape()|| not necc.
+|filesizeformat()|| not implemented
+|first()|| not implemented
+|float()|| not implemented
+|forceescape()|| not implemented
 |format()| format string according to parameter (equivalent to printf) | [OK]
-|groupby()|| not necc.
+|groupby()|| not implemented
 |indent()|| low prio
-|int()|| not necc.
+|int()|| not implemented
 |join()|| low prio
 |last()|| low prio
 |length()|| low prio
-|list()|| not necc.
+|list()|| not implemented
 |lower()|put string in lower case| [OK]
-|map()|| not necc.
-|max()|| not necc.
-|min()|| not necc.
-|pprint()|| not necc.
-|random()|| not necc.
-|reject()|| not necc.
-|rejectattr()|| not necc.
+|map()|| not implemented
+|max()|| not implemented
+|min()|| not implemented
+|pprint()|| not implemented
+|random()|| not implemented
+|reject()|| not implemented
+|rejectattr()|| not implemented
 |replace()|| low prio
 |reverse()|| low prio
-|round()|| not necc.
-|safe()|| not necc.
-|select()|| not necc.
-|selectattr()|| not necc.
+|round()|| not implemented
+|safe()|| not implemented
+|select()|| not implemented
+|selectattr()|| not implemented
 |slice()|| low prio
-|sort()|| not necc.
-|string()|| not necc.
-|striptags()|| not necc.
-|sum()|| not necc.
+|sort()|| not implemented
+|string()|| not implemented
+|striptags()|| not implemented
+|sum()|| not implemented
 |title()|set first char of word in upper case, othersiwe in lower case| [OK]
-|tojson()|| not necc.
+|tojson()|| not implemented
 |trim()|remove space at begin and end of the string| [OK]
 |truncate()| truncate a string at a specified offset plus extras options| [OK]
-|unique()|| not necc.
+|unique()|| not implemented
 |upper()|set string to upper case | [OK]
-|urlencode()|| not necc.
-|urlize()|| not necc.
-|wordcount()|| not necc.
+|urlencode()|| not implemented
+|urlize()|| not implemented
+|wordcount()|| not implemented
 |wordwrap()|| low prio
-|xmlattr()|| not necc.
+|xmlattr()|| not implemented
