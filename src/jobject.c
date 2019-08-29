@@ -145,109 +145,34 @@ JObject* JArray_new(char* name, int offset)
 
 char* JObject_toString(JObject* pObject)
 {
-  ASSERT(pObject != NULL);
+  parameter_value v;
+  parameter_type type;
   char* s;
-  s = NULL;
 
-  switch (pObject->type)
+  v = JObject_getValue(pObject, &type);
+  switch (type)
   {
-    case J_STR_CONSTANTE:
-      s = strdup(((JStringConstante*) pObject)->str_constant);
+    case TYPE_STRING:
+      s = v.type_string;
       break;
 
-    case J_INTEGER:
-      s = intToStr(((JInteger*) pObject)->value);
+    case TYPE_DOUBLE:
+      s = doubleToStr(v.type_double);
       break;
 
-    case J_DOUBLE:
-      s = doubleToStr(((JDouble*) pObject)->value);
+    case TYPE_INT:
+      s = intToStr(v.type_int);
       break;
 
-    case J_IDENTIFIER:
-      {
-        JIdentifier* pIdent;
-        pIdent = (JIdentifier*) pObject;
-        parameter_type type = param_getType(pIdent->identifier);
-        switch (type)
-        {
-          case TYPE_STRING:
-            s = strdup((char*) param_getValue(pIdent->identifier).type_string);
-            break;
-
-          case TYPE_INT:
-            s = intToStr(param_getValue(pIdent->identifier).type_int);
-            if (s == NULL)
-            {
-              fprintf(stdout, "ID error\n");
-              getAstRoot()->inError = TRUE;
-            }
-            break;
-
-          case TYPE_DOUBLE:
-            s = doubleToStr(param_getValue(pIdent->identifier).type_double);
-            if (s == NULL)
-            {
-              fprintf(stdout, "ID error\n");
-              getAstRoot()->inError = TRUE;
-            }
-            break;
-
-          default:
-            getAstRoot()->inError = TRUE;
-            fprintf(stdout, "unknown '%s' identifier\n", pIdent->identifier);
-            ASSERT(FALSE);
-            break;
-        }
-      }
-      break;
-
-    case J_ARRAY:
-      {
-        JArray* pArray;
-        pArray = (JArray*) pObject;
-        BOOL bOk;
-        parameter_value v;
-        parameter_type type = param_getType(pArray->identifier);
-        bOk = param_array_getValue(pArray->identifier, pArray->offset, &v);
-        if (bOk)
-        {
-          switch (type)
-          {
-            case TYPE_STRING:
-              s = strdup((char*) v.type_string);
-              break;
-
-            case TYPE_DOUBLE:
-              s = doubleToStr(v.type_double);
-              if (s == NULL)
-              {
-                fprintf(stdout, "array conversion error\n");
-                getAstRoot()->inError = TRUE;
-              }
-              break;
-
-            case TYPE_INT:
-              s = intToStr(v.type_int);
-              if (s == NULL)
-              {
-                fprintf(stdout, "array conversion error\n");
-                getAstRoot()->inError = TRUE;
-              }
-              break;
-
-            default:
-              getAstRoot()->inError = TRUE;
-              fprintf(stdout, "unknown '%s' array\n", pArray->identifier);
-              ASSERT(FALSE);
-              break;
-          }
-        }
-
-      }
+    case TYPE_UNKOWN:
+      fprintf(stdout, "can't convert to string, unknown type error\n");
+      getAstRoot()->inError = TRUE;
+      s = NULL;
       break;
 
     default:
-      fprintf(stdout, "not yet implemented...(type = %d)\n", pObject->type);
+      ASSERT(FALSE);
+      s = NULL;
       break;
   }
 
@@ -268,6 +193,14 @@ parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
       if (pType)
       {
         *pType = TYPE_STRING;
+      }
+      break;
+
+    case J_BOOLEAN:
+      s.type_int = ((JBoolean*) pObject)->value;
+      if (pType)
+      {
+        *pType = TYPE_INT;
       }
       break;
 
@@ -360,6 +293,36 @@ parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
   return s;
 }
 
+int JObject_toIntValue(JObject* obj)
+{
+  ASSERT(obj != NULL);
+  parameter_type type;
+  parameter_value value = JObject_getValue(obj, &type);
+  int r;
+  r = 0;
+
+  switch (type)
+  {
+    case TYPE_STRING:
+    case TYPE_UNKOWN:
+      //do nothing
+      break;
+
+    case TYPE_DOUBLE:
+      r = (int) value.type_double;
+      break;
+
+    case TYPE_INT:
+      r = value.type_int;
+      break;
+
+    default:
+      ASSERT(FALSE);
+      break;
+  }
+  return r;
+}
+
 void JObject_delete(JObject* pObject)
 {
   switch (pObject->type)
@@ -414,39 +377,6 @@ void JObject_delete(JObject* pObject)
   free(pObject);
 }
 
-int JObject_getIntValue(JObject* obj)
-{
-  ASSERT(obj != NULL);
-  int r;
-  r = 0;
-
-  switch (obj->type)
-  {
-    case J_ARRAY:
-      fprintf(stdout, "Not yet implemented...\n"); //TODO
-      break;
-
-    case J_INTEGER:
-      r = ((JInteger*) obj)->value;
-      break;
-    case J_BOOLEAN:
-      r = ((JBoolean*) obj)->value;
-      break;
-
-    case J_DOUBLE:
-    case J_IDENTIFIER:
-      fprintf(stdout, "Not yet implemented...\n"); //TODO
-      break;
-
-    default:
-      fprintf(stdout, "warning: incompatible type is %d, expected %d\n", obj->type, J_INTEGER);
-      break;
-  }
-
-  return r;
-}
-
-
 char* JFunction_execute(JFunction* f, char* currentStringValue)
 {
   char* s;
@@ -492,7 +422,7 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
 
             case INT:
             case BOOLEAN:
-              a[i] = (void*) (long) JObject_getIntValue(f->argList->listArgs[i]);
+              a[i] = (void*) (long) JObject_toIntValue(f->argList->listArgs[i]);
               break;
 
             case STRING:
@@ -549,7 +479,7 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
 
             case INT:
             case BOOLEAN:
-              a[i] = (void*) (long) JObject_getIntValue(f->argList->listArgs[i]);
+              a[i] = (void*) (long) JObject_toIntValue(f->argList->listArgs[i]);
               break;
 
             case STRING:

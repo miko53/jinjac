@@ -100,7 +100,7 @@ extern JObject* JArgs_new(void);
 extern JObject* JArray_new(char* name, int offset);
 extern char* JObject_toString(JObject* pObject);
 extern parameter_value JObject_getValue(JObject* pObject, parameter_type* pType);
-extern int JObject_getIntValue(JObject* obj);
+extern int JObject_toIntValue(JObject* obj);
 
 extern void JObject_delete(JObject* pObject);
 extern char* JFunction_execute(JFunction* f, char* currentStringValue);
