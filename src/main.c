@@ -26,20 +26,24 @@ STATIC void delete_example_parameter(void);
 STATIC void parse_only_string_arg(char* string)
 {
   YY_BUFFER_STATE buffer;
-  ast* astRoot;
-  BOOL inError;
 
   ast_clean();
-  astRoot = getAstRoot();
   fprintf(stdout, "parse only string = \"%s\"\n", string);
 
   buffer = yy_scan_string ( string );
   yyparse();
 
-  inError = astRoot->inError;
-  if ((!inError) && (astRoot->currentStringValue != NULL))
+  if ((!ast_getInError()) && (ast_getStringResult() != NULL))
   {
-    fprintf(stdout, "result: %s\n", astRoot->currentStringValue);
+    fprintf(stdout, "result: %s\n", ast_getStringResult());
+  }
+  else if (ast_getInError())
+  {
+    fprintf(stdout, "in Error\n");
+  }
+  else
+  {
+    fprintf(stdout, "empty string in result\n");
   }
 
   yy_delete_buffer(buffer);
@@ -278,20 +282,18 @@ STATIC void parse_file(FILE* in, FILE* out)
 STATIC BOOL parse_string(char* string, FILE* out)
 {
   YY_BUFFER_STATE buffer;
-  ast* astRoot;
   BOOL inError;
 
   ast_clean();
-  astRoot = getAstRoot();
   fprintf(stdout, "parse = \"%s\"\n", string);
 
   buffer = yy_scan_string ( string );
   yyparse();
 
-  inError = astRoot->inError;
-  if ((!inError) && (astRoot->currentStringValue != NULL))
+  inError = ast_getInError();
+  if ((!inError) && (ast_getStringResult() != NULL))
   {
-    fputs(astRoot->currentStringValue, out);
+    fputs(ast_getStringResult(), out);
   }
 
   yy_delete_buffer(buffer);

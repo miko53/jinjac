@@ -3,15 +3,10 @@
 
 #include "common.h"
 
-typedef struct
-{
-  BOOL inError;
-  char* currentStringValue;
-} ast;
-
-extern ast* getAstRoot(void);
 extern void ast_clean(void);
-//extern filter_fct getFunction(char* fctName);
+extern void ast_setInError(char* errorString);
+extern BOOL ast_getInError(void);
+extern char* ast_getStringResult(void);
 
 extern int ast_insert_constante(char* name);
 extern int ast_insert_identifier(char* name);

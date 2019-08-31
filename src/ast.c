@@ -8,6 +8,12 @@
 
 #define MAX_OBJECT (50)
 
+typedef struct
+{
+  BOOL inError;
+  char* currentStringValue;
+} ast;
+
 static ast ast_root;
 
 static JObject* ast_list[MAX_OBJECT];
@@ -36,6 +42,18 @@ ast* getAstRoot(void)
 {
   return &ast_root;
 }
+
+void ast_setInError(char* errorString)
+{
+  (void) errorString;
+  ast_root.inError = TRUE;
+}
+
+BOOL ast_getInError(void)
+{
+  return ast_root.inError;
+}
+
 
 int ast_insert(JObject* o)
 {
@@ -148,6 +166,7 @@ char* ast_convert_to_string()
     ast_remove_last(TRUE);
   }
 
+  getAstRoot()->currentStringValue = s;
   return s;
 }
 
@@ -165,8 +184,15 @@ char* ast_apply_filtering()
     ast_remove_last(TRUE);
   }
 
+  getAstRoot()->currentStringValue = s;
   return s;
 }
+
+char* ast_getStringResult()
+{
+  return getAstRoot()->currentStringValue;
+}
+
 
 BOOL ast_get_offset(JObject* pObject, int* pOffset)
 {

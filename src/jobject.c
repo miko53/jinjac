@@ -166,7 +166,7 @@ char* JObject_toString(JObject* pObject)
 
     case TYPE_UNKOWN:
       fprintf(stdout, "can't convert to string, unknown type error\n");
-      getAstRoot()->inError = TRUE;
+      ast_setInError("TYPE UNKOWN1");
       s = NULL;
       break;
 
@@ -237,7 +237,7 @@ parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
             break;
 
           default:
-            getAstRoot()->inError = TRUE;
+            ast_setInError("UNKOWN IDENTIFIER");
             fprintf(stdout, "unknown '%s' identifier\n", pIdent->identifier);
             ASSERT(FALSE);
             break;
@@ -271,7 +271,7 @@ parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
               break;
 
             default:
-              getAstRoot()->inError = TRUE;
+              ast_setInError("UNKOWN ARRAY");
               fprintf(stdout, "unknown '%s' array\n", pArray->identifier);
               ASSERT(FALSE);
               break;

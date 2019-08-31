@@ -14,6 +14,12 @@
   extern int getLine(void);
   
   void yyerror(const char *s);
+  
+  #define stop_in_error(errorNb)   \
+                            do { \
+                              ast_setInError(errorNb); \
+                              YYABORT; \
+                            } while (0);
 
 %}
 
@@ -23,11 +29,13 @@
   char *stringData;
 }
 
-%token<stringData> STRING_CST
+%token<stringData> STRING_LITERAL
 %token<stringData> IDENTIFIER
 %token<doubleData> FLOAT
 %token<integerData> INTEGER
-%token '[' ']'
+
+//%token '[' ']' '.'
+//%right '[' ']' '.'
 %right '|'
 %left '('
 %left ')'
@@ -36,9 +44,6 @@
 
 %token FOR END_FOR IN IF IS ELSE END_IF ELIF L_TRUE L_FALSE BLOCK END_BLOCK EXTENDS RAW END_RAW SET
 %token EQUAL HIGH_AND_EQUAL_THAN LOWER_AND_EQUAL_THAN DIFFERENT
-
-%type<integerData>  number_exp
-%type<doubleData> mixed_number_exp
 
 %%
 jinja_stmt:
@@ -65,27 +70,30 @@ jinja_if_stmt:
   IF condition_expr { dbg_print("a IF statement\n"); }
   
 jinja_filtered_expr:
-  jinja_function_expr 
+  function_expression 
   |
-   jinja_postfix_expr { //convert id to string
-                        getAstRoot()->currentStringValue = ast_convert_to_string();
+   postfix_expression { //convert id to string
+                        dbg_print("postfix_expression string conversion...\n");
+                        ast_convert_to_string();
                       }
   |
-  jinja_filtered_expr '|' jinja_function_expr {
+  jinja_filtered_expr '|' function_expression {
                                                 dbg_print("a jinja filtered expr\n"); 
-                                                getAstRoot()->currentStringValue = ast_apply_filtering();
+                                                ast_apply_filtering();
                                               }
 
-jinja_postfix_expr:
-     jinja_primary_expr { }
-   | IDENTIFIER '[' jinja_array_offset_expr ']' {
-                                                  dbg_print("an array '%s' \n", $1); 
-                                                  ast_create_array_on_top($1);
-                                                } 
-/*   | jinja_postfix_expr  '.' IDENTIFIER { dbg_print("a dot- identifier\n"); }*/ //Plus tard...
+postfix_expression:
+     expression 
+   | postfix_expression '[' expression ']' {
+                                      dbg_print("an array  \n"); 
+                                      //ast_create_array_on_top($1);
+                                   } 
+   | postfix_expression  '.' IDENTIFIER { 
+                                          dbg_print("a dot- identifier\n");
+                                        }
 
 
-jinja_function_expr:
+function_expression:
    IDENTIFIER '(' jinja_arg_list ')' { 
                                         dbg_print("a Function '%s'\n", $1);
                                         ast_insert_function($1);
@@ -95,85 +103,87 @@ jinja_function_expr:
 
 jinja_arg_list:
       %empty
-   |  jinja_postfix_expr { 
+   |  postfix_expression { 
                            dbg_print("arg \n"); 
                            ast_create_function_args_from_top();
                            //ast_dump_stack();
                          }
-   |  jinja_arg_list ',' jinja_postfix_expr { 
+   |  jinja_arg_list ',' postfix_expression { 
                                                dbg_print("arg list\n");
                                                ast_insert_function_args();
                                                //ast_dump_stack();
                                             }
 
                                             
-jinja_array_offset_expr:
+expression:
+  multiplicative_expr
+  | 
+  expression '+' multiplicative_expr { dbg_print("ADD\n"); }
+  |
+  expression '-' multiplicative_expr { dbg_print("SUB\n"); }
+  
+multiplicative_expr:
+  jinja_primary_expr
+  |
+  multiplicative_expr '*' jinja_primary_expr { dbg_print("MUL\n"); }
+  |
+  multiplicative_expr '/' jinja_primary_expr { dbg_print("DIV\n"); }
+  
+  
+/*
     IDENTIFIER  { dbg_print("1-a id '%s'\n", $1); ast_insert_identifier($1); ast_dump_stack();} 
   | number_exp { dbg_print("an int '%d'\n", $1); ast_insert_integer($1); }
-  
+  */
+  /*
 jinja_primary_expr:
     IDENTIFIER  { 
                   ast_insert_identifier($1);
                 }
   |
-    jinja_constant
+    jinja_constant*/
 
-jinja_constant:
-   STRING_CST { 
-                ast_insert_constante($1);
-                }
- | mixed_number_exp {  
-                      ast_insert_double($1);
-                    }
- | number_exp { 
-                ast_insert_integer($1);
+jinja_primary_expr:
+  IDENTIFIER  { 
+                ast_insert_identifier($1);
+                dbg_print("Identifier '%s'\n", $1);
               }
- | L_TRUE {
-            ast_insert_boolean(TRUE);
-            //dbg_print("True\n");
-          };
+  |
+  STRING_LITERAL { 
+                    ast_insert_constante($1);
+                    dbg_print("String Literal '%s'\n", $1);
+                 }
+ | FLOAT {  
+           ast_insert_double($1);
+           dbg_print("Double '%f'\n", $1);
+         }
+ | INTEGER { 
+             ast_insert_integer($1);
+             dbg_print("Integer '%d'\n", $1);
+           }
+ | L_TRUE  {
+             ast_insert_boolean(TRUE);
+             dbg_print("Boolean 'True'\n");
+           }
  | L_FALSE {
-            ast_insert_boolean(FALSE);
-            //dbg_print("False\n");
-            };
-
-number_exp:
-  INTEGER { $$ = $1; }
- | number_exp '+' number_exp  { $$ = $1+$3;}
- | number_exp '-' number_exp  { $$ = $1-$3;}
- | number_exp '*' number_exp  { $$ = $1*$3;}
- | number_exp '/' number_exp  { $$ = $1/$3;}
- | '(' number_exp ')' { $$ = $2; }
-  
-mixed_number_exp:
-  FLOAT { $$ = $1; }
- | mixed_number_exp '+' mixed_number_exp  { $$ = $1+$3;}
- | mixed_number_exp '-' mixed_number_exp  { $$ = $1-$3;}
- | mixed_number_exp '*' mixed_number_exp  { $$ = $1*$3;}
- | mixed_number_exp '/' mixed_number_exp  { $$ = $1/$3;}
- | '(' mixed_number_exp ')' { $$ = $2; }
- | number_exp '+' mixed_number_exp  { $$ = $1+$3;}
- | number_exp '-' mixed_number_exp  { $$ = $1-$3;}
- | number_exp '*' mixed_number_exp  { $$ = $1*$3;}
- | number_exp '/' mixed_number_exp  { $$ = $1/$3;}
- | mixed_number_exp '+' number_exp  { $$ = $1+$3;}
- | mixed_number_exp '-' number_exp  { $$ = $1-$3;}
- | mixed_number_exp '*' number_exp  { $$ = $1*$3;}
- | mixed_number_exp '/' number_exp  { $$ = $1/$3;}
-
+             ast_insert_boolean(FALSE);
+             dbg_print("Boolean 'False'\n");
+           }
+ | '(' expression ')' {
+                        dbg_print("EXP WITH '(' ')'\n");
+                      }
 
 condition_expr:
-  jinja_postfix_expr EQUAL jinja_postfix_expr { dbg_print("equal expression\n"); }
+  postfix_expression EQUAL postfix_expression { dbg_print("equal expression\n"); }
   |
-  jinja_postfix_expr DIFFERENT jinja_postfix_expr { dbg_print("diff expression\n"); }
+  postfix_expression DIFFERENT postfix_expression { dbg_print("diff expression\n"); }
   |
-  jinja_postfix_expr HIGH_AND_EQUAL_THAN jinja_postfix_expr { dbg_print(">= expression\n"); }
+  postfix_expression HIGH_AND_EQUAL_THAN postfix_expression { dbg_print(">= expression\n"); }
   |
-  jinja_postfix_expr LOWER_AND_EQUAL_THAN jinja_postfix_expr { dbg_print("<= expression\n"); }
+  postfix_expression LOWER_AND_EQUAL_THAN postfix_expression { dbg_print("<= expression\n"); }
   |
-  jinja_postfix_expr IS jinja_function_expr { dbg_print("IS expression\n"); }
+  postfix_expression IS function_expression { dbg_print("IS expression\n"); }
   | 
-  jinja_postfix_expr IS IDENTIFIER { dbg_print("IS expression\n"); }
+  postfix_expression IS IDENTIFIER { dbg_print("IS expression\n"); }
 
   
 %%
@@ -181,6 +191,6 @@ condition_expr:
 void yyerror(const char *s) 
 {
   dbg_print("line %d: error: '%s'\n",getLine(), s);
-  getAstRoot()->inError = TRUE;
+  ast_setInError("global error");
 }
 
