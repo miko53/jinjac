@@ -315,9 +315,10 @@ char* ast_getTypeString(jobject_type type)
 void display_function_args(JArgs* argsObj)
 {
   int indexArgs;
+  fprintf(stdout, "\n");
   for (indexArgs = 0; indexArgs < argsObj->nb_args; indexArgs++)
   {
-    fprintf(stdout, ">> object type = %s (%d)\n",
+    fprintf(stdout, " arg[%d]: \"%s\" (%d)\n", indexArgs,
             ast_getTypeString(argsObj->listArgs[indexArgs]->type),
             argsObj->listArgs[indexArgs]->type);
   }
@@ -328,16 +329,41 @@ int ast_dump_stack()
 {
   unsigned int i;
 
-  fprintf(stdout, "dump_ast\n----------\n");
-  fprintf(stdout, "nb item %d\n", ast_nb_object);
+  fprintf(stdout, "---------- begin ast stack\n");
+  fprintf(stdout, "nb item: %d\n", ast_nb_object);
   for (i = 0; i < ast_nb_object; i++)
   {
-    fprintf(stdout, "> object type = %s (%d)\n", ast_getTypeString(ast_list[i]->type), ast_list[i]->type);
+    fprintf(stdout, "item[%d]: \"%s\" (%d)", i, ast_getTypeString(ast_list[i]->type), ast_list[i]->type);
     switch (ast_list[i]->type)
     {
+      case J_STR_CONSTANTE:
+        fprintf(stdout, ": \"%s\"\n", ((JStringConstante*) ast_list[i])->str_constant);
+        break;
+
+      case J_INTEGER:
+        fprintf(stdout, ": \"%d\"\n", ((JInteger*) ast_list[i])->value);
+        break;
+
+      case J_DOUBLE:
+        fprintf(stdout, ": \"%f\"\n", ((JDouble*) ast_list[i])->value);
+        break;
+
+      case J_BOOLEAN:
+        fprintf(stdout, ": \"%d\"\n", ((JBoolean*) ast_list[i])->value);
+        break;
+
+      case J_IDENTIFIER:
+        fprintf(stdout, ": \"%s\"\n", ((JIdentifier*) ast_list[i])->identifier);
+        break;
+
+      case J_ARRAY:
+        fprintf(stdout, ": \"%s\"\n", ((JArray*) ast_list[i])->identifier);
+        break;
+
       case J_FUNCTION_ARGS:
         display_function_args((JArgs*) ast_list[i]);
         break;
+
       case J_FUNCTION:
         if (((JFunction*) ast_list[i])->argList != NULL)
         {
@@ -356,7 +382,7 @@ int ast_dump_stack()
     }
   }
 
-  fprintf(stdout, "----------\n");
+  fprintf(stdout, "---------- end ast stack\n");
   return 0;
 }
 
