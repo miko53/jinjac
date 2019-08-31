@@ -14,11 +14,14 @@
   extern int getLine(void);
   
   void yyerror(const char *s);
-  /*
-  typedef struct yy_buffer_state * YY_BUFFER_STATE;
-  extern int yyparse();
-  extern YY_BUFFER_STATE yy_scan_string(char * str);
-  extern void yy_delete_buffer(YY_BUFFER_STATE buffer);*/
+
+  #define DBG_RULES
+  
+#ifdef DBG_RULES
+  #define dbg_rules(...)     fprintf(stdout, __VA_ARGS__)
+#else 
+  #define dbg_rules(...)
+#endif /* DBG_RULES*/
  
 %}
 
@@ -52,22 +55,22 @@ jinja_stmt:
   | jinja_if_stmt { }
   | jinja_else_stmt { }
   | jinja_endif_stmt { }
-  | jinja_filtered_expr { fprintf(stdout, "a filtered expr\n");}
+  | jinja_filtered_expr { dbg_rules("a filtered expr\n");}
 
 jinja_for_stmt:
-  FOR IDENTIFIER IN jinja_filtered_expr { fprintf(stdout, " a FOR statement\n"); }
+  FOR IDENTIFIER IN jinja_filtered_expr { dbg_rules(" a FOR statement\n"); }
 
 jinja_endfor_stmt:
-  END_FOR { fprintf(stdout, "a ENDFOR stmt\n"); }
+  END_FOR { dbg_rules("a ENDFOR stmt\n"); }
 
 jinja_endif_stmt:
-  END_IF { fprintf(stdout, "a ENDIF stmt\n"); }
+  END_IF { dbg_rules("a ENDIF stmt\n"); }
 
 jinja_else_stmt:
-  ELSE { fprintf(stdout, "a ELSE stmt\n"); }
+  ELSE { dbg_rules("a ELSE stmt\n"); }
 
 jinja_if_stmt:
-  IF condition_expr { fprintf(stdout, "a IF statement\n"); }
+  IF condition_expr { dbg_rules("a IF statement\n"); }
   
 jinja_filtered_expr:
   jinja_function_expr 
@@ -77,22 +80,22 @@ jinja_filtered_expr:
                       }
   |
   jinja_filtered_expr '|' jinja_function_expr {
-                                                fprintf(stdout, "a jinja filtered expr\n"); 
+                                                dbg_rules("a jinja filtered expr\n"); 
                                                 getAstRoot()->currentStringValue = ast_apply_filtering();
                                               }
 
 jinja_postfix_expr:
      jinja_primary_expr { }
    | IDENTIFIER '[' jinja_array_offset_expr ']' {
-                                                  fprintf(stdout, "an array '%s' \n", $1); 
+                                                  dbg_rules("an array '%s' \n", $1); 
                                                   ast_create_array_on_top($1);
                                                 } 
-/*   | jinja_postfix_expr  '.' IDENTIFIER { fprintf(stdout, "a dot- identifier\n"); }*/ //Plus tard...
+/*   | jinja_postfix_expr  '.' IDENTIFIER { dbg_rules("a dot- identifier\n"); }*/ //Plus tard...
 
 
 jinja_function_expr:
    IDENTIFIER '(' jinja_arg_list ')' { 
-                                        fprintf(stdout, "a Function '%s'\n", $1);
+                                        dbg_rules("a Function '%s'\n", $1);
                                         ast_insert_function($1);
                                         free($1);
                                         ast_dump_stack();
@@ -101,20 +104,20 @@ jinja_function_expr:
 jinja_arg_list:
       %empty
    |  jinja_postfix_expr { 
-                           fprintf(stdout, "arg \n"); 
+                           dbg_rules("arg \n"); 
                            ast_create_function_args_from_top();
                            //ast_dump_stack();
                          }
    |  jinja_arg_list ',' jinja_postfix_expr { 
-                                               fprintf(stdout, "arg list\n");
+                                               dbg_rules("arg list\n");
                                                ast_insert_function_args();
                                                //ast_dump_stack();
                                             }
 
                                             
 jinja_array_offset_expr:
-    IDENTIFIER  { fprintf(stdout, "1-a id '%s'\n", $1);  ast_insert_identifier($1); } 
-  | number_exp { fprintf(stdout, "an int '%d'\n", $1); ast_insert_integer($1); }
+    IDENTIFIER  { dbg_rules("1-a id '%s'\n", $1);  ast_insert_identifier($1); } 
+  | number_exp { dbg_rules("an int '%d'\n", $1); ast_insert_integer($1); }
   
 jinja_primary_expr:
     IDENTIFIER  { 
@@ -135,11 +138,11 @@ jinja_constant:
               }
  | L_TRUE {
             ast_insert_boolean(TRUE);
-            //fprintf(stdout, "True\n");
+            //dbg_rules("True\n");
           };
  | L_FALSE {
             ast_insert_boolean(FALSE);
-            //fprintf(stdout, "False\n");
+            //dbg_rules("False\n");
             };
 
 number_exp:
@@ -168,24 +171,24 @@ mixed_number_exp:
 
 
 condition_expr:
-  jinja_postfix_expr EQUAL jinja_postfix_expr { fprintf(stdout, "equal expression\n"); }
+  jinja_postfix_expr EQUAL jinja_postfix_expr { dbg_rules("equal expression\n"); }
   |
-  jinja_postfix_expr DIFFERENT jinja_postfix_expr { fprintf(stdout, "diff expression\n"); }
+  jinja_postfix_expr DIFFERENT jinja_postfix_expr { dbg_rules("diff expression\n"); }
   |
-  jinja_postfix_expr HIGH_AND_EQUAL_THAN jinja_postfix_expr { fprintf(stdout, ">= expression\n"); }
+  jinja_postfix_expr HIGH_AND_EQUAL_THAN jinja_postfix_expr { dbg_rules(">= expression\n"); }
   |
-  jinja_postfix_expr LOWER_AND_EQUAL_THAN jinja_postfix_expr { fprintf(stdout, "<= expression\n"); }
+  jinja_postfix_expr LOWER_AND_EQUAL_THAN jinja_postfix_expr { dbg_rules("<= expression\n"); }
   |
-  jinja_postfix_expr IS jinja_function_expr { fprintf(stdout, "IS expression\n"); }
+  jinja_postfix_expr IS jinja_function_expr { dbg_rules("IS expression\n"); }
   | 
-  jinja_postfix_expr IS IDENTIFIER { fprintf(stdout, "IS expression\n"); }
+  jinja_postfix_expr IS IDENTIFIER { dbg_rules("IS expression\n"); }
 
   
 %%
 
 void yyerror(const char *s) 
 {
-  fprintf(stdout, "line %d: error: '%s'\n",getLine(), s);
+  dbg_rules("line %d: error: '%s'\n",getLine(), s);
   getAstRoot()->inError = TRUE;
 }
 
