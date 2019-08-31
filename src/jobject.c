@@ -281,6 +281,13 @@ parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
             *pType = type;
           }
         }
+        else
+        {
+          if (pType)
+          {
+            *pType = TYPE_UNKOWN;
+          }
+        }
 
       }
       break;

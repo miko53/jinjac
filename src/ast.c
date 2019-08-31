@@ -162,7 +162,6 @@ char* ast_apply_filtering()
 
     JFunction* f = (JFunction*) ast_list[ast_nb_object - 1];
     s = JFunction_execute(f, getAstRoot()->currentStringValue);
-    //s = f->function(getAstRoot()->currentStringValue); //TODO add argument
     ast_remove_last(TRUE);
   }
 

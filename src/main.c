@@ -23,14 +23,40 @@ STATIC BOOL parse_string(char* string, FILE* out);
 STATIC void create_example_parameter(void);
 STATIC void delete_example_parameter(void);
 
+STATIC void parse_only_string_arg(char* string)
+{
+  YY_BUFFER_STATE buffer;
+  ast* astRoot;
+  BOOL inError;
+
+  ast_clean();
+  astRoot = getAstRoot();
+  fprintf(stdout, "parse only string = \"%s\"\n", string);
+
+  buffer = yy_scan_string ( string );
+  yyparse();
+
+  inError = astRoot->inError;
+  if ((!inError) && (astRoot->currentStringValue != NULL))
+  {
+    fprintf(stdout, "result: %s\n", astRoot->currentStringValue);
+  }
+
+  yy_delete_buffer(buffer);
+  yylex_destroy();
+  ast_clean();
+}
+
+
 int main(int argc, char* argv[])
 {
   // Parse through the input:
   int opt;
   char* inputFile = NULL;
   char* outputfile = NULL;
+  char* test_string = NULL;
 
-  while ((opt = getopt(argc, argv, "i:o:h")) != -1)
+  while ((opt = getopt(argc, argv, "i:o:hs:")) != -1)
   {
     switch (opt)
     {
@@ -42,12 +68,24 @@ int main(int argc, char* argv[])
         outputfile = optarg;
         break;
 
+      case 's':
+        test_string = optarg;
+        break;
+
       case 'h':
       default:
         fprintf(stderr, "usage %s -i <input file> -o <output file>\n", argv[0]);
         exit(EXIT_FAILURE);
         break;
     }
+  }
+
+  create_example_parameter();
+
+  if (test_string != NULL)
+  {
+    parse_only_string_arg(test_string);
+    exit(EXIT_SUCCESS);
   }
 
   if (inputFile == NULL)
@@ -81,7 +119,7 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
 
-  create_example_parameter();
+  //   create_example_parameter();
 
   parse_file(in, out);
   fclose(in);
