@@ -74,6 +74,7 @@ jinja_filtered_expr:
   |
    postfix_expression { //convert id to string
                         dbg_print("postfix_expression string conversion...\n");
+                        //ast_dump_stack();
                         ast_convert_to_string();
                       }
   |
@@ -84,13 +85,14 @@ jinja_filtered_expr:
 
 postfix_expression:
      expression 
-   | postfix_expression '[' expression ']' {
-                                      dbg_print("an array  \n"); 
-                                      //ast_create_array_on_top($1);
+   | IDENTIFIER '[' expression ']' {  //TODO: Check id IDENTIFIER --> postfix_expression
+                                      dbg_print("an array %s \n", $1); 
+                                      ast_create_array_on_top($1);
                                    } 
-   | postfix_expression  '.' IDENTIFIER { 
-                                          dbg_print("a dot- identifier\n");
-                                        }
+   | IDENTIFIER  '.' IDENTIFIER {
+                                   //TODO: Check id IDENTIFIER --> postfix_expression
+                                   dbg_print("a dot- identifier (%s)\n", $1);
+                                }
 
 
 function_expression:
@@ -118,16 +120,16 @@ jinja_arg_list:
 expression:
   multiplicative_expr
   | 
-  expression '+' multiplicative_expr { dbg_print("ADD\n"); }
+  expression '+' multiplicative_expr { ast_do_operation('+'); }
   |
-  expression '-' multiplicative_expr { dbg_print("SUB\n"); }
+  expression '-' multiplicative_expr { ast_do_operation('-'); }
   
 multiplicative_expr:
   jinja_primary_expr
   |
-  multiplicative_expr '*' jinja_primary_expr { dbg_print("MUL\n"); }
+  multiplicative_expr '*' jinja_primary_expr { ast_do_operation('*');  }
   |
-  multiplicative_expr '/' jinja_primary_expr { dbg_print("DIV\n"); }
+  multiplicative_expr '/' jinja_primary_expr { ast_do_operation('/');  }
   
   
 /*

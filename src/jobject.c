@@ -599,3 +599,256 @@ int JArgs_insert_args(JArgs* obj, JObject* argToInsert)
   return rc;
 }
 
+BOOL isTypeOkForCalcul(parameter_type type)
+{
+  BOOL bOk;
+  bOk = TRUE;
+
+  if ((type == TYPE_STRING) ||
+      (type == TYPE_UNKOWN))
+  {
+    bOk = FALSE;
+  }
+
+  return bOk;
+}
+
+typedef struct
+{
+  parameter_type type_op1;
+  parameter_type type_op2;
+  parameter_type type_result;
+} op_decision;
+
+static const op_decision operation_array_decision[] =
+{
+  { TYPE_DOUBLE, TYPE_DOUBLE, TYPE_DOUBLE}, //, calcul_ddd },
+  { TYPE_DOUBLE, TYPE_INT, TYPE_DOUBLE}, //, calcul_did },
+  { TYPE_INT, TYPE_DOUBLE, TYPE_DOUBLE}, //, calcul_idd },
+  { TYPE_INT, TYPE_INT, TYPE_INT} //, calcul_iii},
+};
+
+static double calcul_ddd(double d1, double d2, char operation)
+{
+  double r;
+
+  switch (operation)
+  {
+    case '+':
+      r = d1 + d2;
+      break;
+
+    case '-':
+      r = d1 - d2;
+      break;
+
+    case '*':
+      r = d1 * d2;
+      break;
+
+    case '/':
+      r = d1 / d2;
+      break;
+
+    default:
+      r = 0.;
+      ASSERT(FALSE);
+      break;
+  }
+
+  return r;
+}
+
+static double calcul_did(double d1, int i2, char operation)
+{
+  double r;
+
+  switch (operation)
+  {
+    case '+':
+      r = d1 + i2;
+      break;
+
+    case '-':
+      r = d1 - i2;
+      break;
+
+    case '*':
+      r = d1 * i2;
+      break;
+
+    case '/':
+      r = d1 / i2;
+      break;
+
+    default:
+      r = 0.;
+      ASSERT(FALSE);
+      break;
+  }
+
+  return r;
+}
+
+static double calcul_idd(int i1, double d2, char operation)
+{
+  double r;
+
+  switch (operation)
+  {
+    case '+':
+      r = i1 + d2;
+      break;
+
+    case '-':
+      r = i1 - d2;
+      break;
+
+    case '*':
+      r = i1 * d2;
+      break;
+
+    case '/':
+      r = i1 / d2;
+      break;
+
+    default:
+      r = 0.;
+      ASSERT(FALSE);
+      break;
+  }
+
+  return r;
+}
+
+static int calcul_iii(int i1, double i2, char operation)
+{
+  int r;
+
+  switch (operation)
+  {
+    case '+':
+      r = i1 + i2;
+      break;
+
+    case '-':
+      r = i1 - i2;
+      break;
+
+    case '*':
+      r = i1 * i2;
+      break;
+
+    case '/':
+      r = i1 / i2;
+      break;
+
+    default:
+      r = 0;
+      ASSERT(FALSE);
+      break;
+  }
+
+  return r;
+}
+
+
+static int select_operation(parameter_type t1, parameter_type t2)
+{
+  unsigned int i;
+
+  for (i = 0; i < sizeof(operation_array_decision) / sizeof(op_decision); i++)
+  {
+    if ((operation_array_decision[i].type_op1 == t1) &&
+        (operation_array_decision[i].type_op2 == t2))
+    {
+      return i;
+    }
+  }
+
+  ASSERT(FALSE);
+  return -1;
+}
+
+JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperation)
+{
+  ASSERT(op1 != NULL);
+  ASSERT(op2 != NULL);
+
+  JObject* pObjResult = NULL;
+  BOOL bOk;
+
+  //object for mathematical can'not be string.
+  parameter_value valueOp1;
+  parameter_type  typeOp1;
+  parameter_value valueOp2;
+  parameter_type  typeOp2;
+
+  valueOp1 = JObject_getValue(op1, &typeOp1);
+  valueOp2 = JObject_getValue(op2, &typeOp2);
+
+  bOk = isTypeOkForCalcul(typeOp1);
+  if (bOk)
+  {
+    bOk = isTypeOkForCalcul(typeOp2);
+  }
+  else
+  {
+    if (valueOp1.type_string != NULL) //NOTE: TYPE_UNKOWN return a string NULL which can't be freed
+    {
+      free(valueOp1.type_string);
+    }
+  }
+
+  if (!bOk)
+  {
+    if (valueOp2.type_string != NULL) //NOTE: TYPE_UNKOWN return a string NULL which can't be freed
+    {
+      free(valueOp2.type_string);
+    }
+
+    ast_setInError("Can't do calcul wrong operande type");
+  }
+  else
+  {
+    int s = select_operation(typeOp1, typeOp2);
+    switch (s)
+    {
+      case 0:
+        {
+          double r = calcul_ddd(valueOp1.type_double, valueOp2.type_double, mathOperation);
+          pObjResult = JDouble_new(r);
+        }
+        break;
+
+      case 1:
+        {
+          double r = calcul_did(valueOp1.type_double, valueOp2.type_int, mathOperation);
+          pObjResult = JDouble_new(r);
+        }
+        break;
+
+      case 2:
+        {
+          double r = calcul_idd(valueOp1.type_int, valueOp2.type_double, mathOperation);
+          pObjResult = JDouble_new(r);
+        }
+        break;
+
+      case 3:
+        {
+          int r = calcul_iii(valueOp1.type_int, valueOp2.type_int, mathOperation);
+          pObjResult = JInteger_new(r);
+        }
+        break;
+
+      default:
+        ASSERT(FALSE);
+        break;
+    }
+
+  }
+
+  return pObjResult;
+}
+

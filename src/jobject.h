@@ -102,6 +102,8 @@ extern char* JObject_toString(JObject* pObject);
 extern parameter_value JObject_getValue(JObject* pObject, parameter_type* pType);
 extern int JObject_toIntValue(JObject* obj);
 
+extern JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperation);
+
 extern void JObject_delete(JObject* pObject);
 extern char* JFunction_execute(JFunction* f, char* currentStringValue);
 extern int JArgs_insert_args(JArgs* obj, JObject* argToInsert);

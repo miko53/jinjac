@@ -292,6 +292,40 @@ int ast_insert_function_args()
 }
 
 
+int ast_do_operation(char mathOperation)
+{
+  //perform mathematical operation on last two items of the stack
+  //remove them and insert result after.
+  int rc;
+  rc = -1;
+
+  if (ast_nb_object >= 2)
+  {
+    JObject* op1 = ast_list[ast_nb_object - 2];
+    JObject* op2 = ast_list[ast_nb_object - 1];
+
+    JObject* result = JObject_doOperation(op1, op2, mathOperation);
+    if (result != NULL)
+    {
+      ast_remove_last(TRUE);
+      ast_remove_last(TRUE);
+      ast_insert(result);
+      rc = 0;
+    }
+    else
+    {
+      ast_setInError("Calcul not possible");
+    }
+  }
+  else
+  {
+    ast_setInError("Nb operande not in according with calcul");
+  }
+
+  return rc;
+}
+
+
 char* ast_getTypeString(jobject_type type)
 {
   char* s = NULL;

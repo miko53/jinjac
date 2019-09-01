@@ -18,6 +18,8 @@ extern int ast_create_array_on_top(char* name);
 extern int ast_create_function_args_from_top(void);
 extern int ast_insert_function_args(void);
 
+extern int ast_do_operation(char mathOperation);
+
 extern int ast_dump_stack(void);
 
 extern char* ast_convert_to_string(void);
