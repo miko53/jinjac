@@ -721,7 +721,7 @@ static double calcul_idd(int i1, double d2, char operation)
   return r;
 }
 
-static int calcul_iii(int i1, double i2, char operation)
+static int calcul_iii(int i1, int i2, char operation)
 {
   int r;
 

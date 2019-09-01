@@ -120,16 +120,28 @@ jinja_arg_list:
 expression:
   multiplicative_expr
   | 
-  expression '+' multiplicative_expr { ast_do_operation('+'); }
+  expression '+' multiplicative_expr { 
+                                        dbg_print("ADD\n");
+                                        ast_do_operation('+');
+                                     }
   |
-  expression '-' multiplicative_expr { ast_do_operation('-'); }
+  expression '-' multiplicative_expr { 
+                                        dbg_print("SUB\n");
+                                        ast_do_operation('-'); 
+                                     }
   
 multiplicative_expr:
   jinja_primary_expr
   |
-  multiplicative_expr '*' jinja_primary_expr { ast_do_operation('*');  }
+  multiplicative_expr '*' jinja_primary_expr { 
+                                                dbg_print("MUL\n");
+                                                ast_do_operation('*');
+                                             }
   |
-  multiplicative_expr '/' jinja_primary_expr { ast_do_operation('/');  }
+  multiplicative_expr '/' jinja_primary_expr { 
+                                                dbg_print("DIV\n");
+                                                ast_do_operation('/');  
+                                             }
   
   
 /*
