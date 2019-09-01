@@ -58,3 +58,13 @@ List of build-in function implemented
 |wordcount()|| not implemented
 |wordwrap()|| low prio
 |xmlattr()|| not implemented
+
+## TODO
+
+### To implement
+
+- for statment
+- if statment
+- function called as argument of array.
+- missing function
+- other statement
