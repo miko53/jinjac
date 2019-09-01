@@ -620,6 +620,14 @@ typedef struct
   parameter_type type_result;
 } op_decision;
 
+enum
+{
+  OPERATION_DDD,
+  OPERATION_DID,
+  OPERATION_IDD,
+  OPERATION_III
+};
+
 static const op_decision operation_array_decision[] =
 {
   { TYPE_DOUBLE, TYPE_DOUBLE, TYPE_DOUBLE}, //, calcul_ddd },
@@ -627,131 +635,6 @@ static const op_decision operation_array_decision[] =
   { TYPE_INT, TYPE_DOUBLE, TYPE_DOUBLE}, //, calcul_idd },
   { TYPE_INT, TYPE_INT, TYPE_INT} //, calcul_iii},
 };
-
-static double calcul_ddd(double d1, double d2, char operation)
-{
-  double r;
-
-  switch (operation)
-  {
-    case '+':
-      r = d1 + d2;
-      break;
-
-    case '-':
-      r = d1 - d2;
-      break;
-
-    case '*':
-      r = d1 * d2;
-      break;
-
-    case '/':
-      r = d1 / d2;
-      break;
-
-    default:
-      r = 0.;
-      ASSERT(FALSE);
-      break;
-  }
-
-  return r;
-}
-
-static double calcul_did(double d1, int i2, char operation)
-{
-  double r;
-
-  switch (operation)
-  {
-    case '+':
-      r = d1 + i2;
-      break;
-
-    case '-':
-      r = d1 - i2;
-      break;
-
-    case '*':
-      r = d1 * i2;
-      break;
-
-    case '/':
-      r = d1 / i2;
-      break;
-
-    default:
-      r = 0.;
-      ASSERT(FALSE);
-      break;
-  }
-
-  return r;
-}
-
-static double calcul_idd(int i1, double d2, char operation)
-{
-  double r;
-
-  switch (operation)
-  {
-    case '+':
-      r = i1 + d2;
-      break;
-
-    case '-':
-      r = i1 - d2;
-      break;
-
-    case '*':
-      r = i1 * d2;
-      break;
-
-    case '/':
-      r = i1 / d2;
-      break;
-
-    default:
-      r = 0.;
-      ASSERT(FALSE);
-      break;
-  }
-
-  return r;
-}
-
-static int calcul_iii(int i1, int i2, char operation)
-{
-  int r;
-
-  switch (operation)
-  {
-    case '+':
-      r = i1 + i2;
-      break;
-
-    case '-':
-      r = i1 - i2;
-      break;
-
-    case '*':
-      r = i1 * i2;
-      break;
-
-    case '/':
-      r = i1 / i2;
-      break;
-
-    default:
-      r = 0;
-      ASSERT(FALSE);
-      break;
-  }
-
-  return r;
-}
-
 
 static int select_operation(parameter_type t1, parameter_type t2)
 {
@@ -814,28 +697,28 @@ JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperation)
     int s = select_operation(typeOp1, typeOp2);
     switch (s)
     {
-      case 0:
+      case OPERATION_DDD:
         {
           double r = calcul_ddd(valueOp1.type_double, valueOp2.type_double, mathOperation);
           pObjResult = JDouble_new(r);
         }
         break;
 
-      case 1:
+      case OPERATION_DID:
         {
           double r = calcul_did(valueOp1.type_double, valueOp2.type_int, mathOperation);
           pObjResult = JDouble_new(r);
         }
         break;
 
-      case 2:
+      case OPERATION_IDD:
         {
           double r = calcul_idd(valueOp1.type_int, valueOp2.type_double, mathOperation);
           pObjResult = JDouble_new(r);
         }
         break;
 
-      case 3:
+      case OPERATION_III:
         {
           int r = calcul_iii(valueOp1.type_int, valueOp2.type_int, mathOperation);
           pObjResult = JInteger_new(r);
