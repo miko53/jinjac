@@ -12,12 +12,11 @@ typedef struct
 {
   BOOL inError;
   char* currentStringValue;
+  unsigned int ast_nb_object;
+  JObject* ast_list[MAX_OBJECT];
 } ast;
 
 static ast ast_root;
-
-static JObject* ast_list[MAX_OBJECT];
-static unsigned int ast_nb_object;
 
 static void ast_remove_last(BOOL toDelete);
 
@@ -30,17 +29,12 @@ void ast_clean()
     ast_root.currentStringValue = NULL;
   }
 
-  for (unsigned int i = 0; i < ast_nb_object; i++)
+  for (unsigned int i = 0; i < ast_root.ast_nb_object; i++)
   {
-    JObject_delete(ast_list[i]);
-    ast_list[i] = NULL;
+    JObject_delete(ast_root.ast_list[i]);
+    ast_root.ast_list[i] = NULL;
   }
-  ast_nb_object = 0;
-}
-
-ast* getAstRoot(void)
-{
-  return &ast_root;
+  ast_root.ast_nb_object = 0;
 }
 
 void ast_setInError(char* errorString)
@@ -60,16 +54,15 @@ int ast_insert(JObject* o)
   int rc;
   rc = -1;
 
-  if (ast_nb_object < MAX_OBJECT)
+  if (ast_root.ast_nb_object < MAX_OBJECT)
   {
-    ast_list[ast_nb_object] = o;
-    ast_nb_object++;
+    ast_root.ast_list[ast_root.ast_nb_object] = o;
+    ast_root.ast_nb_object++;
     rc = 0;
   }
 
   return rc;
 }
-
 
 int ast_insert_constante(char* name)
 {
@@ -107,9 +100,9 @@ int ast_insert_function(char* fct)
   JObject* top;
   top = NULL;
 
-  if (ast_nb_object >= 1)
+  if (ast_root.ast_nb_object >= 1)
   {
-    top = ast_list[ast_nb_object - 1];
+    top = ast_root.ast_list[ast_root.ast_nb_object - 1];
     if (top->type != J_FUNCTION_ARGS)
     {
       top = NULL;
@@ -142,17 +135,15 @@ int ast_insert_array(char* name, int offset)
   return -1;
 }
 
-
-
 static void ast_remove_last(BOOL toDelete)
 {
   if (toDelete)
   {
-    JObject_delete(ast_list[ast_nb_object - 1]);
+    JObject_delete(ast_root.ast_list[ast_root.ast_nb_object - 1]);
   }
 
-  ast_list[ast_nb_object - 1] = NULL;
-  ast_nb_object--;
+  ast_root.ast_list[ast_root.ast_nb_object - 1] = NULL;
+  ast_root.ast_nb_object--;
 }
 
 
@@ -160,13 +151,13 @@ char* ast_convert_to_string()
 {
   char* s;
   s = NULL;
-  if (ast_nb_object != 0)
+  if (ast_root.ast_nb_object != 0)
   {
-    s = JObject_toString(ast_list[ast_nb_object - 1]);
+    s = JObject_toString(ast_root.ast_list[ast_root.ast_nb_object - 1]);
     ast_remove_last(TRUE);
   }
 
-  getAstRoot()->currentStringValue = s;
+  ast_root.currentStringValue = s;
   return s;
 }
 
@@ -175,24 +166,23 @@ char* ast_apply_filtering()
 {
   char* s;
   s = NULL;
-  if (ast_nb_object != 0)
+  if (ast_root.ast_nb_object != 0)
   {
-    ASSERT(ast_list[ast_nb_object - 1]->type == J_FUNCTION);
+    ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FUNCTION);
 
-    JFunction* f = (JFunction*) ast_list[ast_nb_object - 1];
-    s = JFunction_execute(f, getAstRoot()->currentStringValue);
+    JFunction* f = (JFunction*) ast_root.ast_list[ast_root.ast_nb_object - 1];
+    s = JFunction_execute(f, ast_root.currentStringValue);
     ast_remove_last(TRUE);
   }
 
-  getAstRoot()->currentStringValue = s;
+  ast_root.currentStringValue = s;
   return s;
 }
 
 char* ast_getStringResult()
 {
-  return getAstRoot()->currentStringValue;
+  return ast_root.currentStringValue;
 }
-
 
 BOOL ast_get_offset(JObject* pObject, int* pOffset)
 {
@@ -246,11 +236,11 @@ BOOL ast_get_offset(JObject* pObject, int* pOffset)
 
 int ast_create_array_on_top(char* name)
 {
-  if (ast_nb_object != 0)
+  if (ast_root.ast_nb_object != 0)
   {
     int offset;
     BOOL b;
-    b = ast_get_offset(ast_list[ast_nb_object - 1], &offset);
+    b = ast_get_offset(ast_root.ast_list[ast_root.ast_nb_object - 1], &offset);
     if (b)
     {
       ast_remove_last(TRUE);
@@ -268,8 +258,8 @@ int ast_create_array_on_top(char* name)
 int ast_create_function_args_from_top(void)
 {
   JObject* firstArgs;
-  ASSERT(ast_nb_object >= 1);
-  firstArgs = ast_list[ast_nb_object - 1];
+  ASSERT(ast_root.ast_nb_object >= 1);
+  firstArgs = ast_root.ast_list[ast_root.ast_nb_object - 1];
   ast_remove_last(FALSE); // top object will be inserted in JArgs object that's why not deleted
 
   JArgs* args = (JArgs*) JArgs_new();
@@ -281,11 +271,11 @@ int ast_create_function_args_from_top(void)
 int ast_insert_function_args()
 {
   JObject* arg;
-  ASSERT(ast_nb_object >= 2);
-  arg = ast_list[ast_nb_object - 1];
+  ASSERT(ast_root.ast_nb_object >= 2);
+  arg = ast_root.ast_list[ast_root.ast_nb_object - 1];
 
-  ASSERT(ast_list[ast_nb_object - 2]->type == J_FUNCTION_ARGS);
-  JArgs* args = (JArgs*) ast_list[ast_nb_object - 2];
+  ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 2]->type == J_FUNCTION_ARGS);
+  JArgs* args = (JArgs*) ast_root.ast_list[ast_root.ast_nb_object - 2];
   ast_remove_last(FALSE); // top object will be inserted in JArgs object that's why not deleted
 
   return JArgs_insert_args(args, arg);
@@ -299,10 +289,10 @@ int ast_do_operation(char mathOperation)
   int rc;
   rc = -1;
 
-  if (ast_nb_object >= 2)
+  if (ast_root.ast_nb_object >= 2)
   {
-    JObject* op1 = ast_list[ast_nb_object - 2];
-    JObject* op2 = ast_list[ast_nb_object - 1];
+    JObject* op1 = ast_root.ast_list[ast_root.ast_nb_object - 2];
+    JObject* op2 = ast_root.ast_list[ast_root.ast_nb_object - 1];
 
     JObject* result = JObject_doOperation(op1, op2, mathOperation);
     if (result != NULL)
@@ -390,45 +380,45 @@ int ast_dump_stack()
   unsigned int i;
 
   fprintf(stdout, "---------- begin ast stack\n");
-  fprintf(stdout, "nb item: %d\n", ast_nb_object);
-  for (i = 0; i < ast_nb_object; i++)
+  fprintf(stdout, "nb item: %d\n", ast_root.ast_nb_object);
+  for (i = 0; i < ast_root.ast_nb_object; i++)
   {
-    fprintf(stdout, "item[%d]: \"%s\" (%d)", i, ast_getTypeString(ast_list[i]->type), ast_list[i]->type);
-    switch (ast_list[i]->type)
+    fprintf(stdout, "item[%d]: \"%s\" (%d)", i, ast_getTypeString(ast_root.ast_list[i]->type), ast_root.ast_list[i]->type);
+    switch (ast_root.ast_list[i]->type)
     {
       case J_STR_CONSTANTE:
-        fprintf(stdout, ": \"%s\"\n", ((JStringConstante*) ast_list[i])->str_constant);
+        fprintf(stdout, ": \"%s\"\n", ((JStringConstante*) ast_root.ast_list[i])->str_constant);
         break;
 
       case J_INTEGER:
-        fprintf(stdout, ": \"%d\"\n", ((JInteger*) ast_list[i])->value);
+        fprintf(stdout, ": \"%d\"\n", ((JInteger*) ast_root.ast_list[i])->value);
         break;
 
       case J_DOUBLE:
-        fprintf(stdout, ": \"%f\"\n", ((JDouble*) ast_list[i])->value);
+        fprintf(stdout, ": \"%f\"\n", ((JDouble*) ast_root.ast_list[i])->value);
         break;
 
       case J_BOOLEAN:
-        fprintf(stdout, ": \"%d\"\n", ((JBoolean*) ast_list[i])->value);
+        fprintf(stdout, ": \"%d\"\n", ((JBoolean*) ast_root.ast_list[i])->value);
         break;
 
       case J_IDENTIFIER:
-        fprintf(stdout, ": \"%s\"\n", ((JIdentifier*) ast_list[i])->identifier);
+        fprintf(stdout, ": \"%s\"\n", ((JIdentifier*) ast_root.ast_list[i])->identifier);
         break;
 
       case J_ARRAY:
-        fprintf(stdout, ": \"%s\"\n", ((JArray*) ast_list[i])->identifier);
+        fprintf(stdout, ": \"%s\"\n", ((JArray*) ast_root.ast_list[i])->identifier);
         break;
 
       case J_FUNCTION_ARGS:
-        display_function_args((JArgs*) ast_list[i]);
+        display_function_args((JArgs*) ast_root.ast_list[i]);
         break;
 
       case J_FUNCTION:
-        if (((JFunction*) ast_list[i])->argList != NULL)
+        if (((JFunction*) ast_root.ast_list[i])->argList != NULL)
         {
           fprintf(stdout, "> Begin inner args:\n");
-          display_function_args(((JFunction*) ast_list[i])->argList);
+          display_function_args(((JFunction*) ast_root.ast_list[i])->argList);
           fprintf(stdout, "> End inner args\n");
         }
         else
@@ -445,11 +435,4 @@ int ast_dump_stack()
   fprintf(stdout, "---------- end ast stack\n");
   return 0;
 }
-
-
-
-
-
-
-
 
