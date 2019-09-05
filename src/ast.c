@@ -147,41 +147,63 @@ static void ast_remove_last(BOOL toDelete)
 }
 
 
-char* ast_convert_to_string()
+int ast_do_filtering()
 {
+  int rc;
   char* s;
   s = NULL;
-  if (ast_root.ast_nb_object != 0)
+  rc = -1;
+
+  if (ast_root.ast_nb_object >= 2)
   {
-    s = JObject_toString(ast_root.ast_list[ast_root.ast_nb_object - 1]);
-    ast_remove_last(TRUE);
-  }
-
-  ast_root.currentStringValue = s;
-  return s;
-}
-
-
-char* ast_apply_filtering()
-{
-  char* s;
-  s = NULL;
-  if (ast_root.ast_nb_object != 0)
-  {
-    ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FUNCTION);
+    s = JObject_toString(ast_root.ast_list[ast_root.ast_nb_object - 2]);
+    ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FUNCTION);//TODO check error instead ...
 
     JFunction* f = (JFunction*) ast_root.ast_list[ast_root.ast_nb_object - 1];
-    s = JFunction_execute(f, ast_root.currentStringValue);
-    ast_remove_last(TRUE);
+    if (s != NULL)
+    {
+      s = JFunction_execute(f, s);
+      if (s != NULL)
+      {
+        ast_remove_last(TRUE);
+        ast_remove_last(TRUE);
+        ast_insert(JStringConstante_new(s));
+        rc = 0;
+      }
+      else
+      {
+        rc = -1;
+      }
+    }
+    else
+    {
+      rc = -1;
+    }
+
   }
 
-  ast_root.currentStringValue = s;
-  return s;
+  return rc;
 }
 
 char* ast_getStringResult()
 {
-  return ast_root.currentStringValue;
+  char* s;
+  s = NULL;
+  if (ast_root.currentStringValue == NULL)
+  {
+    if (ast_root.ast_nb_object >= 1)
+    {
+      s = JObject_toString(ast_root.ast_list[ast_root.ast_nb_object - 1]);
+    }
+
+    ast_root.currentStringValue = s;
+  }
+  else
+  {
+    s = ast_root.currentStringValue ;
+  }
+
+  return s;
 }
 
 BOOL ast_get_offset(JObject* pObject, int* pOffset)

@@ -75,12 +75,13 @@ jinja_filtered_expr:
    postfix_expression { //convert id to string
                         dbg_print("postfix_expression string conversion...\n");
                         //ast_dump_stack();
-                        ast_convert_to_string();
+                        
                       }
   |
   jinja_filtered_expr '|' function_expression {
                                                 dbg_print("a jinja filtered expr\n"); 
-                                                ast_apply_filtering();
+                                                //ast_dump_stack();
+                                                ast_do_filtering();
                                               }
 
 postfix_expression:

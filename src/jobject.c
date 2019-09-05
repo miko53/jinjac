@@ -171,6 +171,7 @@ char* JObject_toString(JObject* pObject)
       break;
 
     default:
+      fprintf(stdout, "type =%d\n", type);
       ASSERT(FALSE);
       s = NULL;
       break;

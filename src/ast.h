@@ -22,7 +22,6 @@ extern int ast_do_operation(char mathOperation);
 
 extern int ast_dump_stack(void);
 
-extern char* ast_convert_to_string(void);
-extern char* ast_apply_filtering(void);
+extern int  ast_do_filtering(void);
 
 #endif /* _AST_H */
