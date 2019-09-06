@@ -81,7 +81,7 @@ jinja_filtered_expr:
   jinja_filtered_expr '|' function_expression {
                                                 dbg_print("a jinja filtered expr\n"); 
                                                 //ast_dump_stack();
-                                                ast_do_filtering();
+                                                ast_execute_function();
                                               }
 
 postfix_expression:

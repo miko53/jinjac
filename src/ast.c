@@ -147,7 +147,7 @@ static void ast_remove_last(BOOL toDelete)
 }
 
 
-int ast_do_filtering()
+int ast_execute_function()
 {
   int rc;
   JObject* pConcernedObject;
