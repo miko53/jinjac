@@ -8,6 +8,8 @@
 
 #define NEW(obj)  malloc(sizeof(obj))
 
+typedef char* (*buildin_fct)(char*, ...);
+
 typedef enum
 {
   INT,
@@ -18,7 +20,7 @@ typedef enum
 
 typedef struct
 {
-  filter_fct fct;
+  buildin_fct fct;
   const char* name;
   int nb_args;
   args_type args_type[NB_MAX_ARGS];
@@ -28,19 +30,20 @@ typedef struct
 
 fct_converter tab_fct_converter[] =
 {
-  { .fct = (filter_fct) capitalize, .name = "capitalize", .nb_args = 0 },
+  { .fct = (buildin_fct) capitalize, .name = "capitalize", .nb_args = 0 },
   {
-    .fct = (filter_fct) center, .name = "center", .nb_args = 1,
+    .fct = (buildin_fct) center, .name = "center", .nb_args = 1,
     .args_type = { INT},
     .args_default = { (void*) 80 }
   },
-  { .fct = (filter_fct) format, .name = "format", .nb_args = NB_MAX_ARGS },
-  { .fct = (filter_fct) lower, .name = "lower", .nb_args = 0 },
-  { .fct = (filter_fct) upper, .name = "upper", .nb_args = 0 },
-  { .fct = (filter_fct) title, .name = "title", .nb_args = 0 },
-  { .fct = (filter_fct) trim, .name = "trim", .nb_args = 0},
+  { .fct = (buildin_fct) format, .name = "format", .nb_args = NB_MAX_ARGS },
+  { .fct = (buildin_fct) lower, .name = "lower", .nb_args = 0 },
+  { .fct = (buildin_fct) upper, .name = "upper", .nb_args = 0 },
+  { .fct = (buildin_fct) upper, .name = "range", .nb_args = 0 },
+  { .fct = (buildin_fct) title, .name = "title", .nb_args = 0 },
+  { .fct = (buildin_fct) trim, .name = "trim", .nb_args = 0},
   {
-    .fct = (filter_fct) truncate, .name = "truncate", .nb_args = 4,
+    .fct = (buildin_fct) truncate, .name = "truncate", .nb_args = 4,
     .args_type = { INT, BOOLEAN, STRING, INT},
     .args_default = { (void*) 255,  (void*) FALSE, "...", 0 }
   },
@@ -385,13 +388,16 @@ void JObject_delete(JObject* pObject)
   free(pObject);
 }
 
-char* JFunction_execute(JFunction* f, char* currentStringValue)
+JObject* JFunction_execute(JFunction* f, char* currentStringValue)
 {
+  JObject* resultObject;
   char* s;
-  s = currentStringValue;
   fct_converter* fct_item;
-  fct_item = &tab_fct_converter[f->functionID];
 
+  resultObject = NULL;
+  s = currentStringValue;
+
+  fct_item = &tab_fct_converter[f->functionID];
   switch (f->functionID)
   {
     //function with no argument (except filtering string)
@@ -407,6 +413,7 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
       else
       {
         s = fct_item->fct(currentStringValue);
+        resultObject = JStringConstante_new(s);
       }
       break;
 
@@ -450,6 +457,7 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
         }
 
         s = fct_item->fct(currentStringValue, a[0], a[1], a[2], a[3]);
+        resultObject = JStringConstante_new(s);
 
         //dessallocate the allocated string argument after execution
         for (int i = 0; i < minNbArgs; i++)
@@ -507,6 +515,7 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
         }
 
         s = fct_item->fct(currentStringValue, a[0]);
+        resultObject = JStringConstante_new(s);
 
         //dessallocate the allocated string argument after execution
         for (int i = 0; i < minNbArgs; i++)
@@ -555,6 +564,7 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
         }
 
         s = format(currentStringValue, nbArgs, a, t);
+        resultObject = JStringConstante_new(s);
 
         //dessallocate the allocated string argument after execution
         for (int i = 0; i < nbArgs; i++)
@@ -572,12 +582,16 @@ char* JFunction_execute(JFunction* f, char* currentStringValue)
       }
       break;
 
+    case FCT_RANGE:
+      break;
+
     default:
       ASSERT(FALSE);
       break;
   }
 
-  return s;
+  //return s;
+  return resultObject;
 }
 
 int JArgs_insert_args(JArgs* obj, JObject* argToInsert)

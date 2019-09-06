@@ -162,12 +162,13 @@ int ast_do_filtering()
     JFunction* f = (JFunction*) ast_root.ast_list[ast_root.ast_nb_object - 1];
     if (s != NULL)
     {
-      s = JFunction_execute(f, s);
+      JObject* obj;
+      obj = JFunction_execute(f, s);
       if (s != NULL)
       {
         ast_remove_last(TRUE);
         ast_remove_last(TRUE);
-        ast_insert(JStringConstante_new(s));
+        ast_insert(obj);
         rc = 0;
       }
       else

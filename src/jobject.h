@@ -4,8 +4,6 @@
 #include "common.h"
 #include "parameter.h"
 
-typedef char* (*filter_fct)(char*, ...);
-
 typedef enum
 {
   J_STR_CONSTANTE,
@@ -76,6 +74,7 @@ typedef enum
   FCT_FORMAT,
   FCT_LOWER,
   FCT_UPPER,
+  FCT_RANGE,
   FCT_TITLE,
   FCT_TRIM,
   FCT_TRUNCATE
@@ -89,7 +88,7 @@ typedef struct
   JArgs* argList;
 } JFunction;
 
-
+//constructor
 extern JObject* JStringConstante_new(char* name);
 extern JObject* JIdentifier_new(char* name);
 extern JObject* JInteger_new(int i);
@@ -98,15 +97,16 @@ extern JObject* JBoolean_new(BOOL b);
 extern JObject* JFunction_new(char* fct);
 extern JObject* JArgs_new(void);
 extern JObject* JArray_new(char* name, int offset);
+
+//JObject
 extern char* JObject_toString(JObject* pObject);
 extern parameter_value JObject_getValue(JObject* pObject, parameter_type* pType);
 extern int JObject_toIntValue(JObject* obj);
-
 extern JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperation);
-
 extern void JObject_delete(JObject* pObject);
-extern char* JFunction_execute(JFunction* f, char* currentStringValue);
-extern int JArgs_insert_args(JArgs* obj, JObject* argToInsert);
 
+//JFunction
+extern JObject* JFunction_execute(JFunction* f, char* currentStringValue);
+extern int JArgs_insert_args(JArgs* obj, JObject* argToInsert);
 
 #endif /* JOBJECT_H */

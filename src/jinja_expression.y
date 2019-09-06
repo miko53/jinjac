@@ -144,19 +144,6 @@ multiplicative_expr:
                                                 ast_do_operation('/');  
                                              }
   
-  
-/*
-    IDENTIFIER  { dbg_print("1-a id '%s'\n", $1); ast_insert_identifier($1); ast_dump_stack();} 
-  | number_exp { dbg_print("an int '%d'\n", $1); ast_insert_integer($1); }
-  */
-  /*
-jinja_primary_expr:
-    IDENTIFIER  { 
-                  ast_insert_identifier($1);
-                }
-  |
-    jinja_constant*/
-
 jinja_primary_expr:
   IDENTIFIER  { 
                 ast_insert_identifier($1);
