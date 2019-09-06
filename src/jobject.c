@@ -387,15 +387,16 @@ void JObject_delete(JObject* pObject)
 
   free(pObject);
 }
-
-JObject* JFunction_execute(JFunction* f, char* currentStringValue)
+//char* currentStringValue)
+JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
 {
   JObject* resultObject;
   char* s;
   fct_converter* fct_item;
 
   resultObject = NULL;
-  s = currentStringValue;
+  s = NULL;
+  //s = currentStringValue;
 
   fct_item = &tab_fct_converter[f->functionID];
   switch (f->functionID)
@@ -412,8 +413,12 @@ JObject* JFunction_execute(JFunction* f, char* currentStringValue)
       }
       else
       {
-        s = fct_item->fct(currentStringValue);
-        resultObject = JStringConstante_new(s);
+        s = JObject_toString(pCurrentObject);
+        if (s != NULL)
+        {
+          s = fct_item->fct(s);
+          resultObject = JStringConstante_new(s);
+        }
       }
       break;
 
@@ -456,8 +461,12 @@ JObject* JFunction_execute(JFunction* f, char* currentStringValue)
           a[i] = fct_item->args_default[i];
         }
 
-        s = fct_item->fct(currentStringValue, a[0], a[1], a[2], a[3]);
-        resultObject = JStringConstante_new(s);
+        s = JObject_toString(pCurrentObject);
+        if (s != NULL)
+        {
+          s = fct_item->fct(s, a[0], a[1], a[2], a[3]);
+          resultObject = JStringConstante_new(s);
+        }
 
         //dessallocate the allocated string argument after execution
         for (int i = 0; i < minNbArgs; i++)
@@ -514,8 +523,12 @@ JObject* JFunction_execute(JFunction* f, char* currentStringValue)
           a[i] = fct_item->args_default[i];
         }
 
-        s = fct_item->fct(currentStringValue, a[0]);
-        resultObject = JStringConstante_new(s);
+        s = JObject_toString(pCurrentObject);
+        if (s != NULL)
+        {
+          s = fct_item->fct(s, a[0]);
+          resultObject = JStringConstante_new(s);
+        }
 
         //dessallocate the allocated string argument after execution
         for (int i = 0; i < minNbArgs; i++)
@@ -563,8 +576,12 @@ JObject* JFunction_execute(JFunction* f, char* currentStringValue)
           t[i] = TYPE_STRING;
         }
 
-        s = format(currentStringValue, nbArgs, a, t);
-        resultObject = JStringConstante_new(s);
+        s = JObject_toString(pCurrentObject);
+        if (s != NULL)
+        {
+          s = format(s, nbArgs, a, t);
+          resultObject = JStringConstante_new(s);
+        }
 
         //dessallocate the allocated string argument after execution
         for (int i = 0; i < nbArgs; i++)

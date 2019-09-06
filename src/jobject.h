@@ -106,7 +106,7 @@ extern JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperati
 extern void JObject_delete(JObject* pObject);
 
 //JFunction
-extern JObject* JFunction_execute(JFunction* f, char* currentStringValue);
+extern JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject);
 extern int JArgs_insert_args(JArgs* obj, JObject* argToInsert);
 
 #endif /* JOBJECT_H */

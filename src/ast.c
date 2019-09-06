@@ -150,37 +150,28 @@ static void ast_remove_last(BOOL toDelete)
 int ast_do_filtering()
 {
   int rc;
-  char* s;
-  s = NULL;
+  JObject* pConcernedObject;
   rc = -1;
 
   if (ast_root.ast_nb_object >= 2)
   {
-    s = JObject_toString(ast_root.ast_list[ast_root.ast_nb_object - 2]);
+    pConcernedObject = ast_root.ast_list[ast_root.ast_nb_object - 2];
     ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FUNCTION);//TODO check error instead ...
 
     JFunction* f = (JFunction*) ast_root.ast_list[ast_root.ast_nb_object - 1];
-    if (s != NULL)
+    JObject* obj;
+    obj = JFunction_execute(f, pConcernedObject);
+    if (obj != NULL)
     {
-      JObject* obj;
-      obj = JFunction_execute(f, s);
-      if (s != NULL)
-      {
-        ast_remove_last(TRUE);
-        ast_remove_last(TRUE);
-        ast_insert(obj);
-        rc = 0;
-      }
-      else
-      {
-        rc = -1;
-      }
+      ast_remove_last(TRUE);
+      ast_remove_last(TRUE);
+      ast_insert(obj);
+      rc = 0;
     }
     else
     {
       rc = -1;
     }
-
   }
 
   return rc;
