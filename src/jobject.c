@@ -39,7 +39,11 @@ fct_converter tab_fct_converter[] =
   { .fct = (buildin_fct) format, .name = "format", .nb_args = NB_MAX_ARGS },
   { .fct = (buildin_fct) lower, .name = "lower", .nb_args = 0 },
   { .fct = (buildin_fct) upper, .name = "upper", .nb_args = 0 },
-  { .fct = (buildin_fct) upper, .name = "range", .nb_args = 0 },
+  {
+    .fct = NULL, .name = "range", .nb_args = 3,
+    .args_type = { INT, INT, INT},
+    .args_default = { 0, 0, (void*) 1}
+  },
   { .fct = (buildin_fct) title, .name = "title", .nb_args = 0 },
   { .fct = (buildin_fct) trim, .name = "trim", .nb_args = 0},
   {
@@ -143,6 +147,27 @@ JObject* JArray_new(char* name, int offset)
   o->base.type = J_ARRAY;
   o->identifier = name;
   o->offset = offset;
+  return (JObject*) o;
+}
+
+JObject* JRange_new(JObject* objectToBeSequenced, int start, int stop, int step)
+{
+  JRange* o = NEW(JRange);
+  o->base.type = J_RANGE;
+  o->sequencedObject = objectToBeSequenced;
+  o->start = start;
+  o->stop = stop;
+  o->step = step;
+  o->currentIndex = start;
+  return (JObject*) o;
+}
+
+JObject* JFor_new(char* nameIdentifier, JRange* sequence)
+{
+  JFor* o = NEW(JFor);
+  o->base.type = J_FOR;
+  o->identifierOfIndex = nameIdentifier;
+  o->sequencing = sequence;
   return (JObject*) o;
 }
 
@@ -296,6 +321,11 @@ parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
       }
       break;
 
+    case J_FUNCTION:
+      fprintf(stdout, "a function can not be converted to value\n");
+      ASSERT(FALSE);
+      break;
+
     default:
       fprintf(stdout, "not yet implemented...(type = %d)\n", pObject->type);
       break;
@@ -379,6 +409,26 @@ void JObject_delete(JObject* pObject)
       }
       break;
 
+    case J_RANGE:
+      {
+        JRange* r = ((JRange*) pObject);
+        if (r->sequencedObject != NULL)
+        {
+          JObject_delete(r->sequencedObject);
+        }
+      }
+      break;
+
+    case J_FOR:
+      {
+        JFor* f = ((JFor*) pObject);
+        if (f->sequencing != NULL)
+        {
+          JObject_delete((JObject*) f->sequencing);
+        }
+      }
+      break;
+
     default:
       fprintf(stdout, "type = %d\n", pObject->type);
       ASSERT(FALSE);
@@ -387,7 +437,8 @@ void JObject_delete(JObject* pObject)
 
   free(pObject);
 }
-//char* currentStringValue)
+
+
 JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
 {
   JObject* resultObject;
@@ -600,6 +651,30 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
       break;
 
     case FCT_RANGE:
+      //give number of argument
+      {
+        int nbArgs = f->argList->nb_args;
+        switch (nbArgs)
+        {
+          case 0: // not possible error...
+            break;
+
+          case 1: //only range(stop)
+            resultObject = JRange_new(NULL, 0, JObject_toIntValue(f->argList->listArgs[0]), 1);
+            break;
+
+          case 2: //only range(start, stop)
+            resultObject = JRange_new(NULL, JObject_toIntValue(f->argList->listArgs[0]),
+                                      JObject_toIntValue(f->argList->listArgs[1]), 1);
+            break;
+
+          default:
+          case 3: // range (start, stop, step) ... extras args are ignored
+            resultObject = JRange_new(NULL, JObject_toIntValue(f->argList->listArgs[0]),
+                                      JObject_toIntValue(f->argList->listArgs[1]), JObject_toIntValue(f->argList->listArgs[2]));
+            break;
+        }
+      }
       break;
 
     default:

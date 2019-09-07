@@ -14,6 +14,5 @@ extern char* truncate(char* origin, unsigned int truncSize, BOOL killwords, char
 extern char* center(char* origin, unsigned int width);
 extern char* format(char* origin, int nbParameters, parameter_value* param, parameter_type* type);
 
-
 #endif /* BUILDIN_H */
 

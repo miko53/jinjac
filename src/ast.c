@@ -126,13 +126,17 @@ int ast_insert_function(char* fct)
 
 int ast_insert_array(char* name, int offset)
 {
-  JObject* o = JArray_new(name, offset);
+  int rc;
+  JObject* o;
+
+  rc = -1;
+  o = JArray_new(name, offset);
   if (o != NULL)
   {
-    return ast_insert(o);
+    rc = ast_insert(o);
   }
 
-  return -1;
+  return rc;
 }
 
 static void ast_remove_last(BOOL toDelete)
@@ -151,26 +155,33 @@ int ast_execute_function()
 {
   int rc;
   JObject* pConcernedObject;
+
+  pConcernedObject = NULL;
   rc = -1;
 
-  if (ast_root.ast_nb_object >= 2)
+  if (ast_root.ast_nb_object >= 1)
   {
-    pConcernedObject = ast_root.ast_list[ast_root.ast_nb_object - 2];
+    if (ast_root.ast_nb_object >= 2)
+    {
+      pConcernedObject = ast_root.ast_list[ast_root.ast_nb_object - 2];
+    }
+
     ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FUNCTION);//TODO check error instead ...
 
     JFunction* f = (JFunction*) ast_root.ast_list[ast_root.ast_nb_object - 1];
-    JObject* obj;
-    obj = JFunction_execute(f, pConcernedObject);
-    if (obj != NULL)
+    JObject* resultObj;
+
+    resultObj = JFunction_execute(f, pConcernedObject);
+    if (resultObj != NULL)
     {
+      if (pConcernedObject != NULL)
+      {
+        ast_remove_last(TRUE);
+      }
+
       ast_remove_last(TRUE);
-      ast_remove_last(TRUE);
-      ast_insert(obj);
+      ast_insert(resultObj);
       rc = 0;
-    }
-    else
-    {
-      rc = -1;
     }
   }
 
@@ -330,6 +341,28 @@ int ast_do_operation(char mathOperation)
 }
 
 
+int ast_create_for(char* identifierName)
+{
+  int rc;
+  JObject* o;
+  JObject* range;
+  rc = -1;
+
+  ASSERT(ast_root.ast_nb_object >= 1);
+  range = ast_root.ast_list[ast_root.ast_nb_object - 1];
+  ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type ==
+         J_RANGE); //TODO should be removed to put a J_RANGE conversion instead
+  ast_remove_last(FALSE); // top object will be inserted in JArgs object that's why not deleted
+
+  o = JFor_new(identifierName, (JRange*) range);
+  if (o != NULL)
+  {
+    rc = ast_insert(o);
+  }
+
+  return rc;
+}
+
 char* ast_getTypeString(jobject_type type)
 {
   char* s = NULL;
@@ -368,6 +401,14 @@ char* ast_getTypeString(jobject_type type)
       s = "Boolean";
       break;
 
+    case J_RANGE:
+      s = "Range";
+      break;
+
+    case J_FOR:
+      s = "For";
+      break;
+
     default:
       ASSERT(FALSE);
       break;
@@ -386,6 +427,14 @@ void display_function_args(JArgs* argsObj)
             ast_getTypeString(argsObj->listArgs[indexArgs]->type),
             argsObj->listArgs[indexArgs]->type);
   }
+}
+
+
+void display_range(JRange* range)
+{
+  fprintf(stdout, "> object associed (%p)\n", range->sequencedObject);
+  fprintf(stdout, "> current index (%d)\n", range->currentIndex);
+  fprintf(stdout, "> start (%d), stop (%d), step(%d)\n", range->start, range->stop, range->step);
 }
 
 
@@ -441,6 +490,11 @@ int ast_dump_stack()
         }
         break;
 
+      case J_FOR:
+        {
+          fprintf(stdout, ": iterator \"%s\"\n", ((JFor*) ast_root.ast_list[i])->identifierOfIndex);
+          display_range(((JFor*) ast_root.ast_list[i])->sequencing);
+        }
       default:
         break;
     }

@@ -14,6 +14,8 @@ typedef enum
   J_ARRAY,
   J_FUNCTION_ARGS,
   J_FUNCTION,
+  J_RANGE,
+  J_FOR
 } jobject_type;
 
 typedef struct
@@ -58,6 +60,23 @@ typedef struct
   int offset;
 } JArray;
 
+typedef struct
+{
+  JObject base;
+  JObject* sequencedObject;
+  int start;
+  int stop;
+  int step;
+  int currentIndex;
+} JRange;
+
+typedef struct
+{
+  JObject base;
+  char* identifierOfIndex;
+  JRange* sequencing;
+} JFor;
+
 #define NB_MAX_ARGS   (10)
 
 typedef struct
@@ -97,6 +116,7 @@ extern JObject* JBoolean_new(BOOL b);
 extern JObject* JFunction_new(char* fct);
 extern JObject* JArgs_new(void);
 extern JObject* JArray_new(char* name, int offset);
+extern JObject* JFor_new(char* nameIdentifier, JRange* sequence);
 
 //JObject
 extern char* JObject_toString(JObject* pObject);

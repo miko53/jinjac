@@ -55,7 +55,11 @@ jinja_stmt:
   | jinja_filtered_expr { dbg_print("a filtered expr\n");}
 
 jinja_for_stmt:
-  FOR IDENTIFIER IN jinja_filtered_expr { dbg_print(" a FOR statement\n"); }
+  FOR IDENTIFIER IN jinja_filtered_expr { 
+                                           dbg_print(" a FOR statement id %s \n", $2  );
+                                           ast_create_for($2);
+                                           ast_dump_stack();
+                                        }
 
 jinja_endfor_stmt:
   END_FOR { dbg_print("a ENDFOR stmt\n"); }
@@ -70,7 +74,11 @@ jinja_if_stmt:
   IF condition_expr { dbg_print("a IF statement\n"); }
   
 jinja_filtered_expr:
-  function_expression 
+  function_expression { 
+                         dbg_print("function expression...\n");
+                         ast_execute_function(); 
+                         //ast_dump_stack();
+                      }
   |
    postfix_expression { //convert id to string
                         dbg_print("postfix_expression string conversion...\n");
@@ -80,8 +88,8 @@ jinja_filtered_expr:
   |
   jinja_filtered_expr '|' function_expression {
                                                 dbg_print("a jinja filtered expr\n"); 
-                                                //ast_dump_stack();
                                                 ast_execute_function();
+                                                ast_dump_stack();
                                               }
 
 postfix_expression:

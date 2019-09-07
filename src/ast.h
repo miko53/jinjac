@@ -24,4 +24,6 @@ extern int ast_dump_stack(void);
 
 extern int ast_execute_function(void);
 
+extern int ast_create_for(char* identifierName);
+
 #endif /* _AST_H */
