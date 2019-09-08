@@ -19,7 +19,7 @@ extern int yylex_destroy(void);
 #define STATIC      static
 
 STATIC void parse_file(FILE* in, FILE* out);
-STATIC BOOL parse_string(char* string, FILE* out);
+STATIC BOOL parse_string(char* string, FILE* out, FILE* in);
 STATIC void create_example_parameter(void);
 STATIC void delete_example_parameter(void);
 
@@ -30,20 +30,29 @@ STATIC void parse_only_string_arg(char* string)
   ast_clean();
   fprintf(stdout, "parse only string = \"%s\"\n", string);
 
-  buffer = yy_scan_string ( string );
+  buffer = yy_scan_string (string);
   yyparse();
 
-  if ((!ast_getInError()) && (ast_getStringResult() != NULL))
+  ast_status parserStatus;
+
+  parserStatus = ast_getStatus();
+  switch (parserStatus)
   {
-    fprintf(stdout, "result: %s\n", ast_getStringResult());
-  }
-  else if (ast_getInError())
-  {
-    fprintf(stdout, "in Error\n");
-  }
-  else
-  {
-    fprintf(stdout, "empty string in result\n");
+    case OK_DONE:
+      fprintf(stdout, "result: \"%s\"\n", ast_getStringResult());
+      break;
+
+    case IN_ERROR:
+      fprintf(stdout, "in Error\n");
+      break;
+
+    case FOR_STATEMENT:
+      fprintf(stdout, "For stmt\n");
+      break;
+
+    default:
+      ASSERT(FALSE);
+      break;
   }
 
   yy_delete_buffer(buffer);
@@ -86,6 +95,8 @@ int main(int argc, char* argv[])
 
   create_example_parameter();
 
+  ast_init();
+
   if (test_string != NULL)
   {
     parse_only_string_arg(test_string);
@@ -126,6 +137,9 @@ int main(int argc, char* argv[])
   //   create_example_parameter();
 
   parse_file(in, out);
+
+  ast_clean();
+
   fclose(in);
   fclose(out);
 
@@ -258,7 +272,7 @@ STATIC void parse_file(FILE* in, FILE* out)
             char toParse[LINE_SIZE];
             strncpy(toParse, start, stop - start);
             toParse[stop - start - 1] = '\0'; //NOTE: -1 to remove previous char i.e }} or #}
-            bInError = parse_string(toParse, out);
+            bInError = parse_string(toParse, out, in);
             mode = COPY_MODE;
           }
           else
@@ -279,26 +293,66 @@ STATIC void parse_file(FILE* in, FILE* out)
 }
 
 
-STATIC BOOL parse_string(char* string, FILE* out)
+STATIC BOOL parse_string(char* string, FILE* out, FILE* in)
 {
   YY_BUFFER_STATE buffer;
-  BOOL inError;
+  ast_status parserStatus;
+  BOOL inError = FALSE;
 
-  ast_clean();
+  //ast_clean();//TODO
   fprintf(stdout, "parse = \"%s\"\n", string);
 
   buffer = yy_scan_string ( string );
   yyparse();
 
-  inError = ast_getInError();
-  if ((!inError) && (ast_getStringResult() != NULL))
+  parserStatus = ast_getStatus();
+  switch (parserStatus)
   {
-    fputs(ast_getStringResult(), out);
+    case OK_DONE:
+      fputs(ast_getStringResult(), out);
+      ast_removeLastResultItem();
+      break;
+
+    case FOR_STATEMENT:
+      fprintf(stdout, "FOR stmt\n");
+      ast_setBeginOfForStatement(ftell(in));
+      break;
+
+    case IN_ERROR:
+      fprintf(stdout, "parsing Error\n");
+      inError = TRUE;
+      break;
+
+    case END_FOR_STATEMENT:
+      {
+        long int returnOffset;
+        BOOL bOk;
+        bOk = ast_executeEndForStmt(&returnOffset);
+        if (bOk)
+        {
+          if (returnOffset != -1)
+          {
+            fseek(in, returnOffset, SEEK_SET);
+          }
+
+          ast_removeLastResultItem();
+        }
+        else
+        {
+          inError = TRUE;
+        }
+      }
+      break;
+
+    default:
+      ASSERT(FALSE);
+      break;
   }
+
+  ast_dump_stack();
 
   yy_delete_buffer(buffer);
   yylex_destroy();
-  ast_clean();
 
   return inError;
 }

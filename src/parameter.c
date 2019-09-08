@@ -126,6 +126,30 @@ parameter_value param_getValue(char* key)
   return v;
 }
 
+int update_parameter(char* key, parameter_value newValue)
+{
+  int rc;
+  int i;
+  rc = -1;
+  if (item_nb > 0)
+  {
+    //NOTE: loop done in inverse mode to allow to have index Name overloaded by the loop one
+    for (i = item_nb - 1; i >= 0; i--)
+    {
+      if (strcmp(key, item_array[i].key) == 0)
+      {
+        item_array[i].value = newValue;
+        rc = 0;
+        break;
+      }
+    }
+  }
+
+  fprintf(stdout, "parameter to update '%s' not found\n", key);
+  return rc;
+}
+
+
 
 BOOL param_array_getValue(char* key, int offset, parameter_value* v)
 {

@@ -15,7 +15,8 @@ typedef enum
   J_FUNCTION_ARGS,
   J_FUNCTION,
   J_RANGE,
-  J_FOR
+  J_FOR,
+  J_END_FOR
 } jobject_type;
 
 typedef struct
@@ -75,7 +76,14 @@ typedef struct
   JObject base;
   char* identifierOfIndex;
   JRange* sequencing;
+  long startOffset;
 } JFor;
+
+
+typedef struct
+{
+  JObject base;
+} JEndFor;
 
 #define NB_MAX_ARGS   (10)
 
@@ -117,6 +125,7 @@ extern JObject* JFunction_new(char* fct);
 extern JObject* JArgs_new(void);
 extern JObject* JArray_new(char* name, int offset);
 extern JObject* JFor_new(char* nameIdentifier, JRange* sequence);
+extern JObject* JEndFor_new(void);
 
 //JObject
 extern char* JObject_toString(JObject* pObject);
@@ -128,5 +137,12 @@ extern void JObject_delete(JObject* pObject);
 //JFunction
 extern JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject);
 extern int JArgs_insert_args(JArgs* obj, JObject* argToInsert);
+
+//JFor
+extern int JFor_setStartPoint(JFor* obj, long offset);
+extern int JFor_createIndexParameter(JFor* obj);
+
+//JRange
+extern BOOL JRange_step(JRange* obj, char* indexIdentifierName);
 
 #endif /* JOBJECT_H */

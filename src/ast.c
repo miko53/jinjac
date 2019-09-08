@@ -20,6 +20,17 @@ static ast ast_root;
 
 static void ast_remove_last(BOOL toDelete);
 
+void ast_removeLastResultItem(void)
+{
+  ast_remove_last(TRUE);
+}
+
+
+void ast_init()
+{
+  ast_clean();
+}
+
 void ast_clean()
 {
   ast_root.inError = FALSE;
@@ -43,10 +54,61 @@ void ast_setInError(char* errorString)
   ast_root.inError = TRUE;
 }
 
+ast_status ast_getStatus(void)
+{
+  BOOL inError;
+  ast_status status;
+  inError = ast_root.inError;
+
+  status = IN_ERROR;
+  if (!inError)
+  {
+    if (ast_root.ast_nb_object >= 1)
+    {
+      JObject* top = ast_root.ast_list[ast_root.ast_nb_object - 1];
+      switch (top->type)
+      {
+        case J_FOR:
+          status = FOR_STATEMENT;
+          break;
+
+        case J_END_FOR:
+          status = END_FOR_STATEMENT;
+          break;
+
+        default:
+          status = OK_DONE;
+          break;
+      }
+    }
+  }
+
+  return status;
+}
+
+
 BOOL ast_getInError(void)
 {
   return ast_root.inError;
 }
+
+BOOL ast_setBeginOfForStatement(long offset)
+{
+  BOOL bOk;
+  bOk = FALSE;
+  if (ast_root.ast_nb_object >= 1)
+  {
+    JObject* top = ast_root.ast_list[ast_root.ast_nb_object - 1];
+    if (top->type == J_FOR)
+    {
+      JFor_setStartPoint((JFor*) top, offset);
+      bOk = TRUE;
+    }
+  }
+
+  return bOk;
+}
+
 
 
 int ast_insert(JObject* o)
@@ -192,18 +254,16 @@ char* ast_getStringResult()
 {
   char* s;
   s = NULL;
-  if (ast_root.currentStringValue == NULL)
+  if (ast_root.currentStringValue != NULL)
   {
-    if (ast_root.ast_nb_object >= 1)
-    {
-      s = JObject_toString(ast_root.ast_list[ast_root.ast_nb_object - 1]);
-    }
-
-    ast_root.currentStringValue = s;
+    free(ast_root.currentStringValue);
+    ast_root.currentStringValue = NULL;
   }
-  else
+
+  if (ast_root.ast_nb_object >= 1)
   {
-    s = ast_root.currentStringValue ;
+    s = JObject_toString(ast_root.ast_list[ast_root.ast_nb_object - 1]);
+    ast_root.currentStringValue = s;
   }
 
   return s;
@@ -341,7 +401,7 @@ int ast_do_operation(char mathOperation)
 }
 
 
-int ast_create_for(char* identifierName)
+int ast_create_for_stmt(char* identifierName)
 {
   int rc;
   JObject* o;
@@ -350,11 +410,29 @@ int ast_create_for(char* identifierName)
 
   ASSERT(ast_root.ast_nb_object >= 1);
   range = ast_root.ast_list[ast_root.ast_nb_object - 1];
-  ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type ==
-         J_RANGE); //TODO should be removed to put a J_RANGE conversion instead
+
+  //TODO should be removed to put a J_RANGE conversion instead
+  ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_RANGE);
   ast_remove_last(FALSE); // top object will be inserted in JArgs object that's why not deleted
 
   o = JFor_new(identifierName, (JRange*) range);
+  if (o != NULL)
+  {
+    JFor_createIndexParameter((JFor*) o);
+    rc = ast_insert(o);
+  }
+
+  return rc;
+}
+
+
+int ast_create_end_for_stmt()
+{
+  int rc;
+  JObject* o;
+  rc = -1;
+
+  o = JEndFor_new();
   if (o != NULL)
   {
     rc = ast_insert(o);
@@ -362,6 +440,36 @@ int ast_create_for(char* identifierName)
 
   return rc;
 }
+
+BOOL ast_executeEndForStmt(long* returnOffset)
+{
+  BOOL bOK;
+  bOK = FALSE;
+  ASSERT(returnOffset != NULL);
+
+  if (ast_root.ast_nb_object >= 2)
+  {
+    JObject* o = ast_root.ast_list[ast_root.ast_nb_object - 2];
+    if (o->type == J_FOR)
+    {
+      JFor* pForStmt = (JFor*) o;
+      BOOL isDone;
+      isDone = JRange_step(pForStmt->sequencing, pForStmt->identifierOfIndex);
+      if (isDone)
+      {
+        *returnOffset = -1;
+      }
+      else
+      {
+        *returnOffset = pForStmt->startOffset;
+      }
+      bOK = TRUE;
+    }
+  }
+
+  return bOK;
+}
+
 
 char* ast_getTypeString(jobject_type type)
 {
@@ -407,6 +515,10 @@ char* ast_getTypeString(jobject_type type)
 
     case J_FOR:
       s = "For";
+      break;
+
+    case J_END_FOR:
+      s = "End For";
       break;
 
     default:
@@ -492,9 +604,15 @@ int ast_dump_stack()
 
       case J_FOR:
         {
-          fprintf(stdout, ": iterator \"%s\"\n", ((JFor*) ast_root.ast_list[i])->identifierOfIndex);
+          fprintf(stdout, ": iterator \"%s\" return Point %ld\n",
+                  ((JFor*) ast_root.ast_list[i])->identifierOfIndex,
+                  ((JFor*) ast_root.ast_list[i])->startOffset);
           display_range(((JFor*) ast_root.ast_list[i])->sequencing);
         }
+
+      case J_END_FOR:
+        break;
+
       default:
         break;
     }

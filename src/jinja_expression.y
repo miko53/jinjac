@@ -15,9 +15,9 @@
   
   void yyerror(const char *s);
   
-  #define stop_in_error(errorNb)   \
+  #define stop_in_error(errorString)   \
                             do { \
-                              ast_setInError(errorNb); \
+                              ast_setInError(errorString); \
                               YYABORT; \
                             } while (0);
 
@@ -57,12 +57,15 @@ jinja_stmt:
 jinja_for_stmt:
   FOR IDENTIFIER IN jinja_filtered_expr { 
                                            dbg_print(" a FOR statement id %s \n", $2  );
-                                           ast_create_for($2);
-                                           ast_dump_stack();
+                                           ast_create_for_stmt($2);
+                                           //ast_dump_stack();
                                         }
 
 jinja_endfor_stmt:
-  END_FOR { dbg_print("a ENDFOR stmt\n"); }
+  END_FOR {
+            dbg_print("a ENDFOR stmt\n"); 
+            ast_create_end_for_stmt();
+          }
 
 jinja_endif_stmt:
   END_IF { dbg_print("a ENDIF stmt\n"); }
@@ -89,7 +92,7 @@ jinja_filtered_expr:
   jinja_filtered_expr '|' function_expression {
                                                 dbg_print("a jinja filtered expr\n"); 
                                                 ast_execute_function();
-                                                ast_dump_stack();
+                                                //ast_dump_stack();
                                               }
 
 postfix_expression:

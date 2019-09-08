@@ -171,6 +171,62 @@ JObject* JFor_new(char* nameIdentifier, JRange* sequence)
   return (JObject*) o;
 }
 
+JObject* JEndFor_new(void)
+{
+  JEndFor* o = NEW(JEndFor);
+  o->base.type = J_END_FOR;
+  return (JObject*) o;
+}
+
+int JFor_setStartPoint(JFor* obj, long offset)
+{
+  obj->startOffset = offset;
+  return 0;
+}
+
+int JFor_createIndexParameter(JFor* obj)
+{
+  JRange* seq = obj->sequencing;
+
+  if (seq->sequencedObject == NULL) //default is INT
+  {
+    insert_parameter(obj->identifierOfIndex, TYPE_INT, (parameter_value) seq->currentIndex);
+  }
+  else
+  {
+    ASSERT(FALSE);  //TODO
+  }
+
+  return 0;
+}
+
+BOOL JRange_step(JRange* obj, char* indexIdentifierName)
+{
+  BOOL isDone;
+  isDone = FALSE;
+  ASSERT(obj != NULL);
+  ASSERT(indexIdentifierName != NULL);
+
+  if (obj->sequencedObject == NULL)
+  {
+    obj->currentIndex += obj->step;
+    if (obj->currentIndex >= obj->stop)
+    {
+      isDone = TRUE;
+    }
+
+    update_parameter(indexIdentifierName, (parameter_value) obj->currentIndex);
+  }
+  else
+  {
+    ASSERT(FALSE);  //TODO
+  }
+
+  return isDone;
+}
+
+
+
 char* JObject_toString(JObject* pObject)
 {
   parameter_value v;
@@ -268,7 +324,7 @@ parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
           default:
             ast_setInError("UNKOWN IDENTIFIER");
             fprintf(stdout, "unknown '%s' identifier\n", pIdent->identifier);
-            ASSERT(FALSE);
+            ASSERT(FALSE); //TODO better management this kind of error can happened
             break;
         }
         if (pType)
@@ -379,6 +435,7 @@ void JObject_delete(JObject* pObject)
     case J_INTEGER:
     case J_DOUBLE:
     case J_BOOLEAN:
+    case J_END_FOR:
       //do nothing
       break;
 
@@ -426,6 +483,7 @@ void JObject_delete(JObject* pObject)
         {
           JObject_delete((JObject*) f->sequencing);
         }
+        free(f->identifierOfIndex);
       }
       break;
 
@@ -841,4 +899,5 @@ JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperation)
 
   return pObjResult;
 }
+
 
