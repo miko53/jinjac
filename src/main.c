@@ -186,41 +186,49 @@ STATIC void parse_file(FILE* in, FILE* out)
   ASSERT(out != NULL);
 
   //first parsing level detect {%, {{ on one line
-  char line[LINE_SIZE];
-  line[LINE_SIZE - 1] = '\0';
   BOOL bInError = FALSE;
+  char current;
+  char previous;
   int mode;
 
   no_line = 0;
+  mode = COPY_MODE;
+  char bufferJinja[LINE_SIZE];
+  int bufferIndex = 0;
 
-  while ((fgets(line, LINE_SIZE - 1, in) != NULL) && !bInError)
+  previous = '\0';
+  current = fgetc(in);
+
+  while (!feof(in) && !bInError)
   {
-    //parse line
-    char* current;
-    char* start = NULL;
-    char* stop = NULL;
-    current = line;
-    mode = COPY_MODE;
-    no_line++;
-
-    while ((*current != '\0') && !bInError)
+    if (current == '\n')
+    {
+      no_line++;
+      //clear buffer
+      bufferIndex = 0;
+      if (mode != COPY_MODE)
+      {
+        bInError = TRUE;
+      }
+      fputc(current, out);
+    }
+    else
     {
       switch (mode)
       {
         case COPY_MODE:
-          if (*current == '{')
+          if (current == '{')
           {
             mode = DETECTION_START_DELIMITER;
           }
           else
           {
-            fputc(*current, out);
+            fputc(current, out);
           }
           break;
 
         case DETECTION_START_DELIMITER:
-          start = current + 1;
-          switch (*current)
+          switch (current)
           {
             case '%':
               mode = IN_TEMPLATE_SCRIPT;
@@ -236,14 +244,15 @@ STATIC void parse_file(FILE* in, FILE* out)
 
             default:
               mode = COPY_MODE;
-              fputc(*current, out);
-              start = NULL;
+              fputc(previous, out);
+              fputc(current, out);
+              bufferIndex = 0;
               break;
           }
           break;
 
         case IN_TEMPLATE_SCRIPT:
-          switch (*current)
+          switch (current)
           {
             case '%':
               mode = DETECTION_STOP_DELIMITER;
@@ -259,24 +268,25 @@ STATIC void parse_file(FILE* in, FILE* out)
 
             default:
               // no change of state
+              bufferJinja[bufferIndex++] = current;
               break;
           }
           break;
 
         case DETECTION_STOP_DELIMITER:
-          if (*current == '}')
+          if (current == '}')
           {
             mode = DETECTION_START_DELIMITER;
-            stop = current;
             //launch parsing
-            char toParse[LINE_SIZE];
-            strncpy(toParse, start, stop - start);
-            toParse[stop - start - 1] = '\0'; //NOTE: -1 to remove previous char i.e }} or #}
-            bInError = parse_string(toParse, out, in);
+            bufferJinja[bufferIndex++] = '\0';
+            bInError = parse_string(bufferJinja, out, in);
             mode = COPY_MODE;
+            bufferIndex = 0;
           }
           else
           {
+            bufferJinja[bufferIndex++] = previous;
+            bufferJinja[bufferIndex++] = current;
             mode = IN_TEMPLATE_SCRIPT;
           }
           break;
@@ -286,9 +296,10 @@ STATIC void parse_file(FILE* in, FILE* out)
           break;
 
       }
-
-      current++;
     }
+
+    previous = current;
+    current = fgetc(in);
   }
 }
 
