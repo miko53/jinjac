@@ -134,8 +134,6 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
 
-  //   create_example_parameter();
-
   parse_file(in, out);
 
   ast_clean();
