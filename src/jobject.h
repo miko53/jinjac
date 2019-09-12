@@ -133,6 +133,7 @@ extern parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
 extern int JObject_toIntValue(JObject* obj);
 extern JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperation);
 extern void JObject_delete(JObject* pObject);
+extern JRange* JObject_toRange(JObject* pObject);
 
 //JFunction
 extern JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject);

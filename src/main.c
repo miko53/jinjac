@@ -156,6 +156,7 @@ STATIC void create_example_parameter(void)
   insert_array_parameter("data_value", TYPE_INT, 3, 10, 20, 15);
   insert_array_parameter("data_value_dbl", TYPE_DOUBLE, 4, 0.586, 10.45, 159.546, 3.145561);
   insert_array_parameter("data_value_str", TYPE_STRING, 3, "DES", "GTRV", "AADDEGG");
+  insert_array_parameter("users", TYPE_STRING, 3, "dana", "bob", "john");
 }
 
 STATIC void delete_example_parameter(void)
@@ -308,7 +309,6 @@ STATIC BOOL parse_string(char* string, FILE* out, FILE* in)
   ast_status parserStatus;
   BOOL inError = FALSE;
 
-  //ast_clean();//TODO
   fprintf(stdout, "parse = \"%s\"\n", string);
 
   buffer = yy_scan_string ( string );

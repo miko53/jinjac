@@ -138,7 +138,18 @@ int update_parameter(char* key, parameter_value newValue)
     {
       if (strcmp(key, item_array[i].key) == 0)
       {
-        item_array[i].value = newValue;
+        if (item_array[i].type == TYPE_STRING)
+        {
+          if (item_array[i].value.type_string != NULL)
+          {
+            free(item_array[i].value.type_string);
+          }
+          item_array[i].value.type_string = strdup(newValue.type_string);
+        }
+        else
+        {
+          item_array[i].value = newValue;
+        }
         rc = 0;
         break;
       }
@@ -217,6 +228,23 @@ parameter_type param_getType(char* key)
     }
   }
   return TYPE_UNKOWN;
+}
+
+BOOL param_isArray(char* key, int* nbItem)
+{
+  int i;
+  ASSERT(key != NULL);
+  ASSERT(nbItem != NULL);
+
+  for (i = 0; i < item_nb; i++)
+  {
+    if (strcmp(key, item_array[i].key) == 0)
+    {
+      *nbItem = item_array[i].arrayMaxValue;
+      return item_array[i].isArray;
+    }
+  }
+  return FALSE;
 }
 
 

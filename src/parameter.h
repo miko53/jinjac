@@ -25,6 +25,7 @@ extern int update_parameter(char* key, parameter_value newValue);
 
 extern parameter_value param_getValue(char* key);
 extern parameter_type param_getType(char* key);
+extern BOOL param_isArray(char* key, int* nbItem);
 
 extern BOOL param_array_getValue(char* key, int offset, parameter_value* v);
 extern void param_delete_all();

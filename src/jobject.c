@@ -186,7 +186,9 @@ int JFor_setStartPoint(JFor* obj, long offset)
 
 int JFor_createIndexParameter(JFor* obj)
 {
+  int rc;
   JRange* seq = obj->sequencing;
+  rc = 0;
 
   if (seq->sequencedObject == NULL) //default is INT
   {
@@ -194,10 +196,41 @@ int JFor_createIndexParameter(JFor* obj)
   }
   else
   {
-    ASSERT(FALSE);  //TODO
+    parameter_type paramType;
+    parameter_value paramValue;
+    BOOL isArray;
+    int nbItems;
+
+    switch (seq->sequencedObject->type)
+    {
+      case J_IDENTIFIER:
+        isArray = param_isArray(((JIdentifier*)seq->sequencedObject)->identifier, &nbItems);
+        if (isArray)
+        {
+          obj->sequencing->stop = nbItems;
+          paramType = param_getType(((JArray*)seq->sequencedObject)->identifier);
+          ASSERT(paramType != TYPE_UNKOWN);
+          param_array_getValue(((JArray*) seq->sequencedObject)->identifier, seq->currentIndex, &paramValue);
+          insert_parameter(obj->identifierOfIndex, paramType, paramValue);
+        }
+        else
+        {
+          fprintf(stdout, "can't convert %s into range\n", ((JIdentifier*) seq->sequencedObject)->identifier);
+          rc = -1;
+        }
+
+        break;
+
+
+      default:
+        fprintf(stdout, "type = %d\n", seq->sequencedObject->type);
+        rc = -1;
+        ASSERT(FALSE);  //TODO
+        break;
+    }
   }
 
-  return 0;
+  return rc;
 }
 
 BOOL JRange_step(JRange* obj, char* indexIdentifierName)
@@ -219,7 +252,26 @@ BOOL JRange_step(JRange* obj, char* indexIdentifierName)
   }
   else
   {
-    ASSERT(FALSE);  //TODO
+    obj->currentIndex++;
+    if (obj->currentIndex >= obj->stop)
+    {
+      isDone = TRUE;
+    }
+    else
+    {
+      parameter_value paramValue;
+      switch (obj->sequencedObject->type)
+      {
+        case J_IDENTIFIER:
+          param_array_getValue(((JIdentifier*) obj->sequencedObject)->identifier, obj->currentIndex, &paramValue);
+          update_parameter(indexIdentifierName, paramValue);
+          break;
+
+        default:
+          ASSERT(FALSE);  //TODO
+          break;
+      }
+    }
   }
 
   return isDone;
@@ -389,6 +441,17 @@ parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
 
   return s;
 }
+
+JRange* JObject_toRange(JObject* pObject)
+{
+  ASSERT(pObject != NULL);
+  JRange* jRange;
+
+  jRange = (JRange*) JRange_new(pObject, 0, 1, 1);
+
+  return jRange;
+}
+
 
 int JObject_toIntValue(JObject* obj)
 {

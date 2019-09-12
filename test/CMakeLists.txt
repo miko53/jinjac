@@ -26,7 +26,8 @@ set(TEST_LIST
   "test_14" ;
   "test_15" ;
   "test_16" ;
-  "test_17" 
+  "test_17" ;
+  "test_18"
   )
   
 set(TEST_TITLE 
@@ -47,7 +48,8 @@ set(TEST_TITLE
   "format_buildins_error_mngt" ;
   "argument_of_function_with_identifier_and_array" ;
   "argument_of_function_with_operation" ;
-  "simple_for_statement"
+  "simple_for_statement" ;
+  "for_with_array" 
   )
   
 set(INDEX 0)

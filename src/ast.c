@@ -405,20 +405,27 @@ int ast_create_for_stmt(char* identifierName)
 {
   int rc;
   JObject* o;
-  JObject* range;
+  JRange* range;
   rc = -1;
 
   ASSERT(ast_root.ast_nb_object >= 1);
-  range = ast_root.ast_list[ast_root.ast_nb_object - 1];
 
   //TODO should be removed to put a J_RANGE conversion instead
-  ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_RANGE);
-  ast_remove_last(FALSE); // top object will be inserted in JArgs object that's why not deleted
+  if (ast_root.ast_list[ast_root.ast_nb_object - 1]->type != J_RANGE)
+  {
+    range = JObject_toRange(ast_root.ast_list[ast_root.ast_nb_object - 1]);
+  }
+  else
+  {
+    range = (JRange*) ast_root.ast_list[ast_root.ast_nb_object - 1];
+  }
 
-  o = JFor_new(identifierName, (JRange*) range);
+  ast_remove_last(FALSE); // top object will be inserted in JFor object that's why not deleted
+
+  o = JFor_new(identifierName, range);
   if (o != NULL)
   {
-    JFor_createIndexParameter((JFor*) o);
+    JFor_createIndexParameter((JFor*) o); //TODO rc a prendre en compte
     rc = ast_insert(o);
   }
 
