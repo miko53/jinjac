@@ -16,7 +16,6 @@ extern int yylex_destroy(void);
 
 
 #define LINE_SIZE   (1024)
-#define STATIC      static
 
 STATIC void parse_file(FILE* in, FILE* out);
 STATIC BOOL parse_string(char* string, FILE* out, FILE* in);
@@ -168,7 +167,8 @@ enum parse_file_mode
 {
   COPY_MODE,
   DETECTION_START_DELIMITER,
-  IN_TEMPLATE_SCRIPT,
+  IN_JINJA_SCRIPT,
+  IN_JINJA_SCRIPT_STRING,
   DETECTION_STOP_DELIMITER
 };
 
@@ -188,6 +188,7 @@ STATIC void parse_file(FILE* in, FILE* out)
   BOOL bInError = FALSE;
   char current;
   char previous;
+  char stringChar;
   int mode;
 
   no_line = 0;
@@ -230,15 +231,15 @@ STATIC void parse_file(FILE* in, FILE* out)
           switch (current)
           {
             case '%':
-              mode = IN_TEMPLATE_SCRIPT;
+              mode = IN_JINJA_SCRIPT;
               break;
 
             case '{':
-              mode = IN_TEMPLATE_SCRIPT;
+              mode = IN_JINJA_SCRIPT;
               break;
 
             case '#':
-              mode = IN_TEMPLATE_SCRIPT;
+              mode = IN_JINJA_SCRIPT;
               break;
 
             default:
@@ -250,7 +251,7 @@ STATIC void parse_file(FILE* in, FILE* out)
           }
           break;
 
-        case IN_TEMPLATE_SCRIPT:
+        case IN_JINJA_SCRIPT:
           switch (current)
           {
             case '%':
@@ -265,11 +266,29 @@ STATIC void parse_file(FILE* in, FILE* out)
               mode = DETECTION_STOP_DELIMITER;
               break;
 
+            case '\'':
+            case '\"':
+              stringChar = current;
+              bufferJinja[bufferIndex++] = current;
+              mode = IN_JINJA_SCRIPT_STRING;
+              break;
+
+              break;
+
             default:
               // no change of state
               bufferJinja[bufferIndex++] = current;
               break;
           }
+          break;
+
+        case IN_JINJA_SCRIPT_STRING:
+          if (current == stringChar)
+          {
+            mode = IN_JINJA_SCRIPT;
+          }
+
+          bufferJinja[bufferIndex++] = current;
           break;
 
         case DETECTION_STOP_DELIMITER:
@@ -286,7 +305,7 @@ STATIC void parse_file(FILE* in, FILE* out)
           {
             bufferJinja[bufferIndex++] = previous;
             bufferJinja[bufferIndex++] = current;
-            mode = IN_TEMPLATE_SCRIPT;
+            mode = IN_JINJA_SCRIPT;
           }
           break;
 

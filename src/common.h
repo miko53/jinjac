@@ -14,6 +14,7 @@
 
 typedef enum { FALSE, TRUE } BOOL;
 #define ASSERT      assert
+#define STATIC      static
 
 
 #endif /* COMMON */
