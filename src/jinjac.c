@@ -16,9 +16,20 @@ extern int yylex_destroy(void);
 
 
 #define LINE_SIZE   (1024)
+typedef enum
+{
+  IN_TEXTE,
+  DETECTION_START_DELIMITER,
+  IN_JINJA_SCRIPT,
+  IN_JINJA_SCRIPT_STRING,
+  DETECTION_STOP_DELIMITER
+} parse_file_mode;
 
-STATIC void parse_file(FILE* in, FILE* out);
-STATIC BOOL parse_string(char* string, FILE* out, FILE* in);
+STATIC int no_line;
+
+
+STATIC void jinjac_parse_file(FILE* in, FILE* out);
+STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreNextLine);
 STATIC void create_example_parameter(void);
 STATIC void delete_example_parameter(void);
 
@@ -133,7 +144,7 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
 
-  parse_file(in, out);
+  jinjac_parse_file(in, out);
 
   ast_clean();
 
@@ -163,36 +174,27 @@ STATIC void delete_example_parameter(void)
   param_delete_all();
 }
 
-enum parse_file_mode
-{
-  COPY_MODE,
-  DETECTION_START_DELIMITER,
-  IN_JINJA_SCRIPT,
-  IN_JINJA_SCRIPT_STRING,
-  DETECTION_STOP_DELIMITER
-};
-
-static int no_line;
 
 int getLine(void)
 {
   return no_line;
 }
 
-STATIC void parse_file(FILE* in, FILE* out)
+STATIC void jinjac_parse_file(FILE* in, FILE* out)
 {
   ASSERT(in != NULL);
   ASSERT(out != NULL);
 
   //first parsing level detect {%, {{ on one line
   BOOL bInError = FALSE;
+  BOOL bIgnoreLine = FALSE;
   char current;
   char previous;
   char stringChar;
-  int mode;
+  parse_file_mode mode;
 
   no_line = 0;
-  mode = COPY_MODE;
+  mode = IN_TEXTE;
   char bufferJinja[LINE_SIZE];
   int bufferIndex = 0;
 
@@ -206,24 +208,30 @@ STATIC void parse_file(FILE* in, FILE* out)
       no_line++;
       //clear buffer
       bufferIndex = 0;
-      if (mode != COPY_MODE)
+      if (mode != IN_TEXTE)
       {
         bInError = TRUE;
       }
-      fputc(current, out);
+      if (!bIgnoreLine)
+      {
+        fputc(current, out);
+      }
     }
     else
     {
       switch (mode)
       {
-        case COPY_MODE:
+        case IN_TEXTE:
           if (current == '{')
           {
             mode = DETECTION_START_DELIMITER;
           }
           else
           {
-            fputc(current, out);
+            if (!bIgnoreLine)
+            {
+              fputc(current, out);
+            }
           }
           break;
 
@@ -235,7 +243,14 @@ STATIC void parse_file(FILE* in, FILE* out)
               break;
 
             case '{':
-              mode = IN_JINJA_SCRIPT;
+              if (bIgnoreLine)
+              {
+                mode = IN_TEXTE;
+              }
+              else
+              {
+                mode = IN_JINJA_SCRIPT;
+              }
               break;
 
             case '#':
@@ -243,7 +258,7 @@ STATIC void parse_file(FILE* in, FILE* out)
               break;
 
             default:
-              mode = COPY_MODE;
+              mode = IN_TEXTE;
               fputc(previous, out);
               fputc(current, out);
               bufferIndex = 0;
@@ -297,8 +312,8 @@ STATIC void parse_file(FILE* in, FILE* out)
             mode = DETECTION_START_DELIMITER;
             //launch parsing
             bufferJinja[bufferIndex++] = '\0';
-            bInError = parse_string(bufferJinja, out, in);
-            mode = COPY_MODE;
+            bInError = jinjac_parse_string(bufferJinja, out, in, &bIgnoreLine);
+            mode = IN_TEXTE;
             bufferIndex = 0;
           }
           else
@@ -322,11 +337,18 @@ STATIC void parse_file(FILE* in, FILE* out)
 }
 
 
-STATIC BOOL parse_string(char* string, FILE* out, FILE* in)
+STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreNextLine)
 {
   YY_BUFFER_STATE buffer;
   ast_status parserStatus;
-  BOOL inError = FALSE;
+  BOOL inError;
+
+  ASSERT(string != NULL);
+  ASSERT(out != NULL);
+  ASSERT(ignoreNextLine != NULL);
+
+  inError = FALSE;
+  *ignoreNextLine = FALSE;
 
   fprintf(stdout, "parse = \"%s\"\n", string);
 
@@ -344,6 +366,7 @@ STATIC BOOL parse_string(char* string, FILE* out, FILE* in)
     case FOR_STATEMENT:
       fprintf(stdout, "FOR stmt\n");
       ast_setBeginOfForStatement(ftell(in));
+      *ignoreNextLine = ast_forStmtIsLineToBeIgnored();
       break;
 
     case IN_ERROR:

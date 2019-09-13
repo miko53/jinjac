@@ -233,6 +233,21 @@ int JFor_createIndexParameter(JFor* obj)
   return rc;
 }
 
+BOOL JFor_isDone(JFor* obj)
+{
+  JRange* r = obj->sequencing;
+  BOOL bDone;
+  bDone = FALSE;
+
+  if (r->currentIndex >= r->stop)
+  {
+    bDone = TRUE;
+  }
+
+  return bDone;
+}
+
+
 BOOL JRange_step(JRange* obj, char* indexIdentifierName)
 {
   BOOL isDone;

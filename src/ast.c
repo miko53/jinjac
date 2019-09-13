@@ -432,6 +432,19 @@ int ast_create_for_stmt(char* identifierName)
   return rc;
 }
 
+BOOL ast_forStmtIsLineToBeIgnored()
+{
+  ASSERT(ast_root.ast_nb_object >= 1);
+  ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FOR);
+  BOOL bLineNeedToBeIgnored;
+
+  JFor* pFor = (JFor*) (ast_root.ast_list[ast_root.ast_nb_object - 1]);
+
+  bLineNeedToBeIgnored = JFor_isDone(pFor);
+
+  return bLineNeedToBeIgnored;
+}
+
 
 int ast_create_end_for_stmt()
 {

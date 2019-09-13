@@ -41,6 +41,6 @@ extern int ast_create_for_stmt(char* identifierName);
 extern BOOL ast_setBeginOfForStatement(long offset);
 extern int ast_create_end_for_stmt(void);
 extern BOOL ast_executeEndForStmt(long int* returnOffset);
-
+extern BOOL ast_forStmtIsLineToBeIgnored();
 
 #endif /* _AST_H */

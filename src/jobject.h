@@ -142,7 +142,7 @@ extern int JArgs_insert_args(JArgs* obj, JObject* argToInsert);
 //JFor
 extern int JFor_setStartPoint(JFor* obj, long offset);
 extern int JFor_createIndexParameter(JFor* obj);
-
+extern BOOL JFor_isDone(JFor* obj);
 //JRange
 extern BOOL JRange_step(JRange* obj, char* indexIdentifierName);
 
