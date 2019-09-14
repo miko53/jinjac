@@ -19,9 +19,10 @@ typedef enum
   J_END_FOR
 } jobject_type;
 
-typedef struct
+typedef struct JObjects
 {
   jobject_type type;
+  void (*delete)(struct JObjects* o);
 } JObject;
 
 typedef struct

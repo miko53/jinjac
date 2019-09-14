@@ -71,19 +71,39 @@ static int getFunctionID(char* fctName)
   return -1;
 }
 
+void JObject_delete(JObject* pObject)
+{
+  if (pObject->delete != NULL)
+  {
+    pObject->delete (pObject);
+  }
+  free(pObject);
+}
+
+void JStringConstante_delete(JObject* o)
+{
+  free (((JStringConstante*) o)->str_constant);
+}
 
 JObject* JStringConstante_new(char* name)
 {
   JStringConstante* o = NEW(JStringConstante);
   o->base.type = J_STR_CONSTANTE;
+  o->base.delete = JStringConstante_delete;
   o->str_constant = name;
   return (JObject*) o;
+}
+
+void JIdentifier_delete(JObject* o)
+{
+  free (((JIdentifier*) o)->identifier);
 }
 
 JObject* JIdentifier_new(char* name)
 {
   JIdentifier* o = NEW(JIdentifier);
   o->base.type = J_IDENTIFIER;
+  o->base.delete = JIdentifier_delete;
   o->identifier = name;
   return (JObject*) o;
 }
@@ -93,6 +113,7 @@ JObject* JInteger_new(int i)
 {
   JInteger* o = NEW(JInteger);
   o->base.type = J_INTEGER;
+  o->base.delete = NULL;
   o->value = i;
   return (JObject*) o;
 }
@@ -101,6 +122,7 @@ JObject* JDouble_new(double d)
 {
   JDouble* o = NEW(JDouble);
   o->base.type = J_DOUBLE;
+  o->base.delete = NULL;
   o->value = d;
   return (JObject*) o;
 }
@@ -109,10 +131,19 @@ JObject* JBoolean_new(BOOL b)
 {
   JBoolean* o = NEW(JBoolean);
   o->base.type = J_BOOLEAN;
+  o->base.delete = NULL;
   o->value = b;
   return (JObject*) o;
 }
 
+void JFunction_delete(JObject* pObject)
+{
+  JFunction* fct = ((JFunction*) pObject);
+  if (fct->argList != NULL)
+  {
+    JObject_delete((JObject*) fct->argList);
+  }
+}
 
 JObject* JFunction_new(char* fct)
 {
@@ -121,6 +152,7 @@ JObject* JFunction_new(char* fct)
   {
     JFunction* o = NEW(JFunction);
     o->base.type = J_FUNCTION;
+    o->base.delete = JFunction_delete;
     o->argList = NULL;
     o->functionID = functionID;
     return (JObject*) o;
@@ -133,27 +165,58 @@ JObject* JFunction_new(char* fct)
   return NULL;
 }
 
+void JArgs_delete(JObject* pObject)
+{
+  JArgs* args = ((JArgs*) pObject);
+  int i;
+  for (i = 0; i < args->nb_args; i++)
+  {
+    JObject_delete(args->listArgs[i]);
+    args->listArgs[i] = NULL;
+  }
+  args->nb_args = 0;
+
+}
+
 JObject* JArgs_new(void)
 {
   JArgs* o = NEW(JArgs);
   o->base.type = J_FUNCTION_ARGS;
+  o->base.delete = JArgs_delete;
   o->nb_args = 0;
   return (JObject*) o;
+}
+
+void JArray_delete(JObject* pObject)
+{
+  free (((JArray*) pObject)->identifier);
 }
 
 JObject* JArray_new(char* name, int offset)
 {
   JArray* o = NEW(JArray);
   o->base.type = J_ARRAY;
+  o->base.delete = JArray_delete;
   o->identifier = name;
   o->offset = offset;
   return (JObject*) o;
+}
+
+void JRange_delete(JObject* pObject)
+{
+  JRange* r = ((JRange*) pObject);
+  if (r->sequencedObject != NULL)
+  {
+    JObject_delete(r->sequencedObject);
+  }
+
 }
 
 JObject* JRange_new(JObject* objectToBeSequenced, int start, int stop, int step)
 {
   JRange* o = NEW(JRange);
   o->base.type = J_RANGE;
+  o->base.delete = JRange_delete;
   o->sequencedObject = objectToBeSequenced;
   o->start = start;
   o->stop = stop;
@@ -162,10 +225,22 @@ JObject* JRange_new(JObject* objectToBeSequenced, int start, int stop, int step)
   return (JObject*) o;
 }
 
+void JFor_delete(JObject* pObject)
+{
+  JFor* f = ((JFor*) pObject);
+  if (f->sequencing != NULL)
+  {
+    JObject_delete((JObject*) f->sequencing);
+  }
+  free(f->identifierOfIndex);
+}
+
+
 JObject* JFor_new(char* nameIdentifier, JRange* sequence)
 {
   JFor* o = NEW(JFor);
   o->base.type = J_FOR;
+  o->base.delete = JFor_delete;
   o->identifierOfIndex = nameIdentifier;
   o->sequencing = sequence;
   return (JObject*) o;
@@ -175,6 +250,7 @@ JObject* JEndFor_new(void)
 {
   JEndFor* o = NEW(JEndFor);
   o->base.type = J_END_FOR;
+  o->base.delete = NULL;
   return (JObject*) o;
 }
 
@@ -498,81 +574,7 @@ int JObject_toIntValue(JObject* obj)
   return r;
 }
 
-void JObject_delete(JObject* pObject)
-{
-  switch (pObject->type)
-  {
-    case J_STR_CONSTANTE:
-      free (((JStringConstante*) pObject)->str_constant);
-      break;
 
-    case J_IDENTIFIER:
-      free (((JIdentifier*) pObject)->identifier);
-      break;
-
-    case J_INTEGER:
-    case J_DOUBLE:
-    case J_BOOLEAN:
-    case J_END_FOR:
-      //do nothing
-      break;
-
-    case J_FUNCTION:
-      {
-        JFunction* fct = ((JFunction*) pObject);
-        if (fct->argList != NULL)
-        {
-          JObject_delete((JObject*) fct->argList);
-        }
-      }
-      break;
-
-    case J_ARRAY:
-      free (((JArray*) pObject)->identifier);
-      break;
-
-    case J_FUNCTION_ARGS:
-      {
-        JArgs* args = ((JArgs*) pObject);
-        int i;
-        for (i = 0; i < args->nb_args; i++)
-        {
-          JObject_delete(args->listArgs[i]);
-          args->listArgs[i] = NULL;
-        }
-        args->nb_args = 0;
-      }
-      break;
-
-    case J_RANGE:
-      {
-        JRange* r = ((JRange*) pObject);
-        if (r->sequencedObject != NULL)
-        {
-          JObject_delete(r->sequencedObject);
-        }
-      }
-      break;
-
-    case J_FOR:
-      {
-        JFor* f = ((JFor*) pObject);
-        if (f->sequencing != NULL)
-        {
-          JObject_delete((JObject*) f->sequencing);
-        }
-        free(f->identifierOfIndex);
-      }
-      break;
-
-    default:
-      fprintf(stdout, "type = %d\n", pObject->type);
-      ASSERT(FALSE);
-      break;
-  }
-
-  free(pObject);
-}
 
 
 JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
