@@ -23,6 +23,7 @@ typedef struct JObjects
 {
   jobject_type type;
   void (*delete)(struct JObjects* o);
+  BOOL (*getValue)(struct JObjects* pObject, parameter* param);
 } JObject;
 
 typedef struct

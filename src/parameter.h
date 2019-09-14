@@ -8,7 +8,6 @@ typedef enum
   TYPE_STRING,
   TYPE_INT,
   TYPE_DOUBLE,
-  TYPE_UNKOWN
 } parameter_type;
 
 typedef union
