@@ -371,110 +371,90 @@ BOOL JRange_step(JRange* obj, char* indexIdentifierName)
 
 char* JObject_toString(JObject* pObject)
 {
-  parameter_value v;
-  parameter_type type;
+  parameter param;
+  BOOL bOk;
   char* s;
+  s = NULL;
 
-  v = JObject_getValue(pObject, &type);
-  switch (type)
+  bOk = JObject_getValue(pObject, &param);
+  if (bOk)
   {
-    case TYPE_STRING:
-      s = v.type_string;
-      break;
+    switch (param.type)
+    {
+      case TYPE_STRING:
+        s = param.value.type_string;
+        break;
 
-    case TYPE_DOUBLE:
-      s = doubleToStr(v.type_double);
-      break;
+      case TYPE_DOUBLE:
+        s = doubleToStr(param.value.type_double);
+        break;
 
-    case TYPE_INT:
-      s = intToStr(v.type_int);
-      break;
+      case TYPE_INT:
+        s = intToStr(param.value.type_int);
+        break;
 
-    case TYPE_UNKOWN:
-      fprintf(stdout, "can't convert to string, unknown type error\n");
-      ast_setInError("TYPE UNKOWN1");
-      s = NULL;
-      break;
+      case TYPE_UNKOWN:
+        fprintf(stdout, "can't convert to string, unknown type error\n");
+        ast_setInError("TYPE UNKOWN1");
+        s = NULL;
+        break;
 
-    default:
-      fprintf(stdout, "type =%d\n", type);
-      ASSERT(FALSE);
-      s = NULL;
-      break;
+      default:
+        fprintf(stdout, "type =%d\n", param.type);
+        ASSERT(FALSE);
+        s = NULL;
+        break;
+    }
   }
 
   return s;
 }
 
-
-parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
+BOOL JObject_getValue(JObject* pObject, parameter* param)
 {
   ASSERT(pObject != NULL);
-  parameter_value s;
-  s.type_string = NULL;
+  ASSERT(param != NULL);
+  BOOL bOk;
+  bOk = TRUE;
 
   switch (pObject->type)
   {
     case J_STR_CONSTANTE:
-      s.type_string = strdup(((JStringConstante*) pObject)->str_constant);
-      if (pType)
-      {
-        *pType = TYPE_STRING;
-      }
+      param->value.type_string = strdup(((JStringConstante*) pObject)->str_constant);
+      param->type = TYPE_STRING;
       break;
 
     case J_BOOLEAN:
-      s.type_int = ((JBoolean*) pObject)->value;
-      if (pType)
-      {
-        *pType = TYPE_INT;
-      }
+      param->value.type_int = ((JBoolean*) pObject)->value;
+      param->type = TYPE_INT;
       break;
 
     case J_INTEGER:
-      s.type_int = (((JInteger*) pObject)->value);
-      if (pType)
-      {
-        *pType = TYPE_INT;
-      }
+      param->value.type_int = (((JInteger*) pObject)->value);
+      param->type = TYPE_INT;
       break;
 
     case J_DOUBLE:
-      s.type_double = (((JDouble*) pObject)->value);
-      if (pType)
-      {
-        *pType = TYPE_DOUBLE;
-      }
+      param->value.type_double = (((JDouble*) pObject)->value);
+      param->type = TYPE_DOUBLE;
       break;
 
     case J_IDENTIFIER:
       {
         JIdentifier* pIdent;
         pIdent = (JIdentifier*) pObject;
-        parameter param;
-        BOOL bFounded;
-
-        bFounded = parameter_get(pIdent->identifier, &param);
-        if (!bFounded)
+        bOk = parameter_get(pIdent->identifier, param);
+        if (!bOk)
         {
           ast_setInError("UNKOWN IDENTIFIER");
           fprintf(stdout, "unknown '%s' identifier\n", pIdent->identifier);
         }
         else
         {
-          if (param.type == TYPE_STRING)
+          if (param->type == TYPE_STRING)
           {
-            s.type_string = strdup((char*) param.value.type_string);
+            param->value.type_string = strdup(param->value.type_string);
           }
-          else
-          {
-            s = param.value;
-          }
-        }
-
-        if (pType)
-        {
-          *pType = param.type;
         }
       }
       break;
@@ -483,42 +463,15 @@ parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
       {
         JArray* pArray;
         pArray = (JArray*) pObject;
-        BOOL bOk;
-        parameter param;
-        bOk = parameter_array_getProperties(pArray->identifier, &param.type, NULL);
-        bOk = parameter_array_getValue(pArray->identifier, pArray->offset, &param.value);
+        bOk = parameter_array_getProperties(pArray->identifier, &param->type, NULL);
+        bOk = parameter_array_getValue(pArray->identifier, pArray->offset, &param->value);
         if (bOk)
         {
-          switch (param.type)
+          if (param->type == TYPE_STRING)
           {
-            case TYPE_STRING:
-              s.type_string = strdup((char*) param.value.type_string);
-              break;
-
-            case TYPE_DOUBLE:
-            case TYPE_INT:
-              s = param.value;
-              break;
-
-            default:
-              ast_setInError("UNKOWN ARRAY");
-              fprintf(stdout, "unknown '%s' array\n", pArray->identifier);
-              ASSERT(FALSE);
-              break;
-          }
-          if (pType)
-          {
-            *pType = param.type;
+            param->value.type_string = strdup(param->value.type_string);
           }
         }
-        else
-        {
-          if (pType)
-          {
-            *pType = TYPE_UNKOWN;
-          }
-        }
-
       }
       break;
 
@@ -532,7 +485,7 @@ parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
       break;
   }
 
-  return s;
+  return bOk;
 }
 
 JRange* JObject_toRange(JObject* pObject)
@@ -545,38 +498,38 @@ JRange* JObject_toRange(JObject* pObject)
   return jRange;
 }
 
-
-int JObject_toIntValue(JObject* obj)
+int JObject_toInteger(JObject* obj)
 {
   ASSERT(obj != NULL);
-  parameter_type type;
-  parameter_value value = JObject_getValue(obj, &type);
+  parameter param;
+  BOOL bOk;
   int r;
   r = 0;
 
-  switch (type)
-  {
-    case TYPE_STRING:
-    case TYPE_UNKOWN:
-      //do nothing
-      break;
+  bOk = JObject_getValue(obj, &param);
+  if (bOk)
+    switch (param.type)
+    {
+      case TYPE_STRING:
+      case TYPE_UNKOWN:
+        //do nothing
+        break;
 
-    case TYPE_DOUBLE:
-      r = (int) value.type_double;
-      break;
+      case TYPE_DOUBLE:
+        r = (int) param.value.type_double;
+        break;
 
-    case TYPE_INT:
-      r = value.type_int;
-      break;
+      case TYPE_INT:
+        r = param.value.type_int;
+        break;
 
-    default:
-      ASSERT(FALSE);
-      break;
-  }
+      default:
+        ASSERT(FALSE);
+        break;
+    }
+
   return r;
 }
-
-
 
 
 JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
@@ -633,7 +586,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
 
             case INT:
             case BOOLEAN:
-              a[i] = (void*) (long) JObject_toIntValue(f->argList->listArgs[i]);
+              a[i] = (void*) (long) JObject_toInteger(f->argList->listArgs[i]);
               break;
 
             case STRING:
@@ -695,7 +648,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
 
             case INT:
             case BOOLEAN:
-              a[i] = (void*) (long) JObject_toIntValue(f->argList->listArgs[i]);
+              a[i] = (void*) (long) JObject_toInteger(f->argList->listArgs[i]);
               break;
 
             case STRING:
@@ -754,11 +707,11 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
 
         for (int i = 0; i < nbArgs; i++)
         {
-          parameter_value v;
-          parameter_type type;
-          v = JObject_getValue(f->argList->listArgs[i], &type);
-          a[i] = v;
-          t[i] = type;
+          parameter param;
+          BOOL bOk;
+          bOk = JObject_getValue(f->argList->listArgs[i], &param);
+          a[i] = param.value;
+          t[i] = param.type;
         }
 
         for (int i = nbArgs; i < NB_MAX_ARGS; i++)
@@ -800,18 +753,18 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
             break;
 
           case 1: //only range(stop)
-            resultObject = JRange_new(NULL, 0, JObject_toIntValue(f->argList->listArgs[0]), 1);
+            resultObject = JRange_new(NULL, 0, JObject_toInteger(f->argList->listArgs[0]), 1);
             break;
 
           case 2: //only range(start, stop)
-            resultObject = JRange_new(NULL, JObject_toIntValue(f->argList->listArgs[0]),
-                                      JObject_toIntValue(f->argList->listArgs[1]), 1);
+            resultObject = JRange_new(NULL, JObject_toInteger(f->argList->listArgs[0]),
+                                      JObject_toInteger(f->argList->listArgs[1]), 1);
             break;
 
           default:
           case 3: // range (start, stop, step) ... extras args are ignored
-            resultObject = JRange_new(NULL, JObject_toIntValue(f->argList->listArgs[0]),
-                                      JObject_toIntValue(f->argList->listArgs[1]), JObject_toIntValue(f->argList->listArgs[2]));
+            resultObject = JRange_new(NULL, JObject_toInteger(f->argList->listArgs[0]),
+                                      JObject_toInteger(f->argList->listArgs[1]), JObject_toInteger(f->argList->listArgs[2]));
             break;
         }
       }
@@ -909,65 +862,66 @@ JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperation)
   BOOL bOk;
 
   //object for mathematical can'not be string.
-  parameter_value valueOp1;
-  parameter_type  typeOp1;
-  parameter_value valueOp2;
-  parameter_type  typeOp2;
+  parameter paramOp1;
+  parameter paramOp2;
 
-  valueOp1 = JObject_getValue(op1, &typeOp1);
-  valueOp2 = JObject_getValue(op2, &typeOp2);
-
-  bOk = isTypeOkForCalcul(typeOp1);
+  bOk = JObject_getValue(op1, &paramOp1);
   if (bOk)
   {
-    bOk = isTypeOkForCalcul(typeOp2);
+    JObject_getValue(op2, &paramOp2);
+  }
+
+  bOk = isTypeOkForCalcul(paramOp1.type);
+  if (bOk)
+  {
+    bOk = isTypeOkForCalcul(paramOp2.type);
   }
   else
   {
-    if (valueOp1.type_string != NULL) //NOTE: TYPE_UNKOWN return a string NULL which can't be freed
+    if (paramOp1.value.type_string != NULL) //NOTE: TYPE_UNKOWN return a string NULL which can't be freed
     {
-      free(valueOp1.type_string);
+      free(paramOp1.value.type_string);
     }
   }
 
   if (!bOk)
   {
-    if (valueOp2.type_string != NULL) //NOTE: TYPE_UNKOWN return a string NULL which can't be freed
+    if (paramOp2.value.type_string != NULL) //NOTE: TYPE_UNKOWN return a string NULL which can't be freed
     {
-      free(valueOp2.type_string);
+      free(paramOp2.value.type_string);
     }
 
     ast_setInError("Can't do calcul wrong operande type");
   }
   else
   {
-    int s = select_operation(typeOp1, typeOp2);
+    int s = select_operation(paramOp1.type, paramOp2.type);
     switch (s)
     {
       case OPERATION_DDD:
         {
-          double r = calcul_ddd(valueOp1.type_double, valueOp2.type_double, mathOperation);
+          double r = calcul_ddd(paramOp1.value.type_double, paramOp2.value.type_double, mathOperation);
           pObjResult = JDouble_new(r);
         }
         break;
 
       case OPERATION_DID:
         {
-          double r = calcul_did(valueOp1.type_double, valueOp2.type_int, mathOperation);
+          double r = calcul_did(paramOp1.value.type_double, paramOp2.value.type_int, mathOperation);
           pObjResult = JDouble_new(r);
         }
         break;
 
       case OPERATION_IDD:
         {
-          double r = calcul_idd(valueOp1.type_int, valueOp2.type_double, mathOperation);
+          double r = calcul_idd(paramOp1.value.type_int, paramOp2.value.type_double, mathOperation);
           pObjResult = JDouble_new(r);
         }
         break;
 
       case OPERATION_III:
         {
-          int r = calcul_iii(valueOp1.type_int, valueOp2.type_int, mathOperation);
+          int r = calcul_iii(paramOp1.value.type_int, paramOp2.value.type_int, mathOperation);
           pObjResult = JInteger_new(r);
         }
         break;

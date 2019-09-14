@@ -130,8 +130,9 @@ extern JObject* JEndFor_new(void);
 
 //JObject
 extern char* JObject_toString(JObject* pObject);
-extern parameter_value JObject_getValue(JObject* pObject, parameter_type* pType);
-extern int JObject_toIntValue(JObject* obj);
+extern BOOL JObject_getValue(JObject* pObject, parameter* param);
+
+extern int JObject_toInteger(JObject* obj);
 extern JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperation);
 extern void JObject_delete(JObject* pObject);
 extern JRange* JObject_toRange(JObject* pObject);
