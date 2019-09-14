@@ -3,6 +3,10 @@
 
 #include "common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum
 {
   TYPE_STRING,
@@ -36,6 +40,10 @@ extern int parameter_update(char* key, parameter_value newValue);
 extern int parameter_array_insert(char* key, parameter_type type, int nbValue, ...);
 extern BOOL parameter_array_getProperties(char* key, parameter_type* type, int* nbItem);
 extern BOOL parameter_array_getValue(char* key, int offset, parameter_value* v);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _PARAMETER_H */
 

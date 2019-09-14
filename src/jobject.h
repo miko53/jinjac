@@ -1,8 +1,12 @@
-#ifndef JOBJECT_H
-#define JOBJECT_H
+#ifndef _JOBJECT_H
+#define _JOBJECT_H
 
 #include "common.h"
 #include "parameter.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef enum
 {
@@ -116,4 +120,8 @@ extern BOOL JFor_isDone(JFor* obj);
 extern JObject* JRange_new(JObject* objectToBeSequenced, int start, int stop, int step);
 extern BOOL JRange_step(JRange* obj, char* indexIdentifierName);
 
-#endif /* JOBJECT_H */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _JOBJECT_H */

@@ -1,7 +1,11 @@
-#ifndef COMMON
-#define COMMON
+#ifndef _COMMON_H
+#define _COMMON_H
 
 #include <assert.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define DBG_PRINT
 
@@ -17,5 +21,8 @@ typedef enum { FALSE, TRUE } BOOL;
 #define STATIC      static
 #define NEW(obj)    malloc(sizeof(obj))
 
+#ifdef __cplusplus
+}
+#endif
 
-#endif /* COMMON */
+#endif /* _COMMON_H */

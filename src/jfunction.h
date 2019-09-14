@@ -3,6 +3,10 @@
 
 #include "jobject.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum
 {
   FCT_CAPITALIZE,
@@ -37,6 +41,8 @@ typedef struct
 extern JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject);
 extern int JArgs_insert_args(JArgs* obj, JObject* argToInsert);
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _JFUNCTION_H */

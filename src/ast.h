@@ -3,6 +3,10 @@
 
 #include "common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum
 {
   IN_ERROR = -1,
@@ -42,5 +46,9 @@ extern BOOL ast_setBeginOfForStatement(long offset);
 extern int ast_create_end_for_stmt(void);
 extern BOOL ast_executeEndForStmt(long int* returnOffset);
 extern BOOL ast_forStmtIsLineToBeIgnored();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _AST_H */
