@@ -55,7 +55,7 @@ int parameter_insert(char* key, parameter* param)
   switch (param->type)
   {
     case TYPE_STRING:
-      assert(param->value.type_string != NULL);
+      ASSERT(param->value.type_string != NULL);
       break;
     default:
       break;
@@ -89,7 +89,7 @@ int parameter_insert(char* key, parameter* param)
   return status;
 }
 
-static void add_param_in_array(char* key, parameter_type type, parameter_value value)
+STATIC void add_param_in_array(char* key, parameter_type type, parameter_value value)
 {
   item_array[item_nb].key = strdup(key);
   item_array[item_nb].type = type;
@@ -252,7 +252,7 @@ BOOL parameter_array_getProperties(char* key, parameter_type* type, int* nbItem)
 
 int parameter_array_insert(char* key, parameter_type type, int nbValue, ...)
 {
-  assert(key != NULL);
+  ASSERT(key != NULL);
   va_list valist;
 
   va_start(valist, nbValue);

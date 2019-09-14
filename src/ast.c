@@ -5,6 +5,7 @@
 #include "common.h"
 #include "buildin.h"
 #include "jobject.h"
+#include "jfunction.h"
 
 #define MAX_OBJECT (50)
 
@@ -16,9 +17,9 @@ typedef struct
   JObject* ast_list[MAX_OBJECT];
 } ast;
 
-static ast ast_root;
+STATIC ast ast_root;
 
-static void ast_remove_last(BOOL toDelete);
+STATIC void ast_remove_last(BOOL toDelete);
 
 void ast_removeLastResultItem(void)
 {
@@ -201,7 +202,7 @@ int ast_insert_array(char* name, int offset)
   return rc;
 }
 
-static void ast_remove_last(BOOL toDelete)
+STATIC void ast_remove_last(BOOL toDelete)
 {
   if (toDelete)
   {
@@ -273,57 +274,10 @@ BOOL ast_get_offset(JObject* pObject, int* pOffset)
 {
   ASSERT(pObject != NULL);
   ASSERT(pOffset != NULL);
-  BOOL  b;
-  b = FALSE;
 
-  switch (pObject->type)
-  {
-    case J_IDENTIFIER:
-      {
-        JIdentifier* pIdent;
-        pIdent = (JIdentifier*) pObject;
-        parameter param;
-        BOOL bFounded;
-        bFounded = parameter_get(pIdent->identifier, &param);
-        if (!bFounded)
-        {
-          fprintf(stdout, "error: identifier '%s' not founded\n", pIdent->identifier);
-          *pOffset = 0;
-        }
-        else
-        {
-          if (param.type == TYPE_INT)
-          {
-            *pOffset = param.value.type_int;
-            b = TRUE;
-          }
-          else
-          {
-            fprintf(stdout, "error: param '%s' can't be convert to integer\n", pIdent->identifier);
-          }
-        }
-      }
-
-      break;
-
-    case J_INTEGER:
-      *pOffset = ((JInteger*) pObject)->value;
-      b = TRUE;
-      break;
-
-    default:
-      fprintf(stdout, "this object can't give offset array\n");
-      break;
-  }
-
-  if (b)
-  {
-    fprintf(stdout, "offset of array is %d\n", *pOffset);
-  }
-
-  return b;
+  *pOffset = JObject_toInteger(pObject);
+  return TRUE;
 }
-
 
 int ast_create_array_on_top(char* name)
 {

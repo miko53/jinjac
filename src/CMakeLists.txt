@@ -13,5 +13,12 @@ endif()
 
 ADD_FLEX_BISON_DEPENDENCY(JinjacFlex JinjacBison)
 
-add_executable(jinja_expression ast.c jinjac.c parameter.c convert.c buildin.c jobject.c str_obj.c ${BISON_JinjacBison_OUTPUTS} ${FLEX_JinjacFlex_OUTPUTS})
+set(SRCS_JINJAC
+      ast.c jinjac.c parameter.c 
+      convert.c buildin.c jobject.c 
+      jfunction.c str_obj.c
+      ${BISON_JinjacBison_OUTPUTS} ${FLEX_JinjacFlex_OUTPUTS}
+  )
+
+add_executable(jinja_expression ${SRCS_JINJAC} )
 target_link_libraries(jinja_expression fl)

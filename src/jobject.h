@@ -87,36 +87,6 @@ typedef struct
   JObject base;
 } JEndFor;
 
-#define NB_MAX_ARGS   (10)
-
-typedef struct
-{
-  JObject base;
-  JObject* listArgs[NB_MAX_ARGS];
-  int nb_args;
-} JArgs;
-
-typedef enum
-{
-  FCT_CAPITALIZE,
-  FCT_CENTER,
-  FCT_FORMAT,
-  FCT_LOWER,
-  FCT_UPPER,
-  FCT_RANGE,
-  FCT_TITLE,
-  FCT_TRIM,
-  FCT_TRUNCATE
-} fct_id;
-
-
-typedef struct
-{
-  JObject base;
-  fct_id functionID;
-  JArgs* argList;
-} JFunction;
-
 //constructor
 extern JObject* JStringConstante_new(char* name);
 extern JObject* JIdentifier_new(char* name);
@@ -132,21 +102,18 @@ extern JObject* JEndFor_new(void);
 //JObject
 extern char* JObject_toString(JObject* pObject);
 extern BOOL JObject_getValue(JObject* pObject, parameter* param);
-
 extern int JObject_toInteger(JObject* obj);
 extern JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperation);
 extern void JObject_delete(JObject* pObject);
 extern JRange* JObject_toRange(JObject* pObject);
 
-//JFunction
-extern JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject);
-extern int JArgs_insert_args(JArgs* obj, JObject* argToInsert);
-
 //JFor
 extern int JFor_setStartPoint(JFor* obj, long offset);
 extern int JFor_createIndexParameter(JFor* obj);
 extern BOOL JFor_isDone(JFor* obj);
+
 //JRange
+extern JObject* JRange_new(JObject* objectToBeSequenced, int start, int stop, int step);
 extern BOOL JRange_step(JRange* obj, char* indexIdentifierName);
 
 #endif /* JOBJECT_H */

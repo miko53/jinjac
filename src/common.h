@@ -15,6 +15,7 @@
 typedef enum { FALSE, TRUE } BOOL;
 #define ASSERT      assert
 #define STATIC      static
+#define NEW(obj)    malloc(sizeof(obj))
 
 
 #endif /* COMMON */
