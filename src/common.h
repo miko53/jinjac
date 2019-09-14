@@ -6,10 +6,10 @@
 #define DBG_PRINT
 
 #ifdef DBG_PRINT
-#define dbg_print(...)     fprintf(stderr, __VA_ARGS__)
+#define dbg_print(...)     fprintf(stdout, __VA_ARGS__)
 #else
 #define dbg_print(...)
-#endif /* DBG_RULES*/
+#endif /* DBG_PRINT*/
 
 
 typedef enum { FALSE, TRUE } BOOL;

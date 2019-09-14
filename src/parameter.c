@@ -20,38 +20,46 @@ typedef struct
   int arrayMaxValue;
 } param_item;
 
-static param_item* item_array = NULL;
-static int item_nb = 0;
-static int item_allocated = 0;
+STATIC param_item* item_array = NULL;
+STATIC int item_nb = 0;
+STATIC int item_allocated = 0;
 
 
-static void add_param_in_array(char* key, parameter_type type, parameter_value value);
+STATIC void add_param_in_array(char* key, parameter_type type, parameter_value value);
 
 void parameter_init(void)
 {
   item_allocated = 10;
   item_nb = 0;
   item_array = calloc(10, sizeof(param_item));
-  assert(item_array != NULL);
+  ASSERT(item_array != NULL);
+}
+
+int parameter_insert2(char* key, parameter_type type, parameter_value value)
+{
+  parameter param;
+  param.type = type;
+  param.value = value;
+
+  return parameter_insert(key, &param);
 }
 
 
-
-int insert_parameter(char* key, parameter_type type, parameter_value value)
+int parameter_insert(char* key, parameter* param)
 {
-  assert(key != NULL);
+  ASSERT(key != NULL);
+  ASSERT(param != NULL);
+  int status;
+  status = 1;
 
-  switch (type)
+  switch (param->type)
   {
     case TYPE_STRING:
-      assert(value.type_string != NULL);
+      assert(param->value.type_string != NULL);
       break;
     default:
       break;
   }
-
-  int status;
-  status = 1;
 
   if (item_array == NULL)
   {
@@ -60,7 +68,7 @@ int insert_parameter(char* key, parameter_type type, parameter_value value)
 
   if (item_nb < item_allocated)
   {
-    add_param_in_array(key, type, value);
+    add_param_in_array(key, param->type, param->value);
   }
   else
   {
@@ -70,7 +78,7 @@ int insert_parameter(char* key, parameter_type type, parameter_value value)
       free(item_array);
       item_array = temp;
       item_allocated = item_allocated * 2;
-      add_param_in_array(key, type, value);
+      add_param_in_array(key, param->type, param->value);
     }
     else
     {
@@ -109,24 +117,27 @@ static void add_param_in_array(char* key, parameter_type type, parameter_value v
   item_nb++;
 }
 
-parameter_value param_getValue(char* key)
+BOOL parameter_get(char* key, parameter* param)
 {
+  BOOL bFounded;
   int i;
-  parameter_value v;
+
+  bFounded = FALSE;
+
   for (i = 0; i < item_nb; i++)
   {
     if (strcmp(key, item_array[i].key) == 0)
     {
-      return item_array[i].value;
+      param->type = item_array[i].type;
+      param->value = item_array[i].value;
+      return TRUE;
     }
   }
 
-  ASSERT(FALSE);
-  v.type_string = NULL;
-  return v;
+  return bFounded;
 }
 
-int update_parameter(char* key, parameter_value newValue)
+int parameter_update(char* key, parameter_value newValue)
 {
   int rc;
   int i;
@@ -161,8 +172,7 @@ int update_parameter(char* key, parameter_value newValue)
 }
 
 
-
-BOOL param_array_getValue(char* key, int offset, parameter_value* v)
+BOOL parameter_array_getValue(char* key, int offset, parameter_value* v)
 {
   int i;
   BOOL b;
@@ -217,30 +227,22 @@ BOOL param_array_getValue(char* key, int offset, parameter_value* v)
 }
 
 
-parameter_type param_getType(char* key)
-{
-  int i;
-  for (i = 0; i < item_nb; i++)
-  {
-    if (strcmp(key, item_array[i].key) == 0)
-    {
-      return item_array[i].type;
-    }
-  }
-  return TYPE_UNKOWN;
-}
-
-BOOL param_isArray(char* key, int* nbItem)
+BOOL parameter_array_getProperties(char* key, parameter_type* type, int* nbItem)
 {
   int i;
   ASSERT(key != NULL);
-  ASSERT(nbItem != NULL);
+  ASSERT(type != NULL);
 
   for (i = 0; i < item_nb; i++)
   {
     if (strcmp(key, item_array[i].key) == 0)
     {
-      *nbItem = item_array[i].arrayMaxValue;
+      if (nbItem != NULL)
+      {
+        *nbItem = item_array[i].arrayMaxValue;
+      }
+
+      *type = item_array[i].type;
       return item_array[i].isArray;
     }
   }
@@ -248,7 +250,7 @@ BOOL param_isArray(char* key, int* nbItem)
 }
 
 
-int insert_array_parameter(char* key, parameter_type type, int nbValue, ...)
+int parameter_array_insert(char* key, parameter_type type, int nbValue, ...)
 {
   assert(key != NULL);
   va_list valist;
@@ -388,7 +390,41 @@ int insert_array_parameter(char* key, parameter_type type, int nbValue, ...)
 
 }
 
-void param_delete_all()
+int parameter_delete(char* key)
+{
+  int rc;
+  int i;
+  rc = -1;
+  if (item_nb > 0)
+  {
+    //NOTE: loop done in inverse mode to allow to have index Name overloaded by the loop one
+    for (i = item_nb - 1; i >= 0; i--)
+    {
+      if (strcmp(key, item_array[i].key) == 0)
+      {
+        if (item_array[i].isArray)
+        {
+          free(item_array[i].pArrayValue);
+        }
+        else if (item_array[i].type == TYPE_STRING)
+        {
+          free(item_array[i].value.type_string);
+        }
+
+        free(item_array[i].key);
+        memset(&item_array[i], 0, sizeof(param_item));
+        rc = 0;
+        break;
+      }
+    }
+  }
+
+  fprintf(stdout, "parameter to update '%s' not found\n", key);
+  return rc;
+}
+
+
+void parameter_delete_all()
 {
   for (int i = 0; i < item_nb; i++)
   {

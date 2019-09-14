@@ -282,19 +282,25 @@ BOOL ast_get_offset(JObject* pObject, int* pOffset)
       {
         JIdentifier* pIdent;
         pIdent = (JIdentifier*) pObject;
-        parameter_type type = param_getType(pIdent->identifier);
-        switch (type)
+        parameter param;
+        BOOL bFounded;
+        bFounded = parameter_get(pIdent->identifier, &param);
+        if (!bFounded)
         {
-          case TYPE_INT:
-            *pOffset = param_getValue(pIdent->identifier).type_int;
+          fprintf(stdout, "error: identifier '%s' not founded\n", pIdent->identifier);
+          *pOffset = 0;
+        }
+        else
+        {
+          if (param.type == TYPE_INT)
+          {
+            *pOffset = param.value.type_int;
             b = TRUE;
-            break;
-
-          case TYPE_STRING:
-          case TYPE_DOUBLE:
-          default:
-            fprintf(stdout, "error: type '%s' can't be convert to integer\n", pIdent->identifier);
-            break;
+          }
+          else
+          {
+            fprintf(stdout, "error: param '%s' can't be convert to integer\n", pIdent->identifier);
+          }
         }
       }
 
@@ -306,7 +312,7 @@ BOOL ast_get_offset(JObject* pObject, int* pOffset)
       break;
 
     default:
-      fprintf(stdout, "this object can give offset array\n");
+      fprintf(stdout, "this object can't give offset array\n");
       break;
   }
 
@@ -478,6 +484,7 @@ BOOL ast_executeEndForStmt(long* returnOffset)
       if (isDone)
       {
         *returnOffset = -1;
+        parameter_delete(pForStmt->identifierOfIndex);
       }
       else
       {

@@ -158,20 +158,36 @@ int main(int argc, char* argv[])
 
 STATIC void create_example_parameter(void)
 {
-  insert_parameter("a_ident", TYPE_STRING, (parameter_value) "TheValeur");
-  insert_parameter("name", TYPE_STRING, (parameter_value) "mickael");
-  insert_parameter("gre", TYPE_INT, (parameter_value) 547);
-  insert_parameter("myNiceDouble", TYPE_DOUBLE, (parameter_value) 0.156844);
-  insert_parameter("offset_array", TYPE_INT, (parameter_value) 2);
-  insert_array_parameter("data_value", TYPE_INT, 3, 10, 20, 15);
-  insert_array_parameter("data_value_dbl", TYPE_DOUBLE, 4, 0.586, 10.45, 159.546, 3.145561);
-  insert_array_parameter("data_value_str", TYPE_STRING, 3, "DES", "GTRV", "AADDEGG");
-  insert_array_parameter("users", TYPE_STRING, 3, "dana", "bob", "john");
+  parameter param;
+  param.type = TYPE_STRING;
+  param.value.type_string = "TheValeur";
+  parameter_insert("a_ident", &param);
+
+  param.type = TYPE_STRING;
+  param.value.type_string = "mickael";
+  parameter_insert("name", &param);
+
+  param.type = TYPE_INT;
+  param.value.type_int = 547;
+  parameter_insert("gre", &param);
+
+  param.type = TYPE_DOUBLE;
+  param.value.type_double = 0.156844;
+  parameter_insert("myNiceDouble", &param);
+
+  param.type = TYPE_INT;
+  param.value.type_int = 2;
+  parameter_insert("offset_array", &param);
+
+  parameter_array_insert("data_value", TYPE_INT, 3, 10, 20, 15);
+  parameter_array_insert("data_value_dbl", TYPE_DOUBLE, 4, 0.586, 10.45, 159.546, 3.145561);
+  parameter_array_insert("data_value_str", TYPE_STRING, 3, "DES", "GTRV", "AADDEGG");
+  parameter_array_insert("users", TYPE_STRING, 3, "dana", "bob", "john");
 }
 
 STATIC void delete_example_parameter(void)
 {
-  param_delete_all();
+  parameter_delete_all();
 }
 
 

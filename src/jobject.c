@@ -268,35 +268,34 @@ int JFor_createIndexParameter(JFor* obj)
 
   if (seq->sequencedObject == NULL) //default is INT
   {
-    insert_parameter(obj->identifierOfIndex, TYPE_INT, (parameter_value) seq->currentIndex);
+    parameter param;
+    param.type = TYPE_INT;
+    param.value.type_int = seq->currentIndex;
+    parameter_insert(obj->identifierOfIndex, &param);
   }
   else
   {
-    parameter_type paramType;
-    parameter_value paramValue;
+    parameter param;
     BOOL isArray;
     int nbItems;
 
     switch (seq->sequencedObject->type)
     {
       case J_IDENTIFIER:
-        isArray = param_isArray(((JIdentifier*)seq->sequencedObject)->identifier, &nbItems);
+        isArray = parameter_array_getProperties(((JIdentifier*)seq->sequencedObject)->identifier, &param.type, &nbItems);
         if (isArray)
         {
           obj->sequencing->stop = nbItems;
-          paramType = param_getType(((JArray*)seq->sequencedObject)->identifier);
-          ASSERT(paramType != TYPE_UNKOWN);
-          param_array_getValue(((JArray*) seq->sequencedObject)->identifier, seq->currentIndex, &paramValue);
-          insert_parameter(obj->identifierOfIndex, paramType, paramValue);
+          parameter_array_getValue(((JArray*) seq->sequencedObject)->identifier, seq->currentIndex, &param.value);
+          parameter_insert(obj->identifierOfIndex, &param);
         }
         else
         {
-          fprintf(stdout, "can't convert %s into range\n", ((JIdentifier*) seq->sequencedObject)->identifier);
+          fprintf(stderr, "error: %s unknow identifier\n", ((JIdentifier*) seq->sequencedObject)->identifier);
           rc = -1;
         }
 
         break;
-
 
       default:
         fprintf(stdout, "type = %d\n", seq->sequencedObject->type);
@@ -339,7 +338,7 @@ BOOL JRange_step(JRange* obj, char* indexIdentifierName)
       isDone = TRUE;
     }
 
-    update_parameter(indexIdentifierName, (parameter_value) obj->currentIndex);
+    parameter_update(indexIdentifierName, (parameter_value) obj->currentIndex);
   }
   else
   {
@@ -354,8 +353,8 @@ BOOL JRange_step(JRange* obj, char* indexIdentifierName)
       switch (obj->sequencedObject->type)
       {
         case J_IDENTIFIER:
-          param_array_getValue(((JIdentifier*) obj->sequencedObject)->identifier, obj->currentIndex, &paramValue);
-          update_parameter(indexIdentifierName, paramValue);
+          parameter_array_getValue(((JIdentifier*) obj->sequencedObject)->identifier, obj->currentIndex, &paramValue);
+          parameter_update(indexIdentifierName, paramValue);
           break;
 
         default:
@@ -452,27 +451,30 @@ parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
       {
         JIdentifier* pIdent;
         pIdent = (JIdentifier*) pObject;
-        parameter_type type = param_getType(pIdent->identifier);
-        switch (type)
+        parameter param;
+        BOOL bFounded;
+
+        bFounded = parameter_get(pIdent->identifier, &param);
+        if (!bFounded)
         {
-          case TYPE_STRING:
-            s.type_string = strdup((char*) param_getValue(pIdent->identifier).type_string);
-            break;
-
-          case TYPE_INT:
-          case TYPE_DOUBLE:
-            s =  param_getValue(pIdent->identifier);
-            break;
-
-          default:
-            ast_setInError("UNKOWN IDENTIFIER");
-            fprintf(stdout, "unknown '%s' identifier\n", pIdent->identifier);
-            ASSERT(FALSE); //TODO better management this kind of error can happened
-            break;
+          ast_setInError("UNKOWN IDENTIFIER");
+          fprintf(stdout, "unknown '%s' identifier\n", pIdent->identifier);
         }
+        else
+        {
+          if (param.type == TYPE_STRING)
+          {
+            s.type_string = strdup((char*) param.value.type_string);
+          }
+          else
+          {
+            s = param.value;
+          }
+        }
+
         if (pType)
         {
-          *pType = type;
+          *pType = param.type;
         }
       }
       break;
@@ -482,20 +484,20 @@ parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
         JArray* pArray;
         pArray = (JArray*) pObject;
         BOOL bOk;
-        parameter_value v;
-        parameter_type type = param_getType(pArray->identifier);
-        bOk = param_array_getValue(pArray->identifier, pArray->offset, &v);
+        parameter param;
+        bOk = parameter_array_getProperties(pArray->identifier, &param.type, NULL);
+        bOk = parameter_array_getValue(pArray->identifier, pArray->offset, &param.value);
         if (bOk)
         {
-          switch (type)
+          switch (param.type)
           {
             case TYPE_STRING:
-              s.type_string = strdup((char*) v.type_string);
+              s.type_string = strdup((char*) param.value.type_string);
               break;
 
             case TYPE_DOUBLE:
             case TYPE_INT:
-              s = v;
+              s = param.value;
               break;
 
             default:
@@ -506,7 +508,7 @@ parameter_value JObject_getValue(JObject* pObject, parameter_type* pType)
           }
           if (pType)
           {
-            *pType = type;
+            *pType = param.type;
           }
         }
         else
