@@ -693,8 +693,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
     case FCT_FORMAT:
       {
         int nbArgs = 0;
-        parameter_value a[NB_MAX_ARGS];
-        parameter_type t[NB_MAX_ARGS];
+        parameter par[NB_MAX_ARGS];
 
         if (f->argList != NULL)
         {
@@ -707,33 +706,30 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
 
         for (int i = 0; i < nbArgs; i++)
         {
-          parameter param;
           BOOL bOk;
-          bOk = JObject_getValue(f->argList->listArgs[i], &param);
-          a[i] = param.value;
-          t[i] = param.type;
+          bOk = JObject_getValue(f->argList->listArgs[i], &par[i]);
         }
 
         for (int i = nbArgs; i < NB_MAX_ARGS; i++)
         {
-          a[i].type_string = NULL;
-          t[i] = TYPE_STRING;
+          par[i].type = TYPE_STRING;
+          par[i].value.type_string = NULL;
         }
 
         s = JObject_toString(pCurrentObject);
         if (s != NULL)
         {
-          s = format(s, nbArgs, a, t);
+          s = format(s, nbArgs, par);
           resultObject = JStringConstante_new(s);
         }
 
         //dessallocate the allocated string argument after execution
         for (int i = 0; i < nbArgs; i++)
         {
-          switch (t[i])
+          switch (par[i].type)
           {
             case TYPE_STRING:
-              free(a[i].type_string);
+              free(par[i].value.type_string);
               break;
 
             default:
