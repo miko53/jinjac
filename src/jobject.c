@@ -18,7 +18,7 @@ BOOL JObject_getValue(JObject* pObject, parameter* param)
   }
   else
   {
-    fprintf(stderr, "can't convert object type %d into value\n", pObject->type);
+    error("can't convert object type %d into value\n", pObject->type);
   }
 
   return bOk;
@@ -62,7 +62,7 @@ BOOL JIdentifier_getValue(struct JObjects* pObject, parameter* param)
   if (!bOk)
   {
     ast_setInError("UNKOWN IDENTIFIER");
-    fprintf(stdout, "unknown '%s' identifier\n", pIdent->identifier);
+    error("unknown '%s' identifier\n", pIdent->identifier);
   }
   else
   {
@@ -274,14 +274,14 @@ int JFor_createIndexParameter(JFor* obj)
         }
         else
         {
-          fprintf(stderr, "error: %s unknow identifier\n", ((JIdentifier*) seq->sequencedObject)->identifier);
+          error("error: %s unknow identifier\n", ((JIdentifier*) seq->sequencedObject)->identifier);
           rc = -1;
         }
 
         break;
 
       default:
-        fprintf(stdout, "type = %d\n", seq->sequencedObject->type);
+        error("type = %d\n", seq->sequencedObject->type);
         rc = -1;
         ASSERT(FALSE);  //TODO
         break;
@@ -375,7 +375,7 @@ char* JObject_toString(JObject* pObject)
         break;
 
       default:
-        fprintf(stdout, "type =%d\n", param.type);
+        trace("type =%d\n", param.type);
         ASSERT(FALSE);
         s = NULL;
         break;

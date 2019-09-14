@@ -252,7 +252,7 @@ BOOL findModifier(char* src, parameter_type* type, char** pModifierEnd, BOOL* ha
 char* getModifierString(char* pModifierBegin, char* pModifierEnd)
 {
   int size = pModifierEnd + 1 - pModifierBegin;
-  fprintf(stdout, "modifier (%d) ==> %.*s\n", size, size, pModifierBegin);
+  trace("modifier (%d) ==> %.*s\n", size, size, pModifierBegin);
 
   char* modifierString = malloc(size + 1);
   strncpy(modifierString, pModifierBegin, size);
@@ -292,7 +292,7 @@ BOOL setFormatConsistency(parameter_type* typeToInsert, parameter currentParamet
   }
   else if ((*typeToInsert == TYPE_DOUBLE) && (currentParameter.type == TYPE_STRING))
   {
-    fprintf(stdout, "error in input, a float is required instead of a string\n");
+    error("error in input, a float is required instead of a string\n");
     bOk = FALSE;
   }
   else if ((*typeToInsert == TYPE_INT) && (currentParameter.type == TYPE_DOUBLE))
@@ -301,7 +301,7 @@ BOOL setFormatConsistency(parameter_type* typeToInsert, parameter currentParamet
   }
   else if ((*typeToInsert == TYPE_INT) && (currentParameter.type == TYPE_STRING))
   {
-    fprintf(stdout, "error in input, a int is required instead of a string\n");
+    error("error in input, a int is required instead of a string\n");
     bOk = FALSE;
   }
   return bOk;
@@ -327,8 +327,8 @@ BOOL appendParameterToString(char* pModifierString, parameter_type typeToInsert,
   {
     if (param[currentParameterIndex].type != typeToInsert)
     {
-      fprintf(stdout, "warning: parameter type inconsistency %d versus %d\n", param[currentParameterIndex].type,
-              typeToInsert);
+      error("warning: parameter type inconsistency %d versus %d\n", param[currentParameterIndex].type,
+            typeToInsert);
       bOk = setFormatConsistency(&typeToInsert, param[currentParameterIndex], pModifierString, &paramDataToInsert);
     }
     else
@@ -382,8 +382,8 @@ BOOL appendParameterToString(char* pModifierString, parameter_type typeToInsert,
   }
   else
   {
-    fprintf(stdout, "error: inconsistency number of parameter for format function (%d versus max %d)\n",
-            currentParameterIndex, nbParameters);
+    error("error: inconsistency number of parameter for format function (%d versus max %d)\n",
+          currentParameterIndex, nbParameters);
     bOk = FALSE;
   }
 

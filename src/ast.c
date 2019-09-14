@@ -513,21 +513,21 @@ char* ast_getTypeString(jobject_type type)
 void display_function_args(JArgs* argsObj)
 {
   int indexArgs;
-  fprintf(stdout, "\n");
+  trace("\n");
   for (indexArgs = 0; indexArgs < argsObj->nb_args; indexArgs++)
   {
-    fprintf(stdout, " arg[%d]: \"%s\" (%d)\n", indexArgs,
-            ast_getTypeString(argsObj->listArgs[indexArgs]->type),
-            argsObj->listArgs[indexArgs]->type);
+    trace( " arg[%d]: \"%s\" (%d)\n", indexArgs,
+           ast_getTypeString(argsObj->listArgs[indexArgs]->type),
+           argsObj->listArgs[indexArgs]->type);
   }
 }
 
 
 void display_range(JRange* range)
 {
-  fprintf(stdout, "> object associed (%p)\n", range->sequencedObject);
-  fprintf(stdout, "> current index (%d)\n", range->currentIndex);
-  fprintf(stdout, "> start (%d), stop (%d), step(%d)\n", range->start, range->stop, range->step);
+  trace( "> object associed (%p)\n", range->sequencedObject);
+  trace( "> current index (%d)\n", range->currentIndex);
+  trace( "> start (%d), stop (%d), step(%d)\n", range->start, range->stop, range->step);
 }
 
 
@@ -535,35 +535,35 @@ int ast_dump_stack()
 {
   unsigned int i;
 
-  fprintf(stdout, "---------- begin ast stack\n");
-  fprintf(stdout, "nb item: %d\n", ast_root.ast_nb_object);
+  trace( "---------- begin ast stack\n");
+  trace( "nb item: %d\n", ast_root.ast_nb_object);
   for (i = 0; i < ast_root.ast_nb_object; i++)
   {
-    fprintf(stdout, "item[%d]: \"%s\" (%d)", i, ast_getTypeString(ast_root.ast_list[i]->type), ast_root.ast_list[i]->type);
+    trace( "item[%d]: \"%s\" (%d)", i, ast_getTypeString(ast_root.ast_list[i]->type), ast_root.ast_list[i]->type);
     switch (ast_root.ast_list[i]->type)
     {
       case J_STR_CONSTANTE:
-        fprintf(stdout, ": \"%s\"\n", ((JStringConstante*) ast_root.ast_list[i])->str_constant);
+        trace( ": \"%s\"\n", ((JStringConstante*) ast_root.ast_list[i])->str_constant);
         break;
 
       case J_INTEGER:
-        fprintf(stdout, ": \"%d\"\n", ((JInteger*) ast_root.ast_list[i])->value);
+        trace( ": \"%d\"\n", ((JInteger*) ast_root.ast_list[i])->value);
         break;
 
       case J_DOUBLE:
-        fprintf(stdout, ": \"%f\"\n", ((JDouble*) ast_root.ast_list[i])->value);
+        trace( ": \"%f\"\n", ((JDouble*) ast_root.ast_list[i])->value);
         break;
 
       case J_BOOLEAN:
-        fprintf(stdout, ": \"%d\"\n", ((JBoolean*) ast_root.ast_list[i])->value);
+        trace( ": \"%d\"\n", ((JBoolean*) ast_root.ast_list[i])->value);
         break;
 
       case J_IDENTIFIER:
-        fprintf(stdout, ": \"%s\"\n", ((JIdentifier*) ast_root.ast_list[i])->identifier);
+        trace( ": \"%s\"\n", ((JIdentifier*) ast_root.ast_list[i])->identifier);
         break;
 
       case J_ARRAY:
-        fprintf(stdout, ": \"%s\"\n", ((JArray*) ast_root.ast_list[i])->identifier);
+        trace( ": \"%s\"\n", ((JArray*) ast_root.ast_list[i])->identifier);
         break;
 
       case J_FUNCTION_ARGS:
@@ -573,21 +573,21 @@ int ast_dump_stack()
       case J_FUNCTION:
         if (((JFunction*) ast_root.ast_list[i])->argList != NULL)
         {
-          fprintf(stdout, "> Begin inner args:\n");
+          trace( "> Begin inner args:\n");
           display_function_args(((JFunction*) ast_root.ast_list[i])->argList);
-          fprintf(stdout, "> End inner args\n");
+          trace( "> End inner args\n");
         }
         else
         {
-          fprintf(stdout, ">> no args\n");
+          trace( ">> no args\n");
         }
         break;
 
       case J_FOR:
         {
-          fprintf(stdout, ": iterator \"%s\" return Point %ld\n",
-                  ((JFor*) ast_root.ast_list[i])->identifierOfIndex,
-                  ((JFor*) ast_root.ast_list[i])->startOffset);
+          trace( ": iterator \"%s\" return Point %ld\n",
+                 ((JFor*) ast_root.ast_list[i])->identifierOfIndex,
+                 ((JFor*) ast_root.ast_list[i])->startOffset);
           display_range(((JFor*) ast_root.ast_list[i])->sequencing);
         }
 
@@ -599,7 +599,7 @@ int ast_dump_stack()
     }
   }
 
-  fprintf(stdout, "---------- end ast stack\n");
+  trace( "---------- end ast stack\n");
   return 0;
 }
 

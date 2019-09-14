@@ -38,7 +38,7 @@ STATIC void parse_only_string_arg(char* string)
   YY_BUFFER_STATE buffer;
 
   ast_clean();
-  fprintf(stdout, "parse only string = \"%s\"\n", string);
+  trace("parse only string = \"%s\"\n", string);
 
   buffer = yy_scan_string (string);
   yyparse();
@@ -49,15 +49,15 @@ STATIC void parse_only_string_arg(char* string)
   switch (parserStatus)
   {
     case OK_DONE:
-      fprintf(stdout, "result: \"%s\"\n", ast_getStringResult());
+      trace( "result: \"%s\"\n", ast_getStringResult());
       break;
 
     case IN_ERROR:
-      fprintf(stdout, "in Error\n");
+      trace( "in Error\n");
       break;
 
     case FOR_STATEMENT:
-      fprintf(stdout, "For stmt\n");
+      trace("For stmt\n");
       break;
 
     default:
@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
 
   if (inputFile == NULL)
   {
-    fprintf(stdout, "input or output file not specified\n");
+    fprintf(stderr, "input or output file not specified\n");
     exit(EXIT_FAILURE);
   }
 
@@ -366,7 +366,7 @@ STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreN
   inError = FALSE;
   *ignoreNextLine = FALSE;
 
-  fprintf(stdout, "parse = \"%s\"\n", string);
+  trace("parse = \"%s\"\n", string);
 
   buffer = yy_scan_string ( string );
   yyparse();

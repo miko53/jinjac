@@ -64,7 +64,7 @@ STATIC int getFunctionID(char* fctName)
     }
   }
 
-  fprintf(stdout, "error: function %s not found !", fctName);
+  error("error: function %s not found !", fctName);
   return -1;
 }
 
@@ -92,7 +92,7 @@ JObject* JFunction_new(char* fct)
   }
   else
   {
-    fprintf(stdout, "filtered fct not found !\n");
+    error("filtered fct not found !\n");
   }
 
   return NULL;
@@ -142,7 +142,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
     case FCT_TRIM:
       if ((f->argList != NULL) && (f->argList->nb_args != 0))
       {
-        fprintf(stdout, "warning! unexpected number of arguments for function %s\n", fct_item->name);
+        error("warning! unexpected number of arguments for function %s\n", fct_item->name);
       }
       else
       {
