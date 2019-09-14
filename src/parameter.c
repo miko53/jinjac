@@ -386,8 +386,8 @@ int parameter_array_insert(char* key, parameter_type type, int nbValue, ...)
     }
   }
 
+  va_end(valist);
   return status;
-
 }
 
 int parameter_delete(char* key)

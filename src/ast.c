@@ -536,10 +536,10 @@ int ast_dump_stack()
   unsigned int i;
 
   trace( "---------- begin ast stack\n");
-  trace( "nb item: %d\n", ast_root.ast_nb_object);
+  trace( "nb item: %u\n", ast_root.ast_nb_object);
   for (i = 0; i < ast_root.ast_nb_object; i++)
   {
-    trace( "item[%d]: \"%s\" (%d)", i, ast_getTypeString(ast_root.ast_list[i]->type), ast_root.ast_list[i]->type);
+    trace( "item[%u]: \"%s\" (%d)", i, ast_getTypeString(ast_root.ast_list[i]->type), ast_root.ast_list[i]->type);
     switch (ast_root.ast_list[i]->type)
     {
       case J_STR_CONSTANTE:

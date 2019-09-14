@@ -325,7 +325,6 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
         case DETECTION_STOP_DELIMITER:
           if (current == '}')
           {
-            mode = DETECTION_START_DELIMITER;
             //launch parsing
             bufferJinja[bufferIndex++] = '\0';
             bInError = jinjac_parse_string(bufferJinja, out, in, &bIgnoreLine);
