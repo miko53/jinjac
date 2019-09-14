@@ -385,7 +385,7 @@ int ast_create_for_stmt(char* identifierName)
   o = JFor_new(identifierName, range);
   if (o != NULL)
   {
-    JFor_createIndexParameter((JFor*) o); //TODO rc a prendre en compte
+    JFor_createIndexParameter((JFor*) o);
     rc = ast_insert(o);
   }
 

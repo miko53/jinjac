@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
 
       case 'h':
       default:
-        fprintf(stderr, "usage %s -i <input file> -o <output file>\n", argv[0]);
+        fprintf(stderr, "usage %s -i <input file> -o <output file>\nusage %s -s \"jinja expression\"\n", argv[0], argv[0]);
         exit(EXIT_FAILURE);
         break;
     }

@@ -29,7 +29,8 @@ set(TEST_LIST
   "test_16" ;
   "test_17" ;
   "test_18" ;
-  "test_18b"
+  "test_18b" ;
+  "test_18c"
   )
   
 set(TEST_TITLE 
@@ -53,7 +54,8 @@ set(TEST_TITLE
   "argument_of_function_with_operation" ;
   "simple_for_statement" ;
   "for_with_array" ;
-  "for_without_execution"
+  "for_without_execution" ;
+  "for_with_error_of_id" 
   )
   
 set(INDEX 0)

@@ -61,8 +61,10 @@ BOOL JIdentifier_getValue(struct JObjects* pObject, parameter* param)
   bOk = parameter_get(pIdent->identifier, param);
   if (!bOk)
   {
-    ast_setInError("UNKOWN IDENTIFIER");
-    error("unknown '%s' identifier\n", pIdent->identifier);
+    error("warning: unknown '%s' identifier\n", pIdent->identifier);
+    param->type = TYPE_STRING;
+    param->value.type_string = strdup("");
+    bOk = TRUE;
   }
   else
   {
@@ -274,7 +276,8 @@ int JFor_createIndexParameter(JFor* obj)
         }
         else
         {
-          error("error: %s unknow identifier\n", ((JIdentifier*) seq->sequencedObject)->identifier);
+          error("warning: %s unknow identifier\n", ((JIdentifier*) seq->sequencedObject)->identifier);
+          obj->sequencing->stop = 0;
           rc = -1;
         }
 
