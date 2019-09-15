@@ -44,7 +44,7 @@
   
   void yyerror(const char *s);
   
-  #define stop_in_error(errorString)   \
+  #define stop_on_error(errorString)   \
                             do { \
                               ast_setInError(errorString); \
                               YYABORT; \

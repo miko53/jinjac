@@ -12,6 +12,7 @@ set(TEST_LIST
   "test_01" ; 
   "test_01b" ; 
   "test_01c" ;
+  "test_01d" ;
   "test_02" ; 
   "test_03" ; 
   "test_04" ; 
@@ -37,6 +38,7 @@ set(TEST_TITLE
   "simple_test_without_template" ;
   "simple_test_with_empty_template" ;
   "simple_test_with_tag_inside_string" ;
+  "add_comment_in_script" ;
   "test_with_constant_string" ;
   "constant_string_and_filter_fct" ;
   "with_an_identifier_string" ;

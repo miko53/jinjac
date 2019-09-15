@@ -43,7 +43,6 @@ extern YY_BUFFER_STATE yy_scan_string(char* str);
 extern void yy_delete_buffer(YY_BUFFER_STATE buffer);
 extern int yylex_destroy(void);
 
-
 #define LINE_SIZE   (1024)
 typedef enum
 {
@@ -51,6 +50,8 @@ typedef enum
   DETECTION_START_DELIMITER,
   IN_JINJA_SCRIPT,
   IN_JINJA_SCRIPT_STRING,
+  IN_JINJA_COMMENT,
+  IN_JINJA_COMMENT_STOP_DELIMITER,
   DETECTION_STOP_DELIMITER
 } parse_file_mode;
 
@@ -253,13 +254,17 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
       no_line++;
       //clear buffer
       bufferIndex = 0;
-      if (mode != IN_TEXTE)
+      if (mode != IN_JINJA_COMMENT)
       {
-        bInError = TRUE;
-      }
-      if (!bIgnoreLine)
-      {
-        fputc(current, out);
+        if (mode != IN_TEXTE)
+        {
+          bInError = TRUE;
+        }
+
+        if (!bIgnoreLine)
+        {
+          fputc(current, out);
+        }
       }
     }
     else
@@ -299,7 +304,7 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
               break;
 
             case '#':
-              mode = IN_JINJA_SCRIPT;
+              mode = IN_JINJA_COMMENT;
               break;
 
             default:
@@ -308,6 +313,24 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
               fputc(current, out);
               bufferIndex = 0;
               break;
+          }
+          break;
+
+        case IN_JINJA_COMMENT:
+          if (current == '#')
+          {
+            mode = IN_JINJA_COMMENT_STOP_DELIMITER;
+          }
+          break;
+
+        case IN_JINJA_COMMENT_STOP_DELIMITER:
+          if (current == '}')
+          {
+            mode = IN_TEXTE;
+          }
+          else
+          {
+            mode = IN_JINJA_COMMENT;
           }
           break;
 
@@ -378,6 +401,12 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
     previous = current;
     current = fgetc(in);
   }
+
+  if (bInError)
+  {
+    error("Parsing error\n");
+  }
+
 }
 
 
