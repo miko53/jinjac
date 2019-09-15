@@ -103,7 +103,7 @@ jinja_else_stmt:
   ELSE { dbg_print("a ELSE stmt\n"); }
 
 jinja_if_stmt:
-  IF condition_expr { dbg_print("a IF statement\n"); }
+  IF condition_expr { dbg_print("a IF statement\n");ast_dump_stack(); }
   
 jinja_filtered_expr:
   function_expression { 
@@ -215,6 +215,7 @@ jinja_primary_expr:
                       }
 
 condition_expr:
+  postfix_expression |
   postfix_expression EQUAL postfix_expression { dbg_print("equal expression\n"); }
   |
   postfix_expression DIFFERENT postfix_expression { dbg_print("diff expression\n"); }

@@ -34,6 +34,7 @@
 #include "common.h"
 #include <stdio.h>
 #include <stdarg.h>
+#include "str_obj.h"
 
 //TODO add test to check unicity of variables
 
@@ -145,7 +146,7 @@ STATIC void add_param_in_array(char* key, parameter_type type, parameter_value v
   item_nb++;
 }
 
-BOOL parameter_get(char* key, parameter* param)
+BOOL parameter_get(char* key, parameter* param, BOOL* isArray)
 {
   BOOL bFounded;
   int i;
@@ -158,6 +159,10 @@ BOOL parameter_get(char* key, parameter* param)
     {
       param->type = item_array[i].type;
       param->value = item_array[i].value;
+      if (isArray != NULL)
+      {
+        *isArray = item_array[i].isArray;
+      }
       return TRUE;
     }
   }
@@ -417,6 +422,67 @@ int parameter_array_insert(char* key, parameter_type type, int nbValue, ...)
   va_end(valist);
   return status;
 }
+
+char* parameter_convertArrayToString(char* key)
+{
+  char* pString;
+  BOOL bIsArray;
+  parameter_type type;
+  int nbItems;
+  int indexItem = -1;
+  str_obj arrayResult;
+  char tampon[50];
+
+  pString = NULL;
+
+  bIsArray = parameter_array_getProperties(key, &type, &nbItems);
+  if (bIsArray)
+  {
+    str_obj_create(&arrayResult);
+    for (int i = 0; i < item_nb; i++)
+    {
+      if (strcmp(key, item_array[i].key) == 0)
+      {
+        indexItem = i;
+        break;
+      }
+    }
+    ASSERT(indexItem != -1); //it is not possible to not find the key...
+
+    str_obj_insert(&arrayResult, "[");
+    for (int i = 0; i < nbItems; i++)
+    {
+      switch (type)
+      {
+        case TYPE_DOUBLE:
+          snprintf(tampon, 50, "%f", ((double*) item_array[indexItem].pArrayValue)[i]);
+          break;
+
+        case TYPE_INT:
+          snprintf(tampon, 50, "%d", ((int*) item_array[indexItem].pArrayValue)[i]);
+          break;
+
+        case TYPE_STRING:
+          snprintf(tampon, 50, "u'%s'", ((char**) item_array[indexItem].pArrayValue)[i]);
+          break;
+
+        default:
+          ASSERT(FALSE);
+          break;
+      }
+      str_obj_insert(&arrayResult, tampon);
+      if (i != (nbItems - 1))
+      {
+        str_obj_insert(&arrayResult, ", ");
+      }
+    }
+    str_obj_insert(&arrayResult, "]");
+    pString = arrayResult.s;
+  }
+
+  return pString;
+}
+
 
 int parameter_delete(char* key)
 {

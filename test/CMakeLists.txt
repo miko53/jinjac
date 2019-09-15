@@ -20,6 +20,7 @@ set(TEST_LIST
   "test_06" ; 
   "test_07" ; 
   "test_08" ; 
+  "test_08b" ;
   "test_09" ; 
   "test_10" ; 
   "test_11" ; 
@@ -35,29 +36,30 @@ set(TEST_LIST
   )
   
 set(TEST_TITLE 
-  "simple_test_without_template" ;
-  "simple_test_with_empty_template" ;
-  "simple_test_with_tag_inside_string" ;
-  "add_comment_in_script" ;
-  "test_with_constant_string" ;
-  "constant_string_and_filter_fct" ;
-  "with_an_identifier_string" ;
-  "with_an_identifier_double" ;
-  "three_id_with_filtering" ;
-  "template_do_computation" ;
-  "work_with_array" ;
-  "buildin_functions" ;
-  "truncate_buildins_functions" ;
-  "center_buildins_functions" ;
-  "title_buildins_functions" ;
-  "format_buildins_functions" ;
-  "format_buildins_error_mngt" ;
-  "argument_of_function_with_identifier_and_array" ;
-  "argument_of_function_with_operation" ;
-  "simple_for_statement" ;
-  "for_with_array" ;
-  "for_without_execution" ;
-  "for_with_error_of_id" 
+  "01_simple_test_without_template" ;
+  "01b_simple_test_with_empty_template" ;
+  "01c_simple_test_with_tag_inside_string" ;
+  "01d_add_comment_in_script" ;
+  "02_test_with_constant_string" ;
+  "03_constant_string_and_filter_fct" ;
+  "04_with_an_identifier_string" ;
+  "05_with_an_identifier_double" ;
+  "06_three_id_with_filtering" ;
+  "07_template_do_computation" ;
+  "08_work_with_array" ;
+  "08b_array_displayed_directly" ;
+  "09_buildin_functions" ;
+  "10_truncate_buildins_functions" ;
+  "11_center_buildins_functions" ;
+  "12_title_buildins_functions" ;
+  "13_format_buildins_functions" ;
+  "14_format_buildins_error_mngt" ;
+  "15_argument_of_function_with_identifier_and_array" ;
+  "16_argument_of_function_with_operation" ;
+  "17_simple_for_statement" ;
+  "18_for_with_array" ;
+  "18b_for_without_execution" ;
+  "18c_for_with_error_of_id" 
   )
   
 set(INDEX 0)

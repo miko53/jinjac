@@ -85,9 +85,10 @@ BOOL JDouble_getValue(struct JObjects* pObject, parameter* param)
 BOOL JIdentifier_getValue(struct JObjects* pObject, parameter* param)
 {
   BOOL bOk;
+  BOOL isArray;
   JIdentifier* pIdent;
   pIdent = (JIdentifier*) pObject;
-  bOk = parameter_get(pIdent->identifier, param);
+  bOk = parameter_get(pIdent->identifier, param, &isArray);
   if (!bOk)
   {
     error("warning: unknown '%s' identifier\n", pIdent->identifier);
@@ -97,7 +98,14 @@ BOOL JIdentifier_getValue(struct JObjects* pObject, parameter* param)
   }
   else
   {
-    if (param->type == TYPE_STRING)
+    if (isArray)
+    {
+      bOk = TRUE;
+      param->value.type_string = parameter_convertArrayToString(pIdent->identifier);
+      param->type = TYPE_STRING;
+      trace("array ==> %s\n", param->value.type_string);
+    }
+    else if (param->type == TYPE_STRING)
     {
       param->value.type_string = strdup(param->value.type_string);
     }

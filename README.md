@@ -63,8 +63,11 @@ List of build-in function implemented
 
 ### To implement
 
-- for statment
 - if statment
-- function called as argument of array.
 - missing function
 - other statement
+
+### To improve
+
+- parameter management
+It should be preferable to improve search or use a index when multiple search are performed.

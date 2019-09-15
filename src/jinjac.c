@@ -140,6 +140,7 @@ int main(int argc, char* argv[])
   if (test_string != NULL)
   {
     parse_only_string_arg(test_string);
+    delete_example_parameter();
     exit(EXIT_SUCCESS);
   }
 
@@ -165,12 +166,14 @@ int main(int argc, char* argv[])
   if (in == NULL)
   {
     fprintf(stderr, "unable to open %s file in read mode\n", inputFile);
+    delete_example_parameter();
     exit(EXIT_FAILURE);
   }
 
   if (out == NULL)
   {
     fprintf(stderr, "unable to open %s file in write mode\n", outputfile);
+    delete_example_parameter();
     exit(EXIT_FAILURE);
   }
 
