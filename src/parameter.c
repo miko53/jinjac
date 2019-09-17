@@ -74,12 +74,12 @@ int parameter_insert2(char* key, parameter_type type, parameter_value value)
 }
 
 
-int parameter_insert(char* key, parameter* param)
+J_STATUS parameter_insert(char* key, parameter* param)
 {
   ASSERT(key != NULL);
   ASSERT(param != NULL);
-  int status;
-  status = 1;
+  J_STATUS status;
+  status = J_OK;
 
   switch (param->type)
   {
@@ -111,7 +111,7 @@ int parameter_insert(char* key, parameter* param)
     }
     else
     {
-      status = 0;
+      status = J_ERROR;
     }
   }
 
@@ -170,11 +170,11 @@ BOOL parameter_get(char* key, parameter* param, BOOL* isArray)
   return bFounded;
 }
 
-int parameter_update(char* key, parameter_value newValue)
+J_STATUS parameter_update(char* key, parameter_value newValue)
 {
-  int rc;
+  J_STATUS rc;
   int i;
-  rc = -1;
+  rc = J_ERROR;
   if (item_nb > 0)
   {
     //NOTE: loop done in inverse mode to allow to have index Name overloaded by the loop one
@@ -194,7 +194,7 @@ int parameter_update(char* key, parameter_value newValue)
         {
           item_array[i].value = newValue;
         }
-        rc = 0;
+        rc = J_OK;
         break;
       }
     }
@@ -283,7 +283,7 @@ BOOL parameter_array_getProperties(char* key, parameter_type* type, int* nbItem)
 }
 
 
-int parameter_array_insert(char* key, parameter_type type, int nbValue, ...)
+J_STATUS parameter_array_insert(char* key, parameter_type type, int nbValue, ...)
 {
   ASSERT(key != NULL);
   va_list valist;
@@ -298,8 +298,8 @@ int parameter_array_insert(char* key, parameter_type type, int nbValue, ...)
       break;
   }
 
-  int status;
-  status = 1;
+  J_STATUS status;
+  status = J_OK;
 
   if (item_array == NULL)
   {
@@ -415,7 +415,7 @@ int parameter_array_insert(char* key, parameter_type type, int nbValue, ...)
     }
     else
     {
-      status = 0;
+      status = J_OK;
     }
   }
 
@@ -484,11 +484,12 @@ char* parameter_convertArrayToString(char* key)
 }
 
 
-int parameter_delete(char* key)
+J_STATUS parameter_delete(char* key)
 {
-  int rc;
+  J_STATUS rc;
   int i;
-  rc = -1;
+  rc = J_ERROR;
+
   if (item_nb > 0)
   {
     //NOTE: loop done in inverse mode to allow to have index Name overloaded by the loop one
@@ -507,7 +508,7 @@ int parameter_delete(char* key)
 
         free(item_array[i].key);
         memset(&item_array[i], 0, sizeof(param_item));
-        rc = 0;
+        rc = J_OK;
         break;
       }
     }

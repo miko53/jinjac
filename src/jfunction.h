@@ -69,7 +69,7 @@ typedef struct
 
 //JFunction
 extern JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject);
-extern int JArgs_insert_args(JArgs* obj, JObject* argToInsert);
+extern J_STATUS JArgs_insert_args(JArgs* obj, JObject* argToInsert);
 
 #ifdef __cplusplus
 }

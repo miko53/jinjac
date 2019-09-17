@@ -391,21 +391,21 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
   return resultObject;
 }
 
-int JArgs_insert_args(JArgs* obj, JObject* argToInsert)
+J_STATUS JArgs_insert_args(JArgs* obj, JObject* argToInsert)
 {
   ASSERT(obj != NULL);
   ASSERT(argToInsert != NULL);
-  int rc;
+  J_STATUS rc;
 
   if (obj->nb_args > NB_MAX_ARGS)
   {
-    rc = -1;
+    rc = J_ERROR;
   }
   else
   {
     obj->listArgs[obj->nb_args] = argToInsert;
     obj->nb_args++;
-    rc = 0;
+    rc = J_OK;
   }
 
   return rc;

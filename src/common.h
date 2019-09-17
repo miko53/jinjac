@@ -59,6 +59,12 @@ typedef enum { FALSE, TRUE } BOOL;
 #define STATIC      static
 #define NEW(obj)    malloc(sizeof(obj))
 
+typedef enum
+{
+  J_OK = 0,
+  J_ERROR = -1
+} J_STATUS;
+
 #ifdef __cplusplus
 }
 #endif

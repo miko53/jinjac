@@ -276,17 +276,17 @@ JObject* JEndFor_new(void)
   return (JObject*) o;
 }
 
-int JFor_setStartPoint(JFor* obj, long offset)
+J_STATUS JFor_setStartPoint(JFor* obj, long offset)
 {
   obj->startOffset = offset;
-  return 0;
+  return J_OK;
 }
 
-int JFor_createIndexParameter(JFor* obj)
+J_STATUS JFor_createIndexParameter(JFor* obj)
 {
-  int rc;
+  J_STATUS rc;
   JRange* seq = obj->sequencing;
-  rc = 0;
+  rc = J_OK;
 
   if (seq->sequencedObject == NULL) //default is INT
   {
@@ -315,7 +315,7 @@ int JFor_createIndexParameter(JFor* obj)
         {
           error("warning: %s unknow identifier\n", ((JIdentifier*) seq->sequencedObject)->identifier);
           obj->sequencing->stop = 0;
-          rc = -1;
+          rc = J_ERROR;
         }
 
         break;

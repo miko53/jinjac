@@ -141,53 +141,53 @@ BOOL ast_setBeginOfForStatement(long offset)
 
 
 
-int ast_insert(JObject* o)
+J_STATUS ast_insert(JObject* o)
 {
-  int rc;
-  rc = -1;
+  J_STATUS rc;
+  rc = J_ERROR;
 
   if (ast_root.ast_nb_object < MAX_OBJECT)
   {
     ast_root.ast_list[ast_root.ast_nb_object] = o;
     ast_root.ast_nb_object++;
-    rc = 0;
+    rc = J_OK;
   }
 
   return rc;
 }
 
-int ast_insert_constante(char* name)
+J_STATUS ast_insert_constante(char* name)
 {
   JObject* o = JStringConstante_new(name);
   return ast_insert(o);
 }
 
-int ast_insert_identifier(char* name)
+J_STATUS ast_insert_identifier(char* name)
 {
   JObject* o = JIdentifier_new(name);
   return ast_insert(o);
 }
 
-int ast_insert_integer(int i)
+J_STATUS ast_insert_integer(int i)
 {
   JObject* o = JInteger_new(i);
   return ast_insert(o);
 }
 
-int ast_insert_double(double d)
+J_STATUS ast_insert_double(double d)
 {
   JObject* o = JDouble_new(d);
   return ast_insert(o);
 }
 
-int ast_insert_boolean(BOOL b)
+J_STATUS ast_insert_boolean(BOOL b)
 {
   JObject* o = JBoolean_new(b);
   return ast_insert(o);
 }
 
 
-int ast_insert_function(char* fct)
+J_STATUS ast_insert_function(char* fct)
 {
   JObject* top;
   top = NULL;
@@ -213,15 +213,15 @@ int ast_insert_function(char* fct)
     return ast_insert(o);
   }
 
-  return -1;
+  return J_ERROR;
 }
 
-int ast_insert_array(char* name, int offset)
+J_STATUS ast_insert_array(char* name, int offset)
 {
-  int rc;
+  J_STATUS rc;
   JObject* o;
 
-  rc = -1;
+  rc = J_ERROR;
   o = JArray_new(name, offset);
   if (o != NULL)
   {
@@ -243,13 +243,13 @@ STATIC void ast_remove_last(BOOL toDelete)
 }
 
 
-int ast_execute_function()
+J_STATUS ast_execute_function()
 {
-  int rc;
+  J_STATUS rc;
   JObject* pConcernedObject;
 
   pConcernedObject = NULL;
-  rc = -1;
+  rc = J_ERROR;
 
   if (ast_root.ast_nb_object >= 1)
   {
@@ -273,7 +273,7 @@ int ast_execute_function()
 
       ast_remove_last(TRUE);
       ast_insert(resultObj);
-      rc = 0;
+      rc = J_OK;
     }
   }
 
@@ -308,7 +308,7 @@ BOOL ast_get_offset(JObject* pObject, int* pOffset)
   return TRUE;
 }
 
-int ast_create_array_on_top(char* name)
+J_STATUS ast_create_array_on_top(char* name)
 {
   if (ast_root.ast_nb_object != 0)
   {
@@ -322,14 +322,14 @@ int ast_create_array_on_top(char* name)
     }
   }
 
-  return -1;
+  return J_ERROR;
 }
 
 
 
 // function called when a argument is detected by yacc, the first argument is in
 // stack, it must be removed and inserted in a special JArgs object
-int ast_create_function_args_from_top(void)
+J_STATUS ast_create_function_args_from_top(void)
 {
   JObject* firstArgs;
   ASSERT(ast_root.ast_nb_object >= 1);
@@ -342,7 +342,7 @@ int ast_create_function_args_from_top(void)
   return ast_insert((JObject*) args);
 }
 
-int ast_insert_function_args()
+J_STATUS ast_insert_function_args()
 {
   JObject* arg;
   ASSERT(ast_root.ast_nb_object >= 2);
@@ -356,12 +356,12 @@ int ast_insert_function_args()
 }
 
 
-int ast_do_operation(char mathOperation)
+J_STATUS ast_do_operation(char mathOperation)
 {
   //perform mathematical operation on last two items of the stack
   //remove them and insert result after.
-  int rc;
-  rc = -1;
+  J_STATUS rc;
+  rc = J_ERROR;
 
   if (ast_root.ast_nb_object >= 2)
   {
@@ -374,7 +374,7 @@ int ast_do_operation(char mathOperation)
       ast_remove_last(TRUE);
       ast_remove_last(TRUE);
       ast_insert(result);
-      rc = 0;
+      rc = J_OK;
     }
     else
     {
@@ -390,12 +390,12 @@ int ast_do_operation(char mathOperation)
 }
 
 
-int ast_create_for_stmt(char* identifierName)
+J_STATUS ast_create_for_stmt(char* identifierName)
 {
-  int rc;
+  J_STATUS rc;
   JObject* o;
   JRange* range;
-  rc = -1;
+  rc = J_ERROR;
 
   ASSERT(ast_root.ast_nb_object >= 1);
 
@@ -435,11 +435,11 @@ BOOL ast_forStmtIsLineToBeIgnored()
 }
 
 
-int ast_create_end_for_stmt()
+J_STATUS ast_create_end_for_stmt()
 {
   int rc;
   JObject* o;
-  rc = -1;
+  rc = J_ERROR;
 
   o = JEndFor_new();
   if (o != NULL)
@@ -560,7 +560,7 @@ void display_range(JRange* range)
 }
 
 
-int ast_dump_stack()
+void ast_dump_stack()
 {
   unsigned int i;
 
@@ -629,6 +629,5 @@ int ast_dump_stack()
   }
 
   trace( "---------- end ast stack\n");
-  return 0;
 }
 

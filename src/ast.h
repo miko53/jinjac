@@ -54,25 +54,25 @@ extern ast_status ast_getStatus(void);
 
 extern char* ast_getStringResult(void);
 
-extern int ast_insert_constante(char* name);
-extern int ast_insert_identifier(char* name);
-extern int ast_insert_integer(int i);
-extern int ast_insert_double(double d);
-extern int ast_insert_boolean(BOOL b);
-extern int ast_insert_function(char* fct);
-extern int ast_create_array_on_top(char* name);
-extern int ast_create_function_args_from_top(void);
-extern int ast_insert_function_args(void);
+extern J_STATUS ast_insert_constante(char* name);
+extern J_STATUS ast_insert_identifier(char* name);
+extern J_STATUS ast_insert_integer(int i);
+extern J_STATUS ast_insert_double(double d);
+extern J_STATUS ast_insert_boolean(BOOL b);
+extern J_STATUS ast_insert_function(char* fct);
+extern J_STATUS ast_create_array_on_top(char* name);
+extern J_STATUS ast_create_function_args_from_top(void);
+extern J_STATUS ast_insert_function_args(void);
 
-extern int ast_do_operation(char mathOperation);
+extern J_STATUS ast_do_operation(char mathOperation);
 
-extern int ast_dump_stack(void);
+extern void ast_dump_stack(void);
 
-extern int ast_execute_function(void);
+extern J_STATUS ast_execute_function(void);
 
-extern int ast_create_for_stmt(char* identifierName);
+extern J_STATUS ast_create_for_stmt(char* identifierName);
 extern BOOL ast_setBeginOfForStatement(long offset);
-extern int ast_create_end_for_stmt(void);
+extern J_STATUS ast_create_end_for_stmt(void);
 extern BOOL ast_executeEndForStmt(long int* returnOffset);
 extern BOOL ast_forStmtIsLineToBeIgnored();
 

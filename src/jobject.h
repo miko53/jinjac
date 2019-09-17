@@ -141,8 +141,8 @@ extern void JObject_delete(JObject* pObject);
 extern JRange* JObject_toRange(JObject* pObject);
 
 //JFor
-extern int JFor_setStartPoint(JFor* obj, long offset);
-extern int JFor_createIndexParameter(JFor* obj);
+extern J_STATUS JFor_setStartPoint(JFor* obj, long offset);
+extern J_STATUS JFor_createIndexParameter(JFor* obj);
 extern BOOL JFor_isDone(JFor* obj);
 
 //JRange
