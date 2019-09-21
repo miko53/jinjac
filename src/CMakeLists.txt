@@ -21,4 +21,4 @@ set(SRCS_JINJAC
   )
 
 add_executable(jinja_expression ${SRCS_JINJAC} )
-target_link_libraries(jinja_expression fl)
+target_link_libraries(jinja_expression)

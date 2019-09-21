@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /* scanner for jinja expression*/
+%option noyywrap
+
 %{
   #include <stdio.h>
   #include "jinja_expression.tab.h"  // to get the token types from Bison
@@ -78,6 +80,8 @@ set                       { return SET; }
 \=\=                      { return EQUAL; }
 \>\=                      { return HIGH_AND_EQUAL_THAN; }
 \<\=                      { return LOWER_AND_EQUAL_THAN; }
+\<                        { return LOWER_THAN; }
+\>                        { return HIGHER_THAN; }
 \!\=                      { return DIFFERENT;}
 [_a-zA-Z][_a-zA-Z0-9]*  {
   // We have to strdup yytext because Flex will change it for the next token.
