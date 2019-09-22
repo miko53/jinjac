@@ -619,6 +619,17 @@ JObject* JEndIf_new(void)
   return (JObject*) o;
 }
 
+extern JObject* JElse_new(void)
+{
+  JElse* o = NEW(JElse);
+  o->base.type = J_ELSE;
+  o->base.delete = NULL;
+  o->base.getValue = NULL;
+  o->base.toBoolean = NULL;
+  return (JObject*) o;
+}
+
+
 char* JObject_toString(JObject* pObject)
 {
   parameter param;

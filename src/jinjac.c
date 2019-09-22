@@ -458,6 +458,11 @@ STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreN
       *ignoreNextLine = ast_ifStmtIsLineToBeIgnored();
       break;
 
+    case ELSE_STATEMENT:
+      ast_removeLastResultItem(); //NOTE: little hack to retrieve IF statement without build a new function
+      *ignoreNextLine = !ast_ifStmtIsLineToBeIgnored();
+      break;
+
     case END_IF_STATEMENT:
       *ignoreNextLine = FALSE;
       ast_removeLastResultItem();

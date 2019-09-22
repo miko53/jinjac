@@ -51,6 +51,7 @@ typedef enum
   J_FOR,
   J_END_FOR,
   J_IF,
+  J_ELSE,
   J_END_IF
 } jobject_type;
 
@@ -147,6 +148,11 @@ typedef struct
   JObject base;
 } JEndIf;
 
+typedef struct
+{
+  JObject base;
+} JElse;
+
 //constructor
 extern JObject* JStringConstante_new(char* name);
 extern JObject* JIdentifier_new(char* name);
@@ -184,6 +190,8 @@ extern JObject* JObject_execComparison(JObject* op1, JObject* op2, jobject_condi
 extern JObject* JIF_new(JObject* condition);
 extern BOOL JIF_getIfConditionIsActive(JIF* pIf);
 extern JObject* JEndIf_new(void);
+
+extern JObject* JElse_new(void);
 
 #ifdef __cplusplus
 }

@@ -110,6 +110,10 @@ ast_status ast_getStatus(void)
           status = IF_STATEMENT;
           break;
 
+        case J_ELSE:
+          status = ELSE_STATEMENT;
+          break;
+
         case J_END_IF:
           status = END_IF_STATEMENT;
           break;
@@ -586,6 +590,21 @@ J_STATUS ast_create_end_if_stmt(void)
   rc = J_ERROR;
 
   o = JEndIf_new();
+  if (o != NULL)
+  {
+    rc = ast_insert(o);
+  }
+
+  return rc;
+}
+
+J_STATUS ast_create_else_stmt(void)
+{
+  int rc;
+  JObject* o;
+  rc = J_ERROR;
+
+  o = JElse_new();
   if (o != NULL)
   {
     rc = ast_insert(o);

@@ -104,7 +104,10 @@ jinja_endif_stmt:
          }
 
 jinja_else_stmt:
-  ELSE { dbg_print("a ELSE stmt\n"); }
+  ELSE { 
+          dbg_print("a ELSE stmt\n"); 
+          ast_create_else_stmt();
+       }
 
 jinja_if_stmt:
   IF condition_expr { 

@@ -44,7 +44,8 @@ typedef enum
   FOR_STATEMENT,
   END_FOR_STATEMENT,
   IF_STATEMENT,
-  END_IF_STATEMENT
+  END_IF_STATEMENT,
+  ELSE_STATEMENT
 } ast_status;
 
 extern void ast_init(void);
@@ -83,6 +84,7 @@ extern BOOL ast_forStmtIsLineToBeIgnored(void);
 extern J_STATUS ast_do_condition(jobject_condition condition);
 extern J_STATUS ast_convert_to_condition(void);
 extern J_STATUS ast_create_if_stmt(void);
+extern J_STATUS ast_create_else_stmt(void);
 extern BOOL ast_ifStmtIsLineToBeIgnored(void);
 extern void ast_dump_stack(void);
 extern J_STATUS ast_create_end_if_stmt(void);
