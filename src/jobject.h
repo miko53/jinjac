@@ -49,14 +49,30 @@ typedef enum
   J_FUNCTION,
   J_RANGE,
   J_FOR,
-  J_END_FOR
+  J_END_FOR,
+  J_IF,
+  J_END_IF
 } jobject_type;
+
+typedef enum
+{
+  AST_EQUAL,
+  AST_DIFFERENT,
+  AST_HIGH_AND_EQUAL_THAN,
+  AST_HIGH_THAN,
+  AST_LOWER_AND_EQUAL_THAN,
+  AST_LOWER_THAN,
+  AST_IS
+} jobject_condition;
+
+
 
 typedef struct JObjects
 {
   jobject_type type;
   void (*delete)(struct JObjects* o);
   BOOL (*getValue)(struct JObjects* pObject, parameter* param);
+  BOOL (*toBoolean)(struct JObjects* pObject);
 } JObject;
 
 typedef struct
@@ -120,6 +136,17 @@ typedef struct
   JObject base;
 } JEndFor;
 
+typedef struct
+{
+  JObject base;
+  JObject* condition;
+} JIF;
+
+typedef struct
+{
+  JObject base;
+} JEndIf;
+
 //constructor
 extern JObject* JStringConstante_new(char* name);
 extern JObject* JIdentifier_new(char* name);
@@ -136,6 +163,8 @@ extern JObject* JEndFor_new(void);
 extern char* JObject_toString(JObject* pObject);
 extern BOOL JObject_getValue(JObject* pObject, parameter* param);
 extern int JObject_toInteger(JObject* obj);
+extern BOOL JObject_toBoolean(JObject* pObject);
+
 extern JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperation);
 extern void JObject_delete(JObject* pObject);
 extern JRange* JObject_toRange(JObject* pObject);
@@ -148,6 +177,13 @@ extern BOOL JFor_isDone(JFor* obj);
 //JRange
 extern JObject* JRange_new(JObject* objectToBeSequenced, int start, int stop, int step);
 extern BOOL JRange_step(JRange* obj, char* indexIdentifierName);
+
+extern JObject* JObject_execComparison(JObject* op1, JObject* op2, jobject_condition condition);
+
+//JIF
+extern JObject* JIF_new(JObject* condition);
+extern BOOL JIF_getIfConditionIsActive(JIF* pIf);
+extern JObject* JEndIf_new(void);
 
 #ifdef __cplusplus
 }

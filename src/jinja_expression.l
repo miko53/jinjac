@@ -61,6 +61,9 @@ HEXCONSTANT ([0][xX][0-9A-Fa-f]+)
 ({HEXCONSTANT}|{OCTALCONSTANT}|{DECIMALCONSTANT}){INTEGERSUFFIX}?  { yylval.integerData = strtol(yytext, NULL, 0); return INTEGER; }
 ([0-9]+\.[0-9]*){FLOATINGSUFFI}?                                   { yylval.doubleData = atof(yytext); return FLOAT; }
 ({DECIMALCONSTANT}){FLOATINGSUFFI}?                                { yylval.doubleData = atof(yytext); return FLOAT; }
+and                       { return AND;}
+or                        { return OR;}
+not                       { return NOT;}
 for                       { return FOR;}
 in                        { return IN; }
 endfor                    { return END_FOR; }

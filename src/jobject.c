@@ -134,6 +134,177 @@ BOOL JArray_getValue(struct JObjects* pObject, parameter* param)
   return bOk;
 }
 
+BOOL JObject_toBoolean(JObject* pObject)
+{
+  ASSERT(pObject != NULL);
+  BOOL bResult;
+  bResult = FALSE;
+
+  if (pObject->toBoolean != NULL)
+  {
+    bResult = pObject->toBoolean(pObject);
+  }
+  else
+  {
+    error("can't convert object type %d into boolean\n", pObject->type);
+    ASSERT(FALSE); // should not appear...
+  }
+
+  return bResult;
+}
+
+
+BOOL JStringConstante_toBoolean(JObject* pObject)
+{
+  BOOL r;
+  JStringConstante* p = (JStringConstante*) pObject;
+  r = TRUE;
+  if (strcmp(p->str_constant, "") == 0)
+  {
+    r = FALSE;
+  }
+  return r;
+}
+
+BOOL JInteger_toBoolean(JObject* pObject)
+{
+  BOOL r;
+  JInteger* p = (JInteger*) pObject;
+  r = TRUE;
+
+  if (p->value == 0)
+  {
+    r = FALSE;
+  }
+
+  return r;
+}
+
+
+BOOL JDouble_toBoolean(JObject* pObject)
+{
+  BOOL r;
+  JDouble* p = (JDouble*) pObject;
+  r = TRUE;
+
+  if (p->value == 0.0)
+  {
+    r = FALSE;
+  }
+
+  return r;
+}
+
+BOOL JBoolean_toBoolean(JObject* pObject)
+{
+  JBoolean* p = (JBoolean*) pObject;
+  return p->value;
+}
+
+BOOL JIdentifier_toBoolean(JObject* pObject)
+{
+  BOOL bOk;
+  BOOL isArray;
+  parameter param;
+  JIdentifier* pIdent;
+  pIdent = (JIdentifier*) pObject;
+  bOk = parameter_get(pIdent->identifier, &param, &isArray);
+
+  if (bOk)
+  {
+    if (isArray)
+    {
+      bOk = TRUE;
+    }
+    else
+    {
+      switch (param.type)
+      {
+        case TYPE_STRING:
+          if (strcmp(param.value.type_string, "") == 0)
+          {
+            bOk = FALSE;
+          }
+          break;
+        case TYPE_DOUBLE:
+          if (param.value.type_double == 0.0)
+          {
+            bOk = FALSE;
+          }
+          break;
+
+        case TYPE_INT:
+          if (param.value.type_int == 0)
+          {
+            bOk = FALSE;
+          }
+          break;
+
+        default:
+          bOk = FALSE;
+          ASSERT(FALSE);
+          break;
+      }
+      param_delete(&param);
+    }
+  }
+
+  return bOk;
+}
+
+BOOL JArray_toBoolean(JObject* pObject)
+{
+  BOOL bOk;
+  parameter param;
+  JArray* pArray;
+  pArray = (JArray*) pObject;
+  bOk = parameter_array_getProperties(pArray->identifier, &param.type, NULL);
+  if (bOk)
+  {
+    bOk = parameter_array_getValue(pArray->identifier, pArray->offset, &param.value);
+    if (bOk)
+    {
+      switch (param.type)
+      {
+        case TYPE_STRING:
+          if (strcmp(param.value.type_string, "") == 0)
+          {
+            bOk = FALSE;
+          }
+          break;
+        case TYPE_DOUBLE:
+          if (param.value.type_double == 0.0)
+          {
+            bOk = FALSE;
+          }
+          break;
+
+        case TYPE_INT:
+          if (param.value.type_int == 0)
+          {
+            bOk = FALSE;
+          }
+          break;
+
+        default:
+          bOk = FALSE;
+          ASSERT(FALSE);
+          break;
+      }
+      param_delete(&param);
+    }
+  }
+  return bOk;
+}
+
+
+//TODO Tocheck
+
+BOOL JRange_toBoolean(JObject* pObject)
+{
+  return ((JBoolean*) pObject)->value;
+}
+
 void JObject_delete(JObject* pObject)
 {
   if (pObject->delete != NULL)
@@ -154,6 +325,7 @@ JObject* JStringConstante_new(char* name)
   o->base.type = J_STR_CONSTANTE;
   o->base.delete = JStringConstante_delete;
   o->base.getValue = JStringConstante_getValue;
+  o->base.toBoolean = JStringConstante_toBoolean;
   o->str_constant = name;
   return (JObject*) o;
 }
@@ -169,6 +341,7 @@ JObject* JIdentifier_new(char* name)
   o->base.type = J_IDENTIFIER;
   o->base.delete = JIdentifier_delete;
   o->base.getValue = JIdentifier_getValue;
+  o->base.toBoolean = JIdentifier_toBoolean;
   o->identifier = name;
   return (JObject*) o;
 }
@@ -180,6 +353,7 @@ JObject* JInteger_new(int i)
   o->base.type = J_INTEGER;
   o->base.delete = NULL;
   o->base.getValue = JInteger_getValue;
+  o->base.toBoolean = JInteger_toBoolean;
   o->value = i;
   return (JObject*) o;
 }
@@ -190,6 +364,7 @@ JObject* JDouble_new(double d)
   o->base.type = J_DOUBLE;
   o->base.delete = NULL;
   o->base.getValue = JDouble_getValue;
+  o->base.toBoolean = JDouble_toBoolean;
   o->value = d;
   return (JObject*) o;
 }
@@ -200,6 +375,7 @@ JObject* JBoolean_new(BOOL b)
   o->base.type = J_BOOLEAN;
   o->base.delete = NULL;
   o->base.getValue = JBoolean_getValue;
+  o->base.toBoolean = JBoolean_toBoolean;
   o->value = b;
   return (JObject*) o;
 }
@@ -216,6 +392,7 @@ JObject* JArray_new(char* name, int offset)
   o->base.type = J_ARRAY;
   o->base.delete = JArray_delete;
   o->base.getValue = JArray_getValue;
+  o->base.toBoolean = JArray_toBoolean;
   o->identifier = name;
   o->offset = offset;
   return (JObject*) o;
@@ -237,6 +414,7 @@ JObject* JRange_new(JObject* objectToBeSequenced, int start, int stop, int step)
   o->base.type = J_RANGE;
   o->base.delete = JRange_delete;
   o->base.getValue = NULL;
+  o->base.toBoolean = NULL;
   o->sequencedObject = objectToBeSequenced;
   o->start = start;
   o->stop = stop;
@@ -262,6 +440,7 @@ JObject* JFor_new(char* nameIdentifier, JRange* sequence)
   o->base.type = J_FOR;
   o->base.delete = JFor_delete;
   o->base.getValue = NULL;
+  o->base.toBoolean = NULL;
   o->identifierOfIndex = nameIdentifier;
   o->sequencing = sequence;
   return (JObject*) o;
@@ -273,8 +452,10 @@ JObject* JEndFor_new(void)
   o->base.type = J_END_FOR;
   o->base.delete = NULL;
   o->base.getValue = NULL;
+  o->base.toBoolean = NULL;
   return (JObject*) o;
 }
+
 
 J_STATUS JFor_setStartPoint(JFor* obj, long offset)
 {
@@ -388,6 +569,54 @@ BOOL JRange_step(JRange* obj, char* indexIdentifierName)
   }
 
   return isDone;
+}
+
+
+void JIF_delete(JObject* pObject)
+{
+  JIF* f = ((JIF*) pObject);
+  if (f->condition != NULL)
+  {
+    JObject_delete((JObject*) f->condition);
+  }
+}
+
+
+JObject* JIF_new(JObject* condition)
+{
+  JIF* o = NEW(JIF);
+  o->base.type = J_IF;
+  o->base.delete = JIF_delete;
+  o->base.getValue = NULL;
+  o->base.toBoolean = NULL;
+  o->condition = condition;
+  return (JObject*) o;
+}
+
+BOOL JIF_getIfConditionIsActive(JIF* pIf)
+{
+  BOOL b;
+
+  if (pIf->condition->type == J_BOOLEAN)
+  {
+    b = ((JBoolean*) pIf->condition)->value;
+  }
+  else
+  {
+    b = pIf->condition->toBoolean(pIf->condition);
+  }
+
+  return b;
+}
+
+JObject* JEndIf_new(void)
+{
+  JEndIf* o = NEW(JEndIf);
+  o->base.type = J_END_IF;
+  o->base.delete = NULL;
+  o->base.getValue = NULL;
+  o->base.toBoolean = NULL;
+  return (JObject*) o;
 }
 
 char* JObject_toString(JObject* pObject)
@@ -594,10 +823,72 @@ JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperation)
         ASSERT(FALSE);
         break;
     }
-
   }
 
   return pObjResult;
+}
+
+
+JObject* JObject_execComparison(JObject* op1, JObject* op2, jobject_condition condition)
+{
+  JObject* pObjectResult;
+  pObjectResult = NULL;
+
+  //BOOL bOk1;
+  //BOOL bOk2;
+  BOOL bComparisonResult;
+  parameter paramOp1;
+  parameter paramOp2;
+
+  /*bOk1 =*/ JObject_getValue(op1, &paramOp1);
+  /*bOk2 =*/ JObject_getValue(op2, &paramOp2);
+
+  if ((paramOp1.type == TYPE_STRING) && (paramOp2.type == TYPE_STRING))
+  {
+    if (strcmp(paramOp1.value.type_string, paramOp2.value.type_string) == 0)
+    {
+      pObjectResult = JBoolean_new(TRUE);
+    }
+    else
+    {
+      pObjectResult = JBoolean_new(FALSE);
+    }
+  }
+  else if ((paramOp1.type == TYPE_STRING) || (paramOp2.type == TYPE_STRING))
+  {
+    pObjectResult = JBoolean_new(FALSE);
+  }
+  else
+  {
+    int s = select_operation(paramOp1.type, paramOp2.type);
+    switch (s)
+    {
+      case OPERATION_DDD:
+        bComparisonResult = compare_ddd(paramOp1.value.type_double, paramOp2.value.type_double, condition);
+        break;
+
+      case OPERATION_DID:
+        bComparisonResult = compare_did(paramOp1.value.type_double, paramOp2.value.type_int, condition);
+        break;
+
+      case OPERATION_IDD:
+        bComparisonResult = compare_idd(paramOp1.value.type_int, paramOp2.value.type_double, condition);
+        break;
+
+      case OPERATION_III:
+        bComparisonResult = compare_iii(paramOp1.value.type_int, paramOp2.value.type_int, condition);
+        break;
+
+      default:
+        bComparisonResult = FALSE;
+        ASSERT(FALSE);
+        break;
+    }
+
+    pObjectResult = JBoolean_new(bComparisonResult);
+  }
+
+  return pObjectResult;
 }
 
 

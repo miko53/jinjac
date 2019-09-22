@@ -69,6 +69,10 @@ extern J_STATUS parameter_array_insert(char* key, parameter_type type, int nbVal
 extern BOOL parameter_array_getProperties(char* key, parameter_type* type, int* nbItem);
 extern BOOL parameter_array_getValue(char* key, int offset, parameter_value* v);
 extern char* parameter_convertArrayToString(char* key);
+
+//destructor
+extern void param_delete(parameter* param);
+
 #ifdef __cplusplus
 }
 #endif

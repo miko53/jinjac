@@ -27,33 +27,17 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef _CONVERT_H
-#define _CONVERT_H
+#ifndef _JINJA_H
+#define _JINJA_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "common.h"
-#include "jobject.h"
-
-extern char* intToStr(int value);
-extern char* doubleToStr(double value);
-
-extern double calcul_ddd(double d1, double d2, char operation);
-extern double calcul_did(double d1, int i2, char operation);
-extern double calcul_idd(int i1, double d2, char operation);
-extern int calcul_iii(int i1, int i2, char operation);
-
-extern BOOL compare_ddd(double d1, double d2, jobject_condition condition);
-extern BOOL compare_did(double d1, int i2, jobject_condition condition);
-extern BOOL compare_idd(int i1, double d2, jobject_condition condition);
-extern BOOL compare_iii(int i1, int i2, jobject_condition condition);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _CONVERT_H */
+#endif /* _JINJA_H */

@@ -31,7 +31,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "convert.h"
-#include "common.h"
 
 char* intToStr(int value)
 {
@@ -197,4 +196,155 @@ int calcul_iii(int i1, int i2, char operation)
   return r;
 }
 
+BOOL compare_ddd(double d1, double d2, jobject_condition condition)
+{
+  BOOL r;
+
+  switch (condition)
+  {
+    case AST_EQUAL:
+      r = (d1 == d2);
+      break;
+
+    case AST_DIFFERENT:
+      r = (d1 != d2);
+      break;
+
+    case AST_HIGH_AND_EQUAL_THAN:
+      r = (d1 >= d2);
+      break;
+
+    case AST_HIGH_THAN:
+      r = (d1 > d2);
+      break;
+
+    case AST_LOWER_AND_EQUAL_THAN:
+      r = (d1 <= d2);
+      break;
+
+    case AST_LOWER_THAN:
+      r = (d1 < d2);
+      break;
+
+    default:
+      ASSERT(FALSE);
+      break;
+  }
+
+  return r;
+}
+
+BOOL compare_did(double d1, int i2, jobject_condition condition)
+{
+  BOOL r;
+
+  switch (condition)
+  {
+    case AST_EQUAL:
+      r = (d1 == i2);
+      break;
+
+    case AST_DIFFERENT:
+      r = (d1 != i2);
+      break;
+
+    case AST_HIGH_AND_EQUAL_THAN:
+      r = (d1 >= i2);
+      break;
+
+    case AST_HIGH_THAN:
+      r = (d1 > i2);
+      break;
+
+    case AST_LOWER_AND_EQUAL_THAN:
+      r = (d1 <= i2);
+      break;
+
+    case AST_LOWER_THAN:
+      r = (d1 < i2);
+      break;
+
+    default:
+      ASSERT(FALSE);
+      break;
+  }
+
+  return r;
+}
+
+BOOL compare_idd(int i1, double d2, jobject_condition condition)
+{
+  BOOL r;
+
+  switch (condition)
+  {
+    case AST_EQUAL:
+      r = (i1 == d2);
+      break;
+
+    case AST_DIFFERENT:
+      r = (i1 != d2);
+      break;
+
+    case AST_HIGH_AND_EQUAL_THAN:
+      r = (i1 >= d2);
+      break;
+
+    case AST_HIGH_THAN:
+      r = (i1 > d2);
+      break;
+
+    case AST_LOWER_AND_EQUAL_THAN:
+      r = (i1 <= d2);
+      break;
+
+    case AST_LOWER_THAN:
+      r = (i1 < d2);
+      break;
+
+    default:
+      ASSERT(FALSE);
+      break;
+  }
+
+  return r;
+}
+
+BOOL compare_iii(int i1, int i2, jobject_condition condition)
+{
+  BOOL r;
+
+  switch (condition)
+  {
+    case AST_EQUAL:
+      r = (i1 == i2);
+      break;
+
+    case AST_DIFFERENT:
+      r = (i1 != i2);
+      break;
+
+    case AST_HIGH_AND_EQUAL_THAN:
+      r = (i1 >= i2);
+      break;
+
+    case AST_HIGH_THAN:
+      r = (i1 > i2);
+      break;
+
+    case AST_LOWER_AND_EQUAL_THAN:
+      r = (i1 <= i2);
+      break;
+
+    case AST_LOWER_THAN:
+      r = (i1 < i2);
+      break;
+
+    default:
+      ASSERT(FALSE);
+      break;
+  }
+
+  return r;
+}
 

@@ -90,6 +90,10 @@ STATIC void parse_only_string_arg(char* string)
       trace("For stmt\n");
       break;
 
+    case IF_STATEMENT:
+      trace("If stmt\n");
+      break;
+
     default:
       ASSERT(FALSE);
       break;
@@ -448,6 +452,15 @@ STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreN
     case IN_ERROR:
       fprintf(stdout, "parsing Error\n");
       inError = TRUE;
+      break;
+
+    case IF_STATEMENT:
+      *ignoreNextLine = ast_ifStmtIsLineToBeIgnored();
+      break;
+
+    case END_IF_STATEMENT:
+      *ignoreNextLine = FALSE;
+      ast_removeLastResultItem();
       break;
 
     case END_FOR_STATEMENT:

@@ -72,7 +72,8 @@
 %left '+' '-' '*' '/'
 
 %token FOR END_FOR IN IF IS ELSE END_IF ELIF L_TRUE L_FALSE BLOCK END_BLOCK EXTENDS RAW END_RAW SET
-%token EQUAL HIGH_AND_EQUAL_THAN LOWER_AND_EQUAL_THAN DIFFERENT
+%token EQUAL HIGH_AND_EQUAL_THAN LOWER_AND_EQUAL_THAN DIFFERENT AND OR NOT
+%token LOWER_THAN HIGHER_THAN
 
 %%
 jinja_stmt:
@@ -103,7 +104,11 @@ jinja_else_stmt:
   ELSE { dbg_print("a ELSE stmt\n"); }
 
 jinja_if_stmt:
-  IF condition_expr { dbg_print("a IF statement\n");ast_dump_stack(); }
+  IF condition_expr { 
+                      dbg_print("a IF statement\n");
+                      ast_create_if_stmt();
+                      ast_dump_stack(); 
+                    }
   
 jinja_filtered_expr:
   function_expression { 
@@ -215,19 +220,27 @@ jinja_primary_expr:
                       }
 
 condition_expr:
-  postfix_expression |
-  postfix_expression EQUAL postfix_expression { dbg_print("equal expression\n"); }
+  postfix_expression { dbg_print("alone expression\n"); ast_convert_to_condition(); }
   |
-  postfix_expression DIFFERENT postfix_expression { dbg_print("diff expression\n"); }
+  function_expression { dbg_print("alone fct expression\n"); /*ast_convert_to_condition();*/ } //TODO
   |
-  postfix_expression HIGH_AND_EQUAL_THAN postfix_expression { dbg_print(">= expression\n"); }
+  postfix_expression EQUAL postfix_expression { dbg_print("equal expression\n"); ast_do_condition(AST_EQUAL); }
   |
-  postfix_expression LOWER_AND_EQUAL_THAN postfix_expression { dbg_print("<= expression\n"); }
+  postfix_expression DIFFERENT postfix_expression { dbg_print("diff expression\n"); ast_do_condition(AST_DIFFERENT);}
   |
-  postfix_expression IS function_expression { dbg_print("IS expression\n"); }
+  postfix_expression HIGH_AND_EQUAL_THAN postfix_expression { dbg_print(">= expression\n"); ast_do_condition(AST_HIGH_AND_EQUAL_THAN);}
+  |
+  postfix_expression HIGHER_THAN postfix_expression { dbg_print("> expression\n");  ast_do_condition(AST_HIGH_THAN);}
+  |
+  postfix_expression LOWER_AND_EQUAL_THAN postfix_expression { dbg_print("<= expression\n"); ast_do_condition(AST_LOWER_AND_EQUAL_THAN); }
+  |
+  postfix_expression LOWER_THAN postfix_expression { dbg_print("< expression\n"); ast_do_condition(AST_LOWER_THAN);}
+  |
+  postfix_expression IS function_expression { dbg_print("IS expression with fct\n"); }
   | 
-  postfix_expression IS IDENTIFIER { dbg_print("IS expression\n"); }
-
+  postfix_expression IS IDENTIFIER { dbg_print("IS expression with id\n"); }
+  |
+  '(' condition_expr ')' { dbg_print("condition with parenthese\n"); }
   
 %%
 

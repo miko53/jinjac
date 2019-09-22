@@ -540,3 +540,16 @@ void parameter_delete_all()
   item_allocated = 0;
   item_array = NULL;
 }
+
+
+void param_delete(parameter* param)
+{
+  ASSERT(param != NULL);
+
+  if (param->type == TYPE_STRING)
+  {
+    free(param->value.type_string);
+    param->value.type_string = NULL;
+  }
+}
+

@@ -106,6 +106,10 @@ ast_status ast_getStatus(void)
           status = END_FOR_STATEMENT;
           break;
 
+        case J_IF:
+          status = IF_STATEMENT;
+          break;
+
         default:
           status = OK_DONE;
           break;
@@ -383,7 +387,62 @@ J_STATUS ast_do_operation(char mathOperation)
   }
   else
   {
-    ast_setInError("Nb operande not in according with calcul");
+    ast_setInError("Nb operand not in according with calcul");
+  }
+
+  return rc;
+}
+
+J_STATUS ast_do_condition(jobject_condition condition)
+{
+  J_STATUS rc;
+  rc = J_ERROR;
+
+  if (ast_root.ast_nb_object >= 2)
+  {
+    JObject* op1 = ast_root.ast_list[ast_root.ast_nb_object - 2];
+    JObject* op2 = ast_root.ast_list[ast_root.ast_nb_object - 1];
+    JObject* result = JObject_execComparison(op1, op2, condition);
+    if (result != NULL)
+    {
+      ast_remove_last(TRUE);
+      ast_remove_last(TRUE);
+      ast_insert(result);
+      rc = J_OK;
+    }
+    else
+    {
+      ast_setInError("Calcul not possible");
+    }
+  }
+  else
+  {
+    ast_setInError("Not enought operand to do the comparison...");
+  }
+
+  return rc;
+}
+
+//used with only one condition
+J_STATUS ast_convert_to_condition(void)
+{
+  J_STATUS rc;
+  rc = J_ERROR;
+
+  if (ast_root.ast_nb_object >= 1)
+  {
+    JObject* pObj = ast_root.ast_list[ast_root.ast_nb_object - 1];
+    JObject* pResult;
+    BOOL bResult;
+
+    bResult = JObject_toBoolean(pObj);
+    pResult = JBoolean_new(bResult);
+    if (pResult != NULL)
+    {
+      ast_remove_last(TRUE);
+      ast_insert(pResult);
+      rc = J_OK;
+    }
   }
 
   return rc;
@@ -421,7 +480,7 @@ J_STATUS ast_create_for_stmt(char* identifierName)
   return rc;
 }
 
-BOOL ast_forStmtIsLineToBeIgnored()
+BOOL ast_forStmtIsLineToBeIgnored(void)
 {
   ASSERT(ast_root.ast_nb_object >= 1);
   ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FOR);
@@ -481,6 +540,56 @@ BOOL ast_executeEndForStmt(long* returnOffset)
 }
 
 
+J_STATUS ast_create_if_stmt(void)
+{
+  J_STATUS rc;
+  JObject* o;
+
+  rc = J_ERROR;
+
+  ASSERT(ast_root.ast_nb_object >= 1);
+  if (ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_BOOLEAN)
+  {
+    o = JIF_new(ast_root.ast_list[ast_root.ast_nb_object - 1]);
+    if (o != NULL)
+    {
+      ast_remove_last(FALSE);
+      rc = ast_insert(o);
+    }
+  }
+
+  return rc;
+}
+
+BOOL ast_ifStmtIsLineToBeIgnored(void)
+{
+  ASSERT(ast_root.ast_nb_object >= 1);
+  ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_IF);
+  BOOL bLineNeedToBeIgnored;
+
+  JIF* pIF = (JIF*) (ast_root.ast_list[ast_root.ast_nb_object - 1]);
+
+  bLineNeedToBeIgnored = !JIF_getIfConditionIsActive(pIF);
+
+  return bLineNeedToBeIgnored;
+}
+
+
+J_STATUS ast_create_end_if_stmt()
+{
+  int rc;
+  JObject* o;
+  rc = J_ERROR;
+
+  o = JEndIf_new();
+  if (o != NULL)
+  {
+    rc = ast_insert(o);
+  }
+
+  return rc;
+}
+
 char* ast_getTypeString(jobject_type type)
 {
   char* s = NULL;
@@ -529,6 +638,14 @@ char* ast_getTypeString(jobject_type type)
 
     case J_END_FOR:
       s = "End For";
+      break;
+
+    case J_IF:
+      s = "If";
+      break;
+
+    case J_END_IF:
+      s = "End If";
       break;
 
     default:

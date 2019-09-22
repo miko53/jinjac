@@ -114,6 +114,7 @@ JObject* JFunction_new(char* fct)
     o->base.type = J_FUNCTION;
     o->base.delete = JFunction_delete;
     o->base.getValue = NULL;
+    o->base.toBoolean = NULL;
     o->argList = NULL;
     o->functionID = functionID;
     return (JObject*) o;
@@ -125,6 +126,14 @@ JObject* JFunction_new(char* fct)
 
   return NULL;
 }
+
+//TODO
+/*
+BOOL JFunction_toBoolean(JObject* pObject)
+{
+    return FALSE;
+}
+*/
 
 void JArgs_delete(JObject* pObject)
 {
@@ -145,6 +154,7 @@ JObject* JArgs_new(void)
   o->base.type = J_FUNCTION_ARGS;
   o->base.delete = JArgs_delete;
   o->base.getValue = NULL;
+  o->base.toBoolean = NULL;
   o->nb_args = 0;
   return (JObject*) o;
 }

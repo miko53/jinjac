@@ -31,6 +31,7 @@
 #define _AST_H
 
 #include "common.h"
+#include "jobject.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,7 +42,9 @@ typedef enum
   IN_ERROR = -1,
   OK_DONE,
   FOR_STATEMENT,
-  END_FOR_STATEMENT
+  END_FOR_STATEMENT,
+  IF_STATEMENT,
+  END_IF_STATEMENT
 } ast_status;
 
 extern void ast_init(void);
@@ -66,15 +69,22 @@ extern J_STATUS ast_insert_function_args(void);
 
 extern J_STATUS ast_do_operation(char mathOperation);
 
-extern void ast_dump_stack(void);
-
+//function
 extern J_STATUS ast_execute_function(void);
 
+//FOR END_FOR management
 extern J_STATUS ast_create_for_stmt(char* identifierName);
 extern BOOL ast_setBeginOfForStatement(long offset);
 extern J_STATUS ast_create_end_for_stmt(void);
 extern BOOL ast_executeEndForStmt(long int* returnOffset);
-extern BOOL ast_forStmtIsLineToBeIgnored();
+extern BOOL ast_forStmtIsLineToBeIgnored(void);
+
+//expression
+extern J_STATUS ast_do_condition(jobject_condition condition);
+extern J_STATUS ast_convert_to_condition(void);
+extern J_STATUS ast_create_if_stmt(void);
+extern BOOL ast_ifStmtIsLineToBeIgnored(void);
+extern void ast_dump_stack(void);
 
 #ifdef __cplusplus
 }
