@@ -98,7 +98,10 @@ jinja_endfor_stmt:
           }
 
 jinja_endif_stmt:
-  END_IF { dbg_print("a ENDIF stmt\n"); }
+  END_IF { 
+           dbg_print("a ENDIF stmt\n");
+           ast_create_end_if_stmt();
+         }
 
 jinja_else_stmt:
   ELSE { dbg_print("a ELSE stmt\n"); }

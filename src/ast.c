@@ -110,6 +110,10 @@ ast_status ast_getStatus(void)
           status = IF_STATEMENT;
           break;
 
+        case J_END_IF:
+          status = END_IF_STATEMENT;
+          break;
+
         default:
           status = OK_DONE;
           break;
@@ -575,7 +579,7 @@ BOOL ast_ifStmtIsLineToBeIgnored(void)
 }
 
 
-J_STATUS ast_create_end_if_stmt()
+J_STATUS ast_create_end_if_stmt(void)
 {
   int rc;
   JObject* o;
