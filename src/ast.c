@@ -544,6 +544,7 @@ BOOL ast_executeEndForStmt(long* returnOffset)
     }
   }
 
+  //trace("ast_executeEndForStmt = %d\n", bOK);
   return bOK;
 }
 
@@ -759,8 +760,11 @@ void ast_dump_stack()
                  ((JFor*) ast_root.ast_list[i])->startOffset);
           display_range(((JFor*) ast_root.ast_list[i])->sequencing);
         }
+        break;
 
+      case J_IF:
       case J_END_FOR:
+        trace("\n");
         break;
 
       default:

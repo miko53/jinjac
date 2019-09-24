@@ -41,6 +41,7 @@
 
 typedef struct
 {
+  BOOL isUsed;
   char* key;
   parameter_type type;
   parameter_value value;
@@ -60,7 +61,7 @@ void parameter_init(void)
 {
   item_allocated = 10;
   item_nb = 0;
-  item_array = calloc(10, sizeof(param_item));
+  item_array = calloc(item_allocated, sizeof(param_item));
   ASSERT(item_array != NULL);
 }
 
@@ -101,10 +102,10 @@ J_STATUS parameter_insert(char* key, parameter* param)
   }
   else
   {
-    void* temp = reallocarray(item_array, sizeof(param_item), item_allocated * 2);
+    void* temp = reallocarray(item_array, item_allocated * 2, sizeof(param_item));
     if (temp != NULL)
     {
-      free(item_array);
+      //free(item_array);
       item_array = temp;
       item_allocated = item_allocated * 2;
       add_param_in_array(key, param->type, param->value);
@@ -120,6 +121,8 @@ J_STATUS parameter_insert(char* key, parameter* param)
 
 STATIC void add_param_in_array(char* key, parameter_type type, parameter_value value)
 {
+  trace("insert item '%s' at %d\n", key, item_nb);
+  item_array[item_nb].isUsed = TRUE;
   item_array[item_nb].key = strdup(key);
   item_array[item_nb].type = type;
   item_array[item_nb].isArray = FALSE;
@@ -155,7 +158,7 @@ BOOL parameter_get(char* key, parameter* param, BOOL* isArray)
 
   for (i = 0; i < item_nb; i++)
   {
-    if (strcmp(key, item_array[i].key) == 0)
+    if ((item_array[i].isUsed == TRUE) && (strcmp(key, item_array[i].key) == 0))
     {
       param->type = item_array[i].type;
       param->value = item_array[i].value;
@@ -180,7 +183,7 @@ J_STATUS parameter_update(char* key, parameter_value newValue)
     //NOTE: loop done in inverse mode to allow to have index Name overloaded by the loop one
     for (i = item_nb - 1; i >= 0; i--)
     {
-      if (strcmp(key, item_array[i].key) == 0)
+      if ((item_array[i].isUsed == TRUE)  && (strcmp(key, item_array[i].key) == 0))
       {
         if (item_array[i].type == TYPE_STRING)
         {
@@ -200,7 +203,11 @@ J_STATUS parameter_update(char* key, parameter_value newValue)
     }
   }
 
-  fprintf(stdout, "parameter to update '%s' not found\n", key);
+  if (rc == J_ERROR)
+  {
+    trace("parameter to update '%s' not found\n", key);
+  }
+
   return rc;
 }
 
@@ -214,7 +221,7 @@ BOOL parameter_array_getValue(char* key, int offset, parameter_value* v)
 
   for (i = 0; i < item_nb; i++)
   {
-    if (strcmp(key, item_array[i].key) == 0)
+    if ((item_array[i].isUsed == TRUE) && (strcmp(key, item_array[i].key) == 0))
     {
       param_item* current;
       current = &item_array[i];
@@ -268,7 +275,7 @@ BOOL parameter_array_getProperties(char* key, parameter_type* type, int* nbItem)
 
   for (i = 0; i < item_nb; i++)
   {
-    if (strcmp(key, item_array[i].key) == 0)
+    if ((item_array[i].isUsed == TRUE) && (strcmp(key, item_array[i].key) == 0))
     {
       if (nbItem != NULL)
       {
@@ -308,6 +315,7 @@ J_STATUS parameter_array_insert(char* key, parameter_type type, int nbValue, ...
 
   if (item_nb < item_allocated)
   {
+    item_array[item_nb].isUsed = TRUE;
     item_array[item_nb].key = strdup(key);
     item_array[item_nb].type = type;
     item_array[item_nb].isArray = TRUE;
@@ -358,12 +366,12 @@ J_STATUS parameter_array_insert(char* key, parameter_type type, int nbValue, ...
   }
   else
   {
-    void* temp = reallocarray(item_array, sizeof(param_item), item_allocated * 2);
+    void* temp = reallocarray(item_array, item_allocated * 2, sizeof(param_item));
     if (temp != NULL)
     {
-      free(item_array);
       item_array = temp;
       item_allocated = item_allocated * 2;
+      item_array[item_nb].isUsed = TRUE;
       item_array[item_nb].key = strdup(key);
       item_array[item_nb].type = type;
       item_array[item_nb].isArray = TRUE;
@@ -415,7 +423,7 @@ J_STATUS parameter_array_insert(char* key, parameter_type type, int nbValue, ...
     }
     else
     {
-      status = J_OK;
+      status = J_ERROR;
     }
   }
 
@@ -441,7 +449,7 @@ char* parameter_convertArrayToString(char* key)
     str_obj_create(&arrayResult);
     for (int i = 0; i < item_nb; i++)
     {
-      if (strcmp(key, item_array[i].key) == 0)
+      if ((item_array[i].isUsed == TRUE) && (strcmp(key, item_array[i].key) == 0))
       {
         indexItem = i;
         break;
@@ -495,7 +503,7 @@ J_STATUS parameter_delete(char* key)
     //NOTE: loop done in inverse mode to allow to have index Name overloaded by the loop one
     for (i = item_nb - 1; i >= 0; i--)
     {
-      if (strcmp(key, item_array[i].key) == 0)
+      if ((item_array[i].isUsed == TRUE) && (strcmp(key, item_array[i].key) == 0))
       {
         if (item_array[i].isArray)
         {
@@ -514,7 +522,11 @@ J_STATUS parameter_delete(char* key)
     }
   }
 
-  fprintf(stdout, "parameter to update '%s' not found\n", key);
+  if (rc == J_ERROR)
+  {
+    trace("parameter to delete '%s' not found\n", key);
+  }
+
   return rc;
 }
 

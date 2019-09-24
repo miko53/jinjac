@@ -113,7 +113,7 @@ jinja_if_stmt:
   IF condition_expr { 
                       dbg_print("a IF statement\n");
                       ast_create_if_stmt();
-                      ast_dump_stack(); 
+                      //ast_dump_stack(); 
                     }
   
 jinja_filtered_expr:

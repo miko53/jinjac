@@ -5,3 +5,11 @@ This text must appear with value {{ myNiceDouble }}
 DSFDSF
 {% endif %}
 mlcdkmlsfk
+{% if users %}
+User exists {{ users[0] }}
+{% endif %}
+{% if do_not_exist %}
+Must not exist 
+{% else %}
+It seems not exist !!
+{% endif %}

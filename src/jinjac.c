@@ -466,6 +466,7 @@ STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreN
     case END_IF_STATEMENT:
       *ignoreNextLine = FALSE;
       ast_removeLastResultItem();
+      ast_removeLastResultItem();
       break;
 
     case END_FOR_STATEMENT:
@@ -478,6 +479,10 @@ STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreN
           if (returnOffset != -1)
           {
             fseek(in, returnOffset, SEEK_SET);
+          }
+          else
+          {
+            ast_removeLastResultItem();
           }
 
           ast_removeLastResultItem();

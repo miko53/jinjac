@@ -245,7 +245,7 @@ BOOL JIdentifier_toBoolean(JObject* pObject)
           ASSERT(FALSE);
           break;
       }
-      param_delete(&param);
+      //param_delete(&param);
     }
   }
 
@@ -291,7 +291,7 @@ BOOL JArray_toBoolean(JObject* pObject)
           ASSERT(FALSE);
           break;
       }
-      param_delete(&param);
+      //param_delete(&param);
     }
   }
   return bOk;
