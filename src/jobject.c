@@ -430,6 +430,7 @@ void JFor_delete(JObject* pObject)
   {
     JObject_delete((JObject*) f->sequencing);
   }
+  parameter_delete(f->identifierOfIndex);
   free(f->identifierOfIndex);
 }
 

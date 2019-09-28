@@ -72,6 +72,7 @@ extern J_STATUS ast_do_operation(char mathOperation);
 
 //function
 extern J_STATUS ast_execute_function(void);
+extern J_STATUS ast_execute_filtered_function(void);
 
 //FOR END_FOR management
 extern J_STATUS ast_create_for_stmt(char* identifierName);

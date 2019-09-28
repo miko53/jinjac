@@ -258,17 +258,39 @@ STATIC void ast_remove_last(BOOL toDelete)
 J_STATUS ast_execute_function()
 {
   J_STATUS rc;
+  rc = J_ERROR;
+
+  if (ast_root.ast_nb_object >= 1)
+  {
+    ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FUNCTION);//TODO check error instead ...
+
+    JFunction* f = (JFunction*) ast_root.ast_list[ast_root.ast_nb_object - 1];
+    JObject* resultObj;
+
+    resultObj = JFunction_execute(f, NULL);
+    if (resultObj != NULL)
+    {
+      ast_remove_last(TRUE);
+      ast_insert(resultObj);
+      rc = J_OK;
+    }
+  }
+
+  return rc;
+}
+
+
+J_STATUS ast_execute_filtered_function(void)
+{
+  J_STATUS rc;
   JObject* pConcernedObject;
 
   pConcernedObject = NULL;
   rc = J_ERROR;
 
-  if (ast_root.ast_nb_object >= 1)
+  if (ast_root.ast_nb_object >= 2)
   {
-    if (ast_root.ast_nb_object >= 2)
-    {
-      pConcernedObject = ast_root.ast_list[ast_root.ast_nb_object - 2];
-    }
+    pConcernedObject = ast_root.ast_list[ast_root.ast_nb_object - 2];
 
     ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FUNCTION);//TODO check error instead ...
 
@@ -291,6 +313,8 @@ J_STATUS ast_execute_function()
 
   return rc;
 }
+
+
 
 char* ast_getStringResult()
 {
@@ -534,7 +558,7 @@ BOOL ast_executeEndForStmt(long* returnOffset)
       if (isDone)
       {
         *returnOffset = -1;
-        parameter_delete(pForStmt->identifierOfIndex);
+        //parameter_delete(pForStmt->identifierOfIndex);
       }
       else
       {

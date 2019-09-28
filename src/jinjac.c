@@ -428,75 +428,86 @@ STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreN
   ASSERT(ignoreNextLine != NULL);
 
   inError = FALSE;
-  *ignoreNextLine = FALSE;
 
-  trace("parse = \"%s\"\n", string);
+  trace("line %d: string to parse = \"%s\"\n", no_line, string);
 
   buffer = yy_scan_string ( string );
   yyparse();
 
   parserStatus = ast_getStatus();
-  switch (parserStatus)
+
+  if ((*ignoreNextLine == TRUE) &&
+      ((parserStatus != ELSE_STATEMENT) &&
+       (parserStatus != END_IF_STATEMENT)))
   {
-    case OK_DONE:
-      fputs(ast_getStringResult(), out);
-      ast_removeLastResultItem();
-      break;
+    trace("parserStatus = %d, ignored because ignoreNextLine is set\n", parserStatus);
+    //ast_removeLastResultItem();
+  }
+  else
+  {
+    *ignoreNextLine = FALSE;
+    switch (parserStatus)
+    {
+      case OK_DONE:
+        fputs(ast_getStringResult(), out);
+        ast_removeLastResultItem();
+        break;
 
-    case FOR_STATEMENT:
-      fprintf(stdout, "FOR stmt\n");
-      ast_setBeginOfForStatement(ftell(in));
-      *ignoreNextLine = ast_forStmtIsLineToBeIgnored();
-      break;
+      case FOR_STATEMENT:
+        trace("FOR stmt\n");
+        ast_setBeginOfForStatement(ftell(in));
+        *ignoreNextLine = ast_forStmtIsLineToBeIgnored();
+        break;
 
-    case IN_ERROR:
-      fprintf(stdout, "parsing Error\n");
-      inError = TRUE;
-      break;
+      case IN_ERROR:
+        error("parsing error\n");
+        inError = TRUE;
+        break;
 
-    case IF_STATEMENT:
-      *ignoreNextLine = ast_ifStmtIsLineToBeIgnored();
-      break;
+      case IF_STATEMENT:
+        *ignoreNextLine = ast_ifStmtIsLineToBeIgnored();
+        break;
 
-    case ELSE_STATEMENT:
-      ast_removeLastResultItem(); //NOTE: little hack to retrieve IF statement without build a new function
-      *ignoreNextLine = !ast_ifStmtIsLineToBeIgnored();
-      break;
+      case ELSE_STATEMENT:
+        ast_removeLastResultItem(); //NOTE: little hack to retrieve IF statement without build a new function
+        *ignoreNextLine = !ast_ifStmtIsLineToBeIgnored();
+        break;
 
-    case END_IF_STATEMENT:
-      *ignoreNextLine = FALSE;
-      ast_removeLastResultItem();
-      ast_removeLastResultItem();
-      break;
+      case END_IF_STATEMENT:
+        *ignoreNextLine = FALSE;
+        ast_removeLastResultItem();
+        ast_removeLastResultItem();
+        break;
 
-    case END_FOR_STATEMENT:
-      {
-        long int returnOffset;
-        BOOL bOk;
-        bOk = ast_executeEndForStmt(&returnOffset);
-        if (bOk)
+      case END_FOR_STATEMENT:
         {
-          if (returnOffset != -1)
+          long int returnOffset;
+          BOOL bOk;
+          bOk = ast_executeEndForStmt(&returnOffset);
+          if (bOk)
           {
-            fseek(in, returnOffset, SEEK_SET);
+            if (returnOffset != -1)
+            {
+              fseek(in, returnOffset, SEEK_SET);
+            }
+            else
+            {
+              ast_removeLastResultItem();
+            }
+
+            ast_removeLastResultItem();
           }
           else
           {
-            ast_removeLastResultItem();
+            inError = TRUE;
           }
-
-          ast_removeLastResultItem();
         }
-        else
-        {
-          inError = TRUE;
-        }
-      }
-      break;
+        break;
 
-    default:
-      ASSERT(FALSE);
-      break;
+      default:
+        ASSERT(FALSE);
+        break;
+    }
   }
 
   ast_dump_stack();

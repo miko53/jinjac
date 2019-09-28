@@ -131,7 +131,7 @@ jinja_filtered_expr:
   |
   jinja_filtered_expr '|' function_expression {
                                                 dbg_print("a jinja filtered expr\n"); 
-                                                ast_execute_function();
+                                                ast_execute_filtered_function();
                                                 //ast_dump_stack();
                                               }
 
