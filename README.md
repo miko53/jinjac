@@ -81,7 +81,7 @@ Here we are the list of limitation.
 
 - missing function of previous table
 - in if statement
- * logical are not completed (not, and, or, is, ...)
+  * logical are not completed (not, and, or, is, ...)
 - whitespace control (with '-' characters)
 - raw statement
 - set statement
