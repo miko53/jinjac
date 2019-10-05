@@ -53,15 +53,24 @@ typedef enum
   DETECTION_STOP_DELIMITER,
   IN_JINJA_STATEMENT,
   IN_JINJA_EXPRESSION
-
 } parse_file_mode;
 
 STATIC int no_line;
 
+STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNextLine, parse_file_mode previousMode);
 
-STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreNextLine, parse_file_mode previousMode);
+void jinjac_init(void)
+{
+  ast_init();
+  parameter_init();
+}
 
-void parse_only_string_arg(char* string)
+void jinjac_destroy(void)
+{
+  ast_clean();
+}
+
+void jinjac_parse_string(char* string)
 {
   YY_BUFFER_STATE buffer;
 
@@ -280,7 +289,7 @@ void jinjac_parse_file(FILE* in, FILE* out)
           {
             //launch parsing
             bufferJinja[bufferIndex++] = '\0';
-            bInError = jinjac_parse_string(bufferJinja, out, in, &bIgnoreLine, previousMode);
+            bInError = jinjac_parse_line(bufferJinja, out, in, &bIgnoreLine, previousMode);
             mode = IN_TEXT;
             bufferIndex = 0;
           }
@@ -373,7 +382,7 @@ STATIC ast_status block_statement_getCurrentBlockType(void)
   return s;
 }
 
-STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreNextLine, parse_file_mode previousMode)
+STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNextLine, parse_file_mode previousMode)
 {
   YY_BUFFER_STATE buffer;
   ast_status parserStatus;

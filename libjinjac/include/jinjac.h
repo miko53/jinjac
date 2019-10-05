@@ -62,14 +62,14 @@ typedef struct
   parameter_value value;
 } parameter;
 
-extern void parse_only_string_arg(char* string);
-extern void ast_init(void);
-void jinjac_parse_file(FILE* in, FILE* out);
-extern void ast_clean(void);
+extern void jinjac_init(void);
+extern void jinjac_destroy(void);
+
+extern void jinjac_parse_string(char* string);
+extern void jinjac_parse_file(FILE* in, FILE* out);
 
 extern J_STATUS parameter_insert(char* key, parameter* param);
 extern J_STATUS parameter_array_insert(char* key, parameter_type type, int nbValue, ...);
-extern void parameter_init(void);
 extern void parameter_delete_all(void);
 
 #ifdef __cplusplus

@@ -69,13 +69,12 @@ int main(int argc, char* argv[])
     }
   }
 
+  jinjac_init();
   create_example_parameter();
-
-  ast_init();
 
   if (test_string != NULL)
   {
-    parse_only_string_arg(test_string);
+    jinjac_parse_string(test_string);
     delete_example_parameter();
     exit(EXIT_SUCCESS);
   }
@@ -115,7 +114,7 @@ int main(int argc, char* argv[])
 
   jinjac_parse_file(in, out);
 
-  ast_clean();
+  jinjac_destroy();
 
   fclose(in);
   fclose(out);
