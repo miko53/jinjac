@@ -601,7 +601,7 @@ STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreN
         trace("if statement\n");
         //create a new block (statement) level
         block_stack[block_level].blockType = IF_STATEMENT;
-        if (block_statement_isCurrentBlockActive() == TRUE)
+        if ((block_statement_isCurrentBlockActive() == TRUE) && (block_statement_isCurrentBlockConditionActive() == TRUE))
         {
           block_stack[block_level].bIsBlockActive = TRUE;
           block_stack[block_level].bIsConditionActive = !ast_ifStmtIsLineToBeIgnored();
@@ -634,10 +634,10 @@ STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreN
         {
           if (block_statement_isCurrentBlockActive() == TRUE)
           {
-            ASSERT(block_level >= 1);
-            block_level--;
             ast_removeLastResultItem(); // remove from executive stack
           }
+          ASSERT(block_level >= 1);
+          block_level--;
 
           ast_removeLastResultItem(); // remove from executive stack
         }

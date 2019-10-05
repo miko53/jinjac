@@ -1,0 +1,14 @@
+{% if not_exist %}
+{% if a_ident %}
+  --> shoud not display '{{ a_ident }}'
+{% else %}
+  --> shoud not display '{{ a_ident }}' too
+{% endif %}
+{% else %}
+{% if a_ident %}
+  --> shoud display '{{ a_ident }}' here
+{% else %}
+  --> shoud not display '{{ a_ident }}' in this case
+{% endif %}
+{% endif %}
+TOTO
