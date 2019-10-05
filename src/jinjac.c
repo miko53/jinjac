@@ -479,7 +479,10 @@ STATIC BOOL block_statement_isCurrentBlockConditionActive(void)
   }
   else
   {
-    b = block_stack[block_level - 1].bIsConditionActive;
+    if (block_stack[block_level - 1].bIsBlockActive)
+    {
+      b = block_stack[block_level - 1].bIsConditionActive;
+    }
   }
 
   return b;

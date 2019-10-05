@@ -1,0 +1,12 @@
+{% if not_exist %}
+This part is not displayed
+{% for x in range(0,5) %}
+--> loop inactive here {{ x }} and {{ x+1 }}
+{% endfor %}
+{% else %}
+ active else {{ a_ident }}
+{% for x in range(0,5) %}
+--> loop here {{ x }} and {{ x+1 }}
+{% endfor %}
+{% endif %}
+TOTO

@@ -37,6 +37,8 @@ set(TEST_LIST
   "test_19b" ;
   "test_19c" ;
   "test_19d" ;
+  "test_19e" ;
+  "test_19f" 
   )
   
 set(TEST_TITLE 
@@ -67,7 +69,9 @@ set(TEST_TITLE
   "19_simple_if_statement" ;
   "19b_for_with_if_statement";
   "19c_for_inside_inactif_if" ;
-  "19d_multiple_if_with_first_inative"
+  "19d_multiple_if_with_first_inative" ;
+  "19e_multiple_if_with_first_actif" ;
+  "19f_multiple_fi_with_loop" ;
   )
   
 set(INDEX 0)
