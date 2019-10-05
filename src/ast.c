@@ -788,6 +788,7 @@ void ast_dump_stack()
 
       case J_IF:
       case J_END_FOR:
+      case J_END_IF:
         trace("\n");
         break;
 

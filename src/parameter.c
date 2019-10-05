@@ -498,6 +498,7 @@ J_STATUS parameter_delete(char* key)
   int i;
   rc = J_ERROR;
 
+  trace("delete parameter '%s'\n", key);
   if (item_nb > 0)
   {
     //NOTE: loop done in inverse mode to allow to have index Name overloaded by the loop one

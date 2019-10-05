@@ -46,20 +46,22 @@ extern int yylex_destroy(void);
 #define LINE_SIZE   (1024)
 typedef enum
 {
-  IN_TEXTE,
+  IN_TEXT,
   DETECTION_START_DELIMITER,
-  IN_JINJA_SCRIPT,
   IN_JINJA_SCRIPT_STRING,
   IN_JINJA_COMMENT,
   IN_JINJA_COMMENT_STOP_DELIMITER,
-  DETECTION_STOP_DELIMITER
+  DETECTION_STOP_DELIMITER,
+  IN_JINJA_STATEMENT,
+  IN_JINJA_EXPRESSION
+
 } parse_file_mode;
 
 STATIC int no_line;
 
 
 STATIC void jinjac_parse_file(FILE* in, FILE* out);
-STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreNextLine);
+STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreNextLine, parse_file_mode previousMode);
 STATIC void create_example_parameter(void);
 STATIC void delete_example_parameter(void);
 
@@ -238,19 +240,23 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
   ASSERT(in != NULL);
   ASSERT(out != NULL);
 
-  //first parsing level detect {%, {{ on one line
-  BOOL bInError = FALSE;
-  BOOL bIgnoreLine = FALSE;
-  char current;
-  char previous;
-  char stringChar;
-  parse_file_mode mode;
-
-  no_line = 0;
-  mode = IN_TEXTE;
   char bufferJinja[LINE_SIZE];
   int bufferIndex = 0;
 
+  BOOL bInError = FALSE;
+  BOOL bIgnoreLine = FALSE;
+
+  char current;
+  char previous;
+  char stringChar;
+
+  parse_file_mode mode;
+  parse_file_mode previousMode;
+
+  no_line = 0;
+
+  mode = IN_TEXT;
+  previousMode = IN_JINJA_EXPRESSION;
   previous = '\0';
   current = fgetc(in);
 
@@ -263,7 +269,7 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
       bufferIndex = 0;
       if (mode != IN_JINJA_COMMENT)
       {
-        if (mode != IN_TEXTE)
+        if (mode != IN_TEXT)
         {
           bInError = TRUE;
         }
@@ -278,7 +284,7 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
     {
       switch (mode)
       {
-        case IN_TEXTE:
+        case IN_TEXT:
           if (current == '{')
           {
             mode = DETECTION_START_DELIMITER;
@@ -296,17 +302,17 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
           switch (current)
           {
             case '%':
-              mode = IN_JINJA_SCRIPT;
+              mode = IN_JINJA_STATEMENT;
               break;
 
             case '{':
               if (bIgnoreLine)
               {
-                mode = IN_TEXTE;
+                mode = IN_TEXT;
               }
               else
               {
-                mode = IN_JINJA_SCRIPT;
+                mode = IN_JINJA_EXPRESSION;
               }
               break;
 
@@ -315,7 +321,7 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
               break;
 
             default:
-              mode = IN_TEXTE;
+              mode = IN_TEXT;
               fputc(previous, out);
               fputc(current, out);
               bufferIndex = 0;
@@ -333,7 +339,7 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
         case IN_JINJA_COMMENT_STOP_DELIMITER:
           if (current == '}')
           {
-            mode = IN_TEXTE;
+            mode = IN_TEXT;
           }
           else
           {
@@ -341,18 +347,11 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
           }
           break;
 
-        case IN_JINJA_SCRIPT:
+        case IN_JINJA_STATEMENT:
           switch (current)
           {
             case '%':
-              mode = DETECTION_STOP_DELIMITER;
-              break;
-
-            case '}':
-              mode = DETECTION_STOP_DELIMITER;
-              break;
-
-            case '#':
+              previousMode = IN_JINJA_STATEMENT;
               mode = DETECTION_STOP_DELIMITER;
               break;
 
@@ -360,9 +359,32 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
             case '\"':
               stringChar = current;
               bufferJinja[bufferIndex++] = current;
+              previousMode = IN_JINJA_STATEMENT;
               mode = IN_JINJA_SCRIPT_STRING;
               break;
 
+            default:
+              // no change of state
+              bufferJinja[bufferIndex++] = current;
+              break;
+          }
+
+          break;
+
+        case IN_JINJA_EXPRESSION:
+          switch (current)
+          {
+            case '}':
+              previousMode = IN_JINJA_EXPRESSION;
+              mode = DETECTION_STOP_DELIMITER;
+              break;
+
+            case '\'':
+            case '\"':
+              stringChar = current;
+              bufferJinja[bufferIndex++] = current;
+              previousMode = IN_JINJA_EXPRESSION;
+              mode = IN_JINJA_SCRIPT_STRING;
               break;
 
             default:
@@ -375,7 +397,7 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
         case IN_JINJA_SCRIPT_STRING:
           if (current == stringChar)
           {
-            mode = IN_JINJA_SCRIPT;
+            mode = previousMode;
           }
 
           bufferJinja[bufferIndex++] = current;
@@ -386,15 +408,15 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
           {
             //launch parsing
             bufferJinja[bufferIndex++] = '\0';
-            bInError = jinjac_parse_string(bufferJinja, out, in, &bIgnoreLine);
-            mode = IN_TEXTE;
+            bInError = jinjac_parse_string(bufferJinja, out, in, &bIgnoreLine, previousMode);
+            mode = IN_TEXT;
             bufferIndex = 0;
           }
           else
           {
             bufferJinja[bufferIndex++] = previous;
             bufferJinja[bufferIndex++] = current;
-            mode = IN_JINJA_SCRIPT;
+            mode = previousMode;
           }
           break;
 
@@ -416,8 +438,67 @@ STATIC void jinjac_parse_file(FILE* in, FILE* out)
 
 }
 
+typedef struct
+{
+  BOOL bIsBlockActive;
+  BOOL bIsConditionActive;
+  ast_status blockType;
+  //int level;
+} block;
 
-STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreNextLine)
+//STATIC block block_current;
+
+STATIC block block_stack[50];
+STATIC int block_level;
+
+STATIC BOOL block_statement_isCurrentBlockActive(void)
+{
+  BOOL b;
+  b = FALSE;
+
+  if (block_level == 0)
+  {
+    b = TRUE;
+  }
+  else
+  {
+    b = block_stack[block_level - 1].bIsBlockActive;
+  }
+
+  return b;
+}
+
+STATIC BOOL block_statement_isCurrentBlockConditionActive(void)
+{
+  BOOL b;
+  b = FALSE;
+
+  if (block_level == 0)
+  {
+    b = TRUE;
+  }
+  else
+  {
+    b = block_stack[block_level - 1].bIsConditionActive;
+  }
+
+  return b;
+}
+
+STATIC ast_status block_statement_getCurrentBlockType(void)
+{
+  ast_status s;
+  s = IN_ERROR;
+
+  if (block_level != 0)
+  {
+    s = block_stack[block_level - 1 ].blockType;
+  }
+
+  return s;
+}
+
+STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreNextLine, parse_file_mode previousMode)
 {
   YY_BUFFER_STATE buffer;
   ast_status parserStatus;
@@ -430,22 +511,151 @@ STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreN
   inError = FALSE;
 
   trace("line %d: string to parse = \"%s\"\n", no_line, string);
+  trace("Previous mode = %d\n", previousMode);
 
   buffer = yy_scan_string ( string );
   yyparse();
 
   parserStatus = ast_getStatus();
 
-  if ((*ignoreNextLine == TRUE) &&
-      ((parserStatus != ELSE_STATEMENT) &&
-       (parserStatus != END_IF_STATEMENT)))
+  if (previousMode == IN_JINJA_STATEMENT)
   {
-    trace("parserStatus = %d, ignored because ignoreNextLine is set\n", parserStatus);
-    //ast_removeLastResultItem();
+    switch (parserStatus)
+    {
+      case IN_ERROR:
+        trace("error %d\n", __LINE__);
+        inError = TRUE;
+        break;
+
+      case OK_DONE:
+        error("a statement is expected not an expression\n");
+        inError = TRUE;
+        break;
+
+      case FOR_STATEMENT:
+        trace("for statement\n");
+        //create a new block (statement) level
+        block_stack[block_level].blockType = FOR_STATEMENT;
+        if (block_statement_isCurrentBlockActive() == TRUE)
+        {
+          block_stack[block_level].bIsBlockActive = TRUE;
+
+          ast_setBeginOfForStatement(ftell(in));
+          //*ignoreNextLine =
+          block_stack[block_level].bIsConditionActive = !ast_forStmtIsLineToBeIgnored();
+        }
+        else
+        {
+          block_stack[block_level].bIsBlockActive = FALSE;
+          ast_removeLastResultItem(); // remove from executive stack
+
+        }
+        block_level++;
+        break;
+
+      case END_FOR_STATEMENT:
+        trace("end for statement\n");
+        if (block_statement_getCurrentBlockType() == FOR_STATEMENT)
+        {
+          if (block_statement_isCurrentBlockActive() == TRUE)
+          {
+            long int returnOffset;
+            BOOL bOk;
+            bOk = ast_executeEndForStmt(&returnOffset);
+            if (bOk)
+            {
+              if (returnOffset != -1)
+              {
+                fseek(in, returnOffset, SEEK_SET);
+              }
+              else
+              {
+                ast_removeLastResultItem();
+                ASSERT(block_level >= 1);
+                block_level--;
+              }
+
+              ast_removeLastResultItem();
+            }
+            else
+            {
+              trace("end For execution Error %d\n", __LINE__);
+              inError = TRUE;
+            }
+          }
+          else
+          {
+            ast_removeLastResultItem(); // remove from executive stack
+            ASSERT(block_level >= 1);
+            block_level--;
+          }
+        }
+        else
+        {
+          trace("error, not in for stmt %d\n", __LINE__);
+          inError = TRUE;
+        }
+        break;
+
+      case IF_STATEMENT:
+        trace("if statement\n");
+        //create a new block (statement) level
+        block_stack[block_level].blockType = IF_STATEMENT;
+        if (block_statement_isCurrentBlockActive() == TRUE)
+        {
+          block_stack[block_level].bIsBlockActive = TRUE;
+          block_stack[block_level].bIsConditionActive = !ast_ifStmtIsLineToBeIgnored();
+        }
+        else
+        {
+          block_stack[block_level].bIsBlockActive = FALSE;
+          ast_removeLastResultItem(); // remove from executive stack
+        }
+        block_level++;
+        break;
+
+      case ELSE_STATEMENT:
+        if (block_statement_isCurrentBlockActive() == TRUE)
+        {
+          trace("else statement\n");
+          ast_removeLastResultItem(); //NOTE: little hack to retrieve IF statement without build a new function
+          ASSERT(block_level >= 1);
+          block_stack[block_level - 1].bIsConditionActive = ast_ifStmtIsLineToBeIgnored();
+        }
+        else
+        {
+          ast_removeLastResultItem(); // remove from executive stack
+        }
+        break;
+
+      case END_IF_STATEMENT:
+        trace("end if statement\n");
+        if (block_statement_getCurrentBlockType() == IF_STATEMENT)
+        {
+          if (block_statement_isCurrentBlockActive() == TRUE)
+          {
+            ASSERT(block_level >= 1);
+            block_level--;
+            ast_removeLastResultItem(); // remove from executive stack
+          }
+
+          ast_removeLastResultItem(); // remove from executive stack
+        }
+        else
+        {
+          trace("error, not in IF stmt %d\n", __LINE__);
+          inError = TRUE;
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    *ignoreNextLine = !block_statement_isCurrentBlockConditionActive();
   }
-  else
+  else if (previousMode == IN_JINJA_EXPRESSION)
   {
-    *ignoreNextLine = FALSE;
     switch (parserStatus)
     {
       case OK_DONE:
@@ -453,61 +663,19 @@ STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreN
         ast_removeLastResultItem();
         break;
 
-      case FOR_STATEMENT:
-        trace("FOR stmt\n");
-        ast_setBeginOfForStatement(ftell(in));
-        *ignoreNextLine = ast_forStmtIsLineToBeIgnored();
-        break;
-
       case IN_ERROR:
-        error("parsing error\n");
+        error("parsing error %d \n", __LINE__);
         inError = TRUE;
-        break;
-
-      case IF_STATEMENT:
-        *ignoreNextLine = ast_ifStmtIsLineToBeIgnored();
-        break;
-
-      case ELSE_STATEMENT:
-        ast_removeLastResultItem(); //NOTE: little hack to retrieve IF statement without build a new function
-        *ignoreNextLine = !ast_ifStmtIsLineToBeIgnored();
-        break;
-
-      case END_IF_STATEMENT:
-        *ignoreNextLine = FALSE;
-        ast_removeLastResultItem();
-        ast_removeLastResultItem();
-        break;
-
-      case END_FOR_STATEMENT:
-        {
-          long int returnOffset;
-          BOOL bOk;
-          bOk = ast_executeEndForStmt(&returnOffset);
-          if (bOk)
-          {
-            if (returnOffset != -1)
-            {
-              fseek(in, returnOffset, SEEK_SET);
-            }
-            else
-            {
-              ast_removeLastResultItem();
-            }
-
-            ast_removeLastResultItem();
-          }
-          else
-          {
-            inError = TRUE;
-          }
-        }
         break;
 
       default:
         ASSERT(FALSE);
         break;
     }
+  }
+  else
+  {
+    ASSERT(FALSE);
   }
 
   ast_dump_stack();
