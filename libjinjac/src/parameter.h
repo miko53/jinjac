@@ -27,46 +27,34 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#ifndef _PARAMETER_H
+#define _PARAMETER_H
 
-#ifndef _COMMON_H
-#define _COMMON_H
-
-#include <assert.h>
+#include "common.h"
+#include "jinjac.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define DBG_PRINT
-#define TRACE
+extern void parameter_init(void);
+extern void parameter_delete_all();
 
-#ifdef DBG_PRINT
-#define dbg_print(...)     fprintf(stdout, __VA_ARGS__)
-#else
-#define dbg_print(...)
-#endif /* DBG_PRINT*/
+extern J_STATUS parameter_delete(char* key);
+extern J_STATUS parameter_insert2(char* key, parameter_type type, parameter_value value);
+extern BOOL parameter_get(char* key, parameter* param, BOOL* isArray);
+extern J_STATUS parameter_update(char* key, parameter_value newValue);
 
-#ifdef TRACE
-#define trace(...)        fprintf(stderr, __VA_ARGS__)
-#else
-#define trace(...)
-#endif
+extern BOOL parameter_array_getProperties(char* key, parameter_type* type, int* nbItem);
+extern BOOL parameter_array_getValue(char* key, int offset, parameter_value* v);
+extern char* parameter_convertArrayToString(char* key);
 
-#define error(...)        fprintf(stderr, __VA_ARGS__)
-
-typedef enum { FALSE, TRUE } BOOL;
-#define ASSERT      assert
-#define STATIC      static
-#define NEW(obj)    malloc(sizeof(obj))
-
-typedef enum
-{
-  J_OK = 0,
-  J_ERROR = -1
-} J_STATUS;
+//destructor
+extern void param_delete(parameter* param);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _COMMON_H */
+#endif /* _PARAMETER_H */
+

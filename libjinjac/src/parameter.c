@@ -532,7 +532,7 @@ J_STATUS parameter_delete(char* key)
 }
 
 
-void parameter_delete_all()
+void parameter_delete_all(void)
 {
   for (int i = 0; i < item_nb; i++)
   {

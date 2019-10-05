@@ -27,14 +27,20 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef _PARAMETER_H
-#define _PARAMETER_H
+#ifndef _JINJA_H
+#define _JINJA_H
 
-#include "common.h"
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef enum
+{
+  J_OK = 0,
+  J_ERROR = -1
+} J_STATUS;
 
 typedef enum
 {
@@ -56,26 +62,18 @@ typedef struct
   parameter_value value;
 } parameter;
 
-extern void parameter_init(void);
-extern void parameter_delete_all();
+extern void parse_only_string_arg(char* string);
+extern void ast_init(void);
+void jinjac_parse_file(FILE* in, FILE* out);
+extern void ast_clean(void);
 
 extern J_STATUS parameter_insert(char* key, parameter* param);
-extern J_STATUS parameter_delete(char* key);
-extern J_STATUS parameter_insert2(char* key, parameter_type type, parameter_value value);
-extern BOOL parameter_get(char* key, parameter* param, BOOL* isArray);
-extern J_STATUS parameter_update(char* key, parameter_value newValue);
-
 extern J_STATUS parameter_array_insert(char* key, parameter_type type, int nbValue, ...);
-extern BOOL parameter_array_getProperties(char* key, parameter_type* type, int* nbItem);
-extern BOOL parameter_array_getValue(char* key, int offset, parameter_value* v);
-extern char* parameter_convertArrayToString(char* key);
-
-//destructor
-extern void param_delete(parameter* param);
+extern void parameter_init(void);
+extern void parameter_delete_all(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _PARAMETER_H */
-
+#endif /* _JINJA_H */

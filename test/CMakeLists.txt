@@ -67,7 +67,7 @@ set(TEST_TITLE
   "18b_for_without_execution" ;
   "18c_for_with_error_of_id" ;
   "19_simple_if_statement" ;
-  "19b_for_with_if_statement";
+  "19b_for_with_if_statement" ;
   "19c_for_inside_inactif_if" ;
   "19d_multiple_if_with_first_inative" ;
   "19e_multiple_if_with_first_actif" ;

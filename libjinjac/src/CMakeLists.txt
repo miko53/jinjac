@@ -13,12 +13,12 @@ endif()
 
 ADD_FLEX_BISON_DEPENDENCY(JinjacFlex JinjacBison)
 
-set(SRCS_JINJAC
+set(LIBJINJAC_SRC_FILES
       ast.c jinjac.c parameter.c 
       convert.c buildin.c jobject.c 
       jfunction.c str_obj.c
       ${BISON_JinjacBison_OUTPUTS} ${FLEX_JinjacFlex_OUTPUTS}
   )
 
-add_executable(jinja_expression ${SRCS_JINJAC} )
-target_link_libraries(jinja_expression)
+add_library(libjinjac_shared SHARED ${LIBJINJAC_SRC_FILES})
+add_library(libjinjac_static STATIC ${LIBJINJAC_SRC_FILES})
