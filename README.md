@@ -1,10 +1,23 @@
 # jinjac
 
-Jinja template adapted with C langage (for C based software)
+Jinjac is a library which adapt the jinja templating language for C.
+its aim is to be very minimalistic and with few dependancies in order to be able to use it in a embedded software.
+Nevertheless it tries to implement a large set feature.
+
+It comes from with several unit tests (see test folders)
+
+## list of implemented features
+
+- basic template replacing (with all types of data e.g. string, integer, double)
+- filtering (see list of build-in function)
+- comment management 
+- function execution
+- for statement
+- if statement
 
 ## build-in function
 
-List of build-in function implemented
+Here we are the list of build-in function which are implemented
 
 |function|description|status|
 |--------|-----------|------|
@@ -61,11 +74,29 @@ List of build-in function implemented
 
 ## TODO
 
-### To implement
+### To implement / not implemented
 
-- if statment
-- missing function
-- other statement
+Here we are the list of limitation.
+(or the aim of this library some of thems are not really necessary)
+
+- missing function of previous table
+- in if statement
+ * logical are not completed (not, and, or, is, ...)
+- whitespace control (with '-' characters)
+- raw statement
+- set statement
+- template inheritance
+- child template
+- super block
+- extends
+- html espacing
+- in for the loop variables doesn't exist
+- in for the else is not managed
+- macros / call
+- filters as statement
+- assignment in function argument
+- include
+- autoespacted
 
 ### To improve
 
