@@ -536,7 +536,7 @@ STATIC BOOL jinjac_parse_string(char* string, FILE* out, FILE* in, BOOL* ignoreN
         trace("for statement\n");
         //create a new block (statement) level
         block_stack[block_level].blockType = FOR_STATEMENT;
-        if (block_statement_isCurrentBlockActive() == TRUE)
+        if ((block_statement_isCurrentBlockActive() == TRUE) && (block_statement_isCurrentBlockConditionActive() == TRUE))
         {
           block_stack[block_level].bIsBlockActive = TRUE;
 

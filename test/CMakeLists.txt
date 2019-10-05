@@ -35,6 +35,7 @@ set(TEST_LIST
   "test_18c" ;
   "test_19" ;
   "test_19b" ;
+  "test_19c" 
   )
   
 set(TEST_TITLE 
@@ -64,6 +65,7 @@ set(TEST_TITLE
   "18c_for_with_error_of_id" ;
   "19_simple_if_statement" ;
   "19b_for_with_if_statement";
+  "19c_for_inside_inactif_if"
   )
   
 set(INDEX 0)
