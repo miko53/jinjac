@@ -36,12 +36,8 @@
 #include "ast.h"
 #include "block_statement.h"
 #include "jinja_expression.tab.h"
-
-typedef struct yy_buffer_state* YY_BUFFER_STATE;
-extern int yyparse();
-extern YY_BUFFER_STATE yy_scan_string(char* str);
-extern void yy_delete_buffer(YY_BUFFER_STATE buffer);
-extern int yylex_destroy(void);
+#include "flex_decl.h"
+#include "jinja_parse.h"
 
 #define LINE_SIZE   (1024)
 

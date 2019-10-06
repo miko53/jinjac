@@ -34,15 +34,9 @@
   #include "ast.h"
   #include "parameter.h"
   #include "convert.h"
-
-  // Declare stuff from Flex that Bison needs to know about:
-  extern int yylex();
-  extern int yyparse();
-  extern FILE *yyin;
- 
-  extern int32_t getLine(void);
+  #include "flex_decl.h"
+  #include "jinja_parse.h"
   
-  void yyerror(const char *s);
   
   #define stop_on_error(errorString)   \
                             do { \
