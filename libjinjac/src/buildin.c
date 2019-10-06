@@ -210,7 +210,7 @@ char* center(char* origin, unsigned int width)
 }
 
 
-BOOL findModifier(char* src, parameter_type* type, char** pModifierEnd, BOOL* hasNoArg)
+BOOL findModifier(char* src, jinjac_parameter_type* type, char** pModifierEnd, BOOL* hasNoArg)
 {
   ASSERT(type != NULL);
   ASSERT(src != NULL);
@@ -294,8 +294,8 @@ char* getModifierString(char* pModifierBegin, char* pModifierEnd)
 }
 
 
-BOOL setFormatConsistency(parameter_type* typeToInsert, parameter currentParameter, char* pModifierString,
-                          parameter_value* paramDataToInsert)
+BOOL setFormatConsistency(jinjac_parameter_type* typeToInsert, jinjac_parameter currentParameter, char* pModifierString,
+                          jinjac_parameter_value* paramDataToInsert)
 {
   BOOL bOk;
   bOk = TRUE;
@@ -337,9 +337,9 @@ BOOL setFormatConsistency(parameter_type* typeToInsert, parameter currentParamet
   return bOk;
 }
 
-BOOL appendParameterToString(char* pModifierString, parameter_type typeToInsert,
+BOOL appendParameterToString(char* pModifierString, jinjac_parameter_type typeToInsert,
                              str_obj* strDestination, int currentParameterIndex,
-                             int nbParameters, parameter* param, BOOL hasNoArg
+                             int nbParameters, jinjac_parameter* param, BOOL hasNoArg
                             )
 {
   ASSERT(pModifierString != NULL);
@@ -351,7 +351,7 @@ BOOL appendParameterToString(char* pModifierString, parameter_type typeToInsert,
   BOOL bOk;
   extraStringToAdd = NULL;
   bOk = TRUE;
-  parameter_value paramDataToInsert;
+  jinjac_parameter_value paramDataToInsert;
 
   if (currentParameterIndex < nbParameters)
   {
@@ -420,7 +420,7 @@ BOOL appendParameterToString(char* pModifierString, parameter_type typeToInsert,
   return bOk;
 }
 
-char* format(char* origin, int nbParameters, parameter* param)
+char* format(char* origin, int nbParameters, jinjac_parameter* param)
 {
   int currentParameterIndex = 0;
   char* src;
@@ -462,7 +462,7 @@ char* format(char* origin, int nbParameters, parameter* param)
       {
         BOOL bEndFound;
         BOOL hasNoArg;
-        parameter_type typeToInsert;
+        jinjac_parameter_type typeToInsert;
         //find end modifier
         bEndFound = findModifier(src, &typeToInsert, &pModifierEnd, &hasNoArg);
         if (bEndFound)

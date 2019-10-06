@@ -72,7 +72,7 @@ typedef struct JObjects
 {
   jobject_type type;
   void (*delete)(struct JObjects* o);
-  BOOL (*getValue)(struct JObjects* pObject, parameter* param);
+  BOOL (*getValue)(struct JObjects* pObject, jinjac_parameter* param);
   BOOL (*toBoolean)(struct JObjects* pObject);
 } JObject;
 
@@ -167,7 +167,7 @@ extern JObject* JEndFor_new(void);
 
 //JObject
 extern char* JObject_toString(JObject* pObject);
-extern BOOL JObject_getValue(JObject* pObject, parameter* param);
+extern BOOL JObject_getValue(JObject* pObject, jinjac_parameter* param);
 extern int JObject_toInteger(JObject* obj);
 extern BOOL JObject_toBoolean(JObject* pObject);
 

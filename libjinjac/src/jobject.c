@@ -34,7 +34,7 @@
 #include "convert.h"
 #include "ast.h"
 
-BOOL JObject_getValue(JObject* pObject, parameter* param)
+BOOL JObject_getValue(JObject* pObject, jinjac_parameter* param)
 {
   ASSERT(pObject != NULL);
   ASSERT(param != NULL);
@@ -53,14 +53,14 @@ BOOL JObject_getValue(JObject* pObject, parameter* param)
   return bOk;
 }
 
-BOOL JStringConstante_getValue(struct JObjects* pObject, parameter* param)
+BOOL JStringConstante_getValue(struct JObjects* pObject, jinjac_parameter* param)
 {
   param->value.type_string = strdup(((JStringConstante*) pObject)->str_constant);
   param->type = TYPE_STRING;
   return TRUE;
 }
 
-BOOL JBoolean_getValue(struct JObjects* pObject, parameter* param)
+BOOL JBoolean_getValue(struct JObjects* pObject, jinjac_parameter* param)
 {
   param->value.type_int = ((JBoolean*) pObject)->value;
   param->type = TYPE_INT;
@@ -68,21 +68,21 @@ BOOL JBoolean_getValue(struct JObjects* pObject, parameter* param)
 }
 
 
-BOOL JInteger_getValue(struct JObjects* pObject, parameter* param)
+BOOL JInteger_getValue(struct JObjects* pObject, jinjac_parameter* param)
 {
   param->value.type_int = (((JInteger*) pObject)->value);
   param->type = TYPE_INT;
   return TRUE;
 }
 
-BOOL JDouble_getValue(struct JObjects* pObject, parameter* param)
+BOOL JDouble_getValue(struct JObjects* pObject, jinjac_parameter* param)
 {
   param->value.type_double = (((JDouble*) pObject)->value);
   param->type = TYPE_DOUBLE;
   return TRUE;
 }
 
-BOOL JIdentifier_getValue(struct JObjects* pObject, parameter* param)
+BOOL JIdentifier_getValue(struct JObjects* pObject, jinjac_parameter* param)
 {
   BOOL bOk;
   BOOL isArray;
@@ -114,7 +114,7 @@ BOOL JIdentifier_getValue(struct JObjects* pObject, parameter* param)
 }
 
 
-BOOL JArray_getValue(struct JObjects* pObject, parameter* param)
+BOOL JArray_getValue(struct JObjects* pObject, jinjac_parameter* param)
 {
   BOOL bOk;
   JArray* pArray;
@@ -205,7 +205,7 @@ BOOL JIdentifier_toBoolean(JObject* pObject)
 {
   BOOL bOk;
   BOOL isArray;
-  parameter param;
+  jinjac_parameter param;
   JIdentifier* pIdent;
   pIdent = (JIdentifier*) pObject;
   bOk = parameter_get(pIdent->identifier, &param, &isArray);
@@ -255,7 +255,7 @@ BOOL JIdentifier_toBoolean(JObject* pObject)
 BOOL JArray_toBoolean(JObject* pObject)
 {
   BOOL bOk;
-  parameter param;
+  jinjac_parameter param;
   JArray* pArray;
   pArray = (JArray*) pObject;
   bOk = parameter_array_getProperties(pArray->identifier, &param.type, NULL);
@@ -472,14 +472,14 @@ J_STATUS JFor_createIndexParameter(JFor* obj)
 
   if (seq->sequencedObject == NULL) //default is INT
   {
-    parameter param;
+    jinjac_parameter param;
     param.type = TYPE_INT;
     param.value.type_int = seq->currentIndex;
     jinjac_parameter_insert(obj->identifierOfIndex, &param);
   }
   else
   {
-    parameter param;
+    jinjac_parameter param;
     BOOL isArray;
     int nbItems;
 
@@ -543,7 +543,7 @@ BOOL JRange_step(JRange* obj, char* indexIdentifierName)
       isDone = TRUE;
     }
 
-    parameter_update(indexIdentifierName, (parameter_value) obj->currentIndex);
+    parameter_update(indexIdentifierName, (jinjac_parameter_value) obj->currentIndex);
   }
   else
   {
@@ -554,7 +554,7 @@ BOOL JRange_step(JRange* obj, char* indexIdentifierName)
     }
     else
     {
-      parameter_value paramValue;
+      jinjac_parameter_value paramValue;
       switch (obj->sequencedObject->type)
       {
         case J_IDENTIFIER:
@@ -633,7 +633,7 @@ extern JObject* JElse_new(void)
 
 char* JObject_toString(JObject* pObject)
 {
-  parameter param;
+  jinjac_parameter param;
   BOOL bOk;
   char* s;
   s = NULL;
@@ -679,7 +679,7 @@ JRange* JObject_toRange(JObject* pObject)
 int JObject_toInteger(JObject* obj)
 {
   ASSERT(obj != NULL);
-  parameter param;
+  jinjac_parameter param;
   BOOL bOk;
   int r;
   r = 0;
@@ -712,7 +712,7 @@ int JObject_toInteger(JObject* obj)
 
 
 
-BOOL isTypeOkForCalcul(parameter_type type)
+BOOL isTypeOkForCalcul(jinjac_parameter_type type)
 {
   BOOL bOk;
   bOk = TRUE;
@@ -727,9 +727,9 @@ BOOL isTypeOkForCalcul(parameter_type type)
 
 typedef struct
 {
-  parameter_type type_op1;
-  parameter_type type_op2;
-  parameter_type type_result;
+  jinjac_parameter_type type_op1;
+  jinjac_parameter_type type_op2;
+  jinjac_parameter_type type_result;
 } op_decision;
 
 enum
@@ -748,7 +748,7 @@ STATIC const op_decision operation_array_decision[] =
   { TYPE_INT, TYPE_INT, TYPE_INT } //, calcul_iii},
 };
 
-STATIC int select_operation(parameter_type t1, parameter_type t2)
+STATIC int select_operation(jinjac_parameter_type t1, jinjac_parameter_type t2)
 {
   unsigned int i;
 
@@ -774,8 +774,8 @@ JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperation)
   BOOL bOk1, bOk2;
 
   //object for mathematical can'not be string.
-  parameter paramOp1;
-  parameter paramOp2;
+  jinjac_parameter paramOp1;
+  jinjac_parameter paramOp2;
 
   bOk1 = JObject_getValue(op1, &paramOp1);
   bOk2 = JObject_getValue(op2, &paramOp2);
@@ -849,8 +849,8 @@ JObject* JObject_execComparison(JObject* op1, JObject* op2, jobject_condition co
   //BOOL bOk1;
   //BOOL bOk2;
   BOOL bComparisonResult;
-  parameter paramOp1;
-  parameter paramOp2;
+  jinjac_parameter paramOp1;
+  jinjac_parameter paramOp2;
 
   /*bOk1 =*/ JObject_getValue(op1, &paramOp1);
   /*bOk2 =*/ JObject_getValue(op2, &paramOp2);

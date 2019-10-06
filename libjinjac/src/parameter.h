@@ -41,16 +41,16 @@ extern void parameter_init(void);
 extern void jinjac_parameter_delete_all();
 
 extern J_STATUS parameter_delete(char* key);
-extern J_STATUS parameter_insert2(char* key, parameter_type type, parameter_value value);
-extern BOOL parameter_get(char* key, parameter* param, BOOL* isArray);
-extern J_STATUS parameter_update(char* key, parameter_value newValue);
+extern J_STATUS parameter_insert2(char* key, jinjac_parameter_type type, jinjac_parameter_value value);
+extern BOOL parameter_get(char* key, jinjac_parameter* param, BOOL* isArray);
+extern J_STATUS parameter_update(char* key, jinjac_parameter_value newValue);
 
-extern BOOL parameter_array_getProperties(char* key, parameter_type* type, int* nbItem);
-extern BOOL parameter_array_getValue(char* key, int offset, parameter_value* v);
+extern BOOL parameter_array_getProperties(char* key, jinjac_parameter_type* type, int* nbItem);
+extern BOOL parameter_array_getValue(char* key, int offset, jinjac_parameter_value* v);
 extern char* parameter_convertArrayToString(char* key);
 
 //destructor
-extern void param_delete(parameter* param);
+extern void param_delete(jinjac_parameter* param);
 
 #ifdef __cplusplus
 }

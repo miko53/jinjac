@@ -46,7 +46,7 @@ extern char* trim(char* s);
 extern char* truncate(char* origin, unsigned int truncSize, BOOL killwords, char* endSentence,
                       unsigned int tolerateMargin);
 extern char* center(char* origin, unsigned int width);
-extern char* format(char* origin, int nbParameters, parameter* param);
+extern char* format(char* origin, int nbParameters, jinjac_parameter* param);
 
 #ifdef __cplusplus
 }

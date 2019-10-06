@@ -43,8 +43,8 @@ typedef struct
 {
   BOOL isUsed;
   char* key;
-  parameter_type type;
-  parameter_value value;
+  jinjac_parameter_type type;
+  jinjac_parameter_value value;
   BOOL isArray;
   void* pArrayValue;
   int arrayMaxValue;
@@ -55,7 +55,7 @@ STATIC int item_nb = 0;
 STATIC int item_allocated = 0;
 
 
-STATIC void add_param_in_array(char* key, parameter_type type, parameter_value value);
+STATIC void add_param_in_array(char* key, jinjac_parameter_type type, jinjac_parameter_value value);
 
 void parameter_init(void)
 {
@@ -65,9 +65,9 @@ void parameter_init(void)
   ASSERT(item_array != NULL);
 }
 
-int parameter_insert2(char* key, parameter_type type, parameter_value value)
+int parameter_insert2(char* key, jinjac_parameter_type type, jinjac_parameter_value value)
 {
-  parameter param;
+  jinjac_parameter param;
   param.type = type;
   param.value = value;
 
@@ -75,7 +75,7 @@ int parameter_insert2(char* key, parameter_type type, parameter_value value)
 }
 
 
-J_STATUS jinjac_parameter_insert(char* key, parameter* param)
+J_STATUS jinjac_parameter_insert(char* key, jinjac_parameter* param)
 {
   ASSERT(key != NULL);
   ASSERT(param != NULL);
@@ -119,7 +119,7 @@ J_STATUS jinjac_parameter_insert(char* key, parameter* param)
   return status;
 }
 
-STATIC void add_param_in_array(char* key, parameter_type type, parameter_value value)
+STATIC void add_param_in_array(char* key, jinjac_parameter_type type, jinjac_parameter_value value)
 {
   trace("insert item '%s' at %d\n", key, item_nb);
   item_array[item_nb].isUsed = TRUE;
@@ -149,7 +149,7 @@ STATIC void add_param_in_array(char* key, parameter_type type, parameter_value v
   item_nb++;
 }
 
-BOOL parameter_get(char* key, parameter* param, BOOL* isArray)
+BOOL parameter_get(char* key, jinjac_parameter* param, BOOL* isArray)
 {
   BOOL bFounded;
   int i;
@@ -173,7 +173,7 @@ BOOL parameter_get(char* key, parameter* param, BOOL* isArray)
   return bFounded;
 }
 
-J_STATUS parameter_update(char* key, parameter_value newValue)
+J_STATUS parameter_update(char* key, jinjac_parameter_value newValue)
 {
   J_STATUS rc;
   int i;
@@ -212,7 +212,7 @@ J_STATUS parameter_update(char* key, parameter_value newValue)
 }
 
 
-BOOL parameter_array_getValue(char* key, int offset, parameter_value* v)
+BOOL parameter_array_getValue(char* key, int offset, jinjac_parameter_value* v)
 {
   int i;
   BOOL b;
@@ -267,7 +267,7 @@ BOOL parameter_array_getValue(char* key, int offset, parameter_value* v)
 }
 
 
-BOOL parameter_array_getProperties(char* key, parameter_type* type, int* nbItem)
+BOOL parameter_array_getProperties(char* key, jinjac_parameter_type* type, int* nbItem)
 {
   int i;
   ASSERT(key != NULL);
@@ -290,7 +290,7 @@ BOOL parameter_array_getProperties(char* key, parameter_type* type, int* nbItem)
 }
 
 
-J_STATUS jinjac_parameter_array_insert(char* key, parameter_type type, int nbValue, ...)
+J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, int nbValue, ...)
 {
   ASSERT(key != NULL);
   va_list valist;
@@ -435,7 +435,7 @@ char* parameter_convertArrayToString(char* key)
 {
   char* pString;
   BOOL bIsArray;
-  parameter_type type;
+  jinjac_parameter_type type;
   int nbItems;
   int indexItem = -1;
   str_obj arrayResult;
@@ -555,7 +555,7 @@ void jinjac_parameter_delete_all(void)
 }
 
 
-void param_delete(parameter* param)
+void param_delete(jinjac_parameter* param)
 {
   ASSERT(param != NULL);
 

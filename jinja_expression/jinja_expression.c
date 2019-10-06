@@ -127,7 +127,7 @@ int main(int argc, char* argv[])
 
 static void create_example_parameter(void)
 {
-  parameter param;
+  jinjac_parameter param;
   param.type = TYPE_STRING;
   param.value.type_string = "TheValeur";
   jinjac_parameter_insert("a_ident", &param);

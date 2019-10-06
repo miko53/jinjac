@@ -47,20 +47,20 @@ typedef enum
   TYPE_STRING,
   TYPE_INT,
   TYPE_DOUBLE,
-} parameter_type;
+} jinjac_parameter_type;
 
 typedef union
 {
   char* type_string;
   int type_int;
   double type_double;
-} parameter_value;
+} jinjac_parameter_value;
 
 typedef struct
 {
-  parameter_type type;
-  parameter_value value;
-} parameter;
+  jinjac_parameter_type type;
+  jinjac_parameter_value value;
+} jinjac_parameter;
 
 extern void jinjac_init(void);
 extern void jinjac_destroy(void);
@@ -68,8 +68,8 @@ extern void jinjac_destroy(void);
 extern void jinjac_parse_string(char* string);
 extern void jinjac_parse_file(FILE* in, FILE* out);
 
-extern J_STATUS jinjac_parameter_insert(char* key, parameter* param);
-extern J_STATUS jinjac_parameter_array_insert(char* key, parameter_type type, int nbValue, ...);
+extern J_STATUS jinjac_parameter_insert(char* key, jinjac_parameter* param);
+extern J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, int nbValue, ...);
 extern void jinjac_parameter_delete_all(void);
 
 #ifdef __cplusplus

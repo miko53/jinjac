@@ -320,7 +320,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
     case FCT_FORMAT:
       {
         int nbArgs = 0;
-        parameter par[NB_MAX_ARGS];
+        jinjac_parameter par[NB_MAX_ARGS];
 
         if (f->argList != NULL)
         {
@@ -333,8 +333,8 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
 
         for (int i = 0; i < nbArgs; i++)
         {
-          BOOL bOk;
-          bOk = JObject_getValue(f->argList->listArgs[i], &par[i]);
+          /*BOOL bOk;
+          bOk =*/ JObject_getValue(f->argList->listArgs[i], &par[i]);
         }
 
         for (int i = nbArgs; i < NB_MAX_ARGS; i++)
