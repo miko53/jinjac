@@ -34,6 +34,7 @@
 #include "parameter.h"
 #include "common.h"
 #include "ast.h"
+#include "block_statement.h"
 #include "jinja_expression.tab.h"
 
 typedef struct yy_buffer_state* YY_BUFFER_STATE;
@@ -319,71 +320,13 @@ void jinjac_parse_file(FILE* in, FILE* out)
 
 }
 
-typedef struct
-{
-  BOOL bIsBlockActive;
-  BOOL bIsConditionActive;
-  ast_status blockType;
-} block;
-
-STATIC block block_stack[50];
-STATIC int32_t block_level;
-
-STATIC BOOL block_statement_isCurrentBlockActive(void)
-{
-  BOOL b;
-  b = FALSE;
-
-  if (block_level == 0)
-  {
-    b = TRUE;
-  }
-  else
-  {
-    b = block_stack[block_level - 1].bIsBlockActive;
-  }
-
-  return b;
-}
-
-STATIC BOOL block_statement_isCurrentBlockConditionActive(void)
-{
-  BOOL b;
-  b = FALSE;
-
-  if (block_level == 0)
-  {
-    b = TRUE;
-  }
-  else
-  {
-    if (block_stack[block_level - 1].bIsBlockActive)
-    {
-      b = block_stack[block_level - 1].bIsConditionActive;
-    }
-  }
-
-  return b;
-}
-
-STATIC ast_status block_statement_getCurrentBlockType(void)
-{
-  ast_status s;
-  s = IN_ERROR;
-
-  if (block_level != 0)
-  {
-    s = block_stack[block_level - 1 ].blockType;
-  }
-
-  return s;
-}
-
 STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNextLine, parse_file_mode previousMode)
 {
   YY_BUFFER_STATE buffer;
   ast_status parserStatus;
   BOOL inError;
+  BOOL bBlockActive = FALSE;
+  BOOL bConditionActive = FALSE;
 
   ASSERT(string != NULL);
   ASSERT(out != NULL);
@@ -416,21 +359,20 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
       case FOR_STATEMENT:
         trace("for statement\n");
         //create a new block (statement) level
-        block_stack[block_level].blockType = FOR_STATEMENT;
         if ((block_statement_isCurrentBlockActive() == TRUE) && (block_statement_isCurrentBlockConditionActive() == TRUE))
         {
-          block_stack[block_level].bIsBlockActive = TRUE;
-
+          bBlockActive = TRUE;
           ast_setBeginOfForStatement(ftell(in));
-          block_stack[block_level].bIsConditionActive = !ast_forStmtIsLineToBeIgnored();
+          bConditionActive = !ast_forStmtIsLineToBeIgnored();
         }
         else
         {
-          block_stack[block_level].bIsBlockActive = FALSE;
+          bBlockActive = FALSE;
           ast_removeLastResultItem(); // remove from executive stack
 
         }
-        block_level++;
+
+        block_statement_createNewBlock(FOR_STATEMENT, bBlockActive, bConditionActive);
         break;
 
       case END_FOR_STATEMENT:
@@ -451,8 +393,7 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
               else
               {
                 ast_removeLastResultItem();
-                ASSERT(block_level >= 1);
-                block_level--;
+                block_statement_removeCurrrent();
               }
 
               ast_removeLastResultItem();
@@ -466,8 +407,7 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
           else
           {
             ast_removeLastResultItem(); // remove from executive stack
-            ASSERT(block_level >= 1);
-            block_level--;
+            block_statement_removeCurrrent();
           }
         }
         else
@@ -480,18 +420,17 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
       case IF_STATEMENT:
         trace("if statement\n");
         //create a new block (statement) level
-        block_stack[block_level].blockType = IF_STATEMENT;
         if ((block_statement_isCurrentBlockActive() == TRUE) && (block_statement_isCurrentBlockConditionActive() == TRUE))
         {
-          block_stack[block_level].bIsBlockActive = TRUE;
-          block_stack[block_level].bIsConditionActive = !ast_ifStmtIsLineToBeIgnored();
+          bBlockActive = TRUE;
+          bConditionActive = !ast_ifStmtIsLineToBeIgnored();
         }
         else
         {
-          block_stack[block_level].bIsBlockActive = FALSE;
+          bBlockActive = FALSE;
           ast_removeLastResultItem(); // remove from executive stack
         }
-        block_level++;
+        block_statement_createNewBlock(IF_STATEMENT, bBlockActive, bConditionActive);
         break;
 
       case ELSE_STATEMENT:
@@ -499,8 +438,7 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
         {
           trace("else statement\n");
           ast_removeLastResultItem(); //NOTE: little hack to retrieve IF statement without build a new function
-          ASSERT(block_level >= 1);
-          block_stack[block_level - 1].bIsConditionActive = ast_ifStmtIsLineToBeIgnored();
+          block_statement_setConditionActiveOfCurrentBlock(ast_ifStmtIsLineToBeIgnored());
         }
         else
         {
@@ -516,9 +454,8 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
           {
             ast_removeLastResultItem(); // remove from executive stack
           }
-          ASSERT(block_level >= 1);
-          block_level--;
 
+          block_statement_removeCurrrent();
           ast_removeLastResultItem(); // remove from executive stack
         }
         else

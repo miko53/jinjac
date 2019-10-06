@@ -17,7 +17,7 @@ set(LIBJINJAC_SRC_FILES
       ast.c jinjac.c parameter.c 
       convert.c buildin.c jobject.c 
       jfunction.c str_obj.c
-      trace.c
+      trace.c block_statement.c
       ${BISON_JinjacBison_OUTPUTS} ${FLEX_JinjacFlex_OUTPUTS}
   )
 
