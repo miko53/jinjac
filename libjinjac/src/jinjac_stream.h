@@ -27,11 +27,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef _JINJA_H
-#define _JINJA_H
 
+#ifndef _JINJAC_STREAM_H
+#define _JINJAC_STREAM_H
+
+#include "common.h"
 #include <stdio.h>
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,43 +40,46 @@ extern "C" {
 
 typedef enum
 {
-  J_OK = 0,
-  J_ERROR = -1
-} J_STATUS;
-
-typedef enum
-{
-  TYPE_STRING,
-  TYPE_INT,
-  TYPE_DOUBLE,
-} jinjac_parameter_type;
-
-typedef union
-{
-  char* type_string;
-  int32_t type_int;
-  double type_double;
-} jinjac_parameter_value;
+  JINJAC_PARSE_FILE,
+  JINJAC_PARSE_BUFFER
+} jinjac_parsing_type;
 
 typedef struct
 {
-  jinjac_parameter_type type;
-  jinjac_parameter_value value;
-} jinjac_parameter;
+  char* buffer;
+  int32_t size;
+} BUFFER;
 
-extern void jinjac_init(void);
-extern void jinjac_destroy(void);
+struct jinjac_streamS;
 
-extern void jinjac_parse_string(char* string);
-extern void jinjac_parse_file(FILE* in, FILE* out);
-extern void jinjac_parse_buffer(char* in, int32_t sizeIn, char** pOut, int32_t* pSizeOut);
+typedef struct
+{
+  int32_t (*fgetc)(struct jinjac_streamS* ctxt);
+  int32_t (*feof)(struct jinjac_streamS* ctxt);
+  int32_t (*fputc)(struct jinjac_streamS* ctxt, int32_t c);
+  int32_t (*fputs)(struct jinjac_streamS* ctxt, char* s);
+  int32_t (*fseek)(struct jinjac_streamS* ctxt, int64_t offset);
+  int64_t (*ftell)(struct jinjac_streamS* ctxt);
+} steam_ops;
 
-extern J_STATUS jinjac_parameter_insert(char* key, jinjac_parameter* param);
-extern J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, int32_t nbValue, ...);
-extern void jinjac_parameter_delete_all(void);
+typedef struct jinjac_streamS
+{
+  jinjac_parsing_type type;
+  union
+  {
+    FILE* file;
+    BUFFER* buffer;
+  };
+  steam_ops ops;
+} jinjac_stream;
+
+extern int32_t jinjac_stream_initFile(jinjac_stream* ctxt, FILE* file);
+extern int32_t jinjac_stream_initBuffer(jinjac_stream* ctxt, BUFFER* buffer);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _JINJA_H */
+#endif /* _JINJAC_STREAM_H */
+
+

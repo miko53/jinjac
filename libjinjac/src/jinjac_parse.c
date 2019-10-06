@@ -37,7 +37,8 @@
 #include "block_statement.h"
 #include "jinja_expression.tab.h"
 #include "flex_decl.h"
-#include "jinja_parse.h"
+#include "jinjac_parse.h"
+#include "jinjac_stream.h"
 
 #define LINE_SIZE   (1024)
 
@@ -55,7 +56,9 @@ typedef enum
 
 STATIC int32_t no_line;
 
-STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNextLine, parse_file_mode previousMode);
+STATIC BOOL jinjac_parse_line(char* string, jinjac_stream* out, jinjac_stream* in, BOOL* ignoreNextLine,
+                              parse_file_mode previousMode);
+STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out);
 
 void jinjac_init(void)
 {
@@ -113,7 +116,22 @@ int32_t getLine(void)
   return no_line;
 }
 
+void jinjac_parse_buffer(char* in, int32_t sizeIn, char** pOut, int32_t* pSizeOut)
+{
+
+}
+
 void jinjac_parse_file(FILE* in, FILE* out)
+{
+  jinjac_stream streamIn;
+  jinjac_stream streamOut;
+
+  jinjac_stream_initFile(&streamIn, in);
+  jinjac_stream_initFile(&streamOut, out);
+  jinjac_parse_stream(&streamIn, &streamOut);
+}
+
+STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
 {
   ASSERT(in != NULL);
   ASSERT(out != NULL);
@@ -136,9 +154,9 @@ void jinjac_parse_file(FILE* in, FILE* out)
   mode = IN_TEXT;
   previousMode = IN_JINJA_EXPRESSION;
   previous = '\0';
-  current = fgetc(in);
+  current = in->ops.fgetc(in);
 
-  while (!feof(in) && !bInError)
+  while (!in->ops.feof(in) && !bInError)
   {
     if (current == '\n')
     {
@@ -154,7 +172,7 @@ void jinjac_parse_file(FILE* in, FILE* out)
 
         if (!bIgnoreLine)
         {
-          fputc(current, out);
+          out->ops.fputc(out, current);
         }
       }
     }
@@ -171,7 +189,7 @@ void jinjac_parse_file(FILE* in, FILE* out)
           {
             if (!bIgnoreLine)
             {
-              fputc(current, out);
+              out->ops.fputc(out, current);
             }
           }
           break;
@@ -200,8 +218,8 @@ void jinjac_parse_file(FILE* in, FILE* out)
 
             default:
               mode = IN_TEXT;
-              fputc(previous, out);
-              fputc(current, out);
+              out->ops.fputc(out, previous);
+              out->ops.fputc(out, current);
               bufferIndex = 0;
               break;
           }
@@ -306,7 +324,7 @@ void jinjac_parse_file(FILE* in, FILE* out)
     }
 
     previous = current;
-    current = fgetc(in);
+    current = in->ops.fgetc(in);
   }
 
   if (bInError)
@@ -316,7 +334,8 @@ void jinjac_parse_file(FILE* in, FILE* out)
 
 }
 
-STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNextLine, parse_file_mode previousMode)
+STATIC BOOL jinjac_parse_line(char* string, jinjac_stream* out, jinjac_stream* in, BOOL* ignoreNextLine,
+                              parse_file_mode previousMode)
 {
   YY_BUFFER_STATE buffer;
   ast_status parserStatus;
@@ -358,7 +377,7 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
         if ((block_statement_isCurrentBlockActive() == TRUE) && (block_statement_isCurrentBlockConditionActive() == TRUE))
         {
           bBlockActive = TRUE;
-          ast_setBeginOfForStatement(ftell(in));
+          ast_setBeginOfForStatement(in->ops.ftell(in));
           bConditionActive = !ast_forStmtIsLineToBeIgnored();
         }
         else
@@ -384,7 +403,7 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
             {
               if (returnOffset != -1)
               {
-                fseek(in, returnOffset, SEEK_SET);
+                in->ops.fseek(in, returnOffset);
               }
               else
               {
@@ -472,7 +491,7 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
     switch (parserStatus)
     {
       case OK_DONE:
-        fputs(ast_getStringResult(), out);
+        out->ops.fputs(out, ast_getStringResult());
         ast_removeLastResultItem();
         break;
 

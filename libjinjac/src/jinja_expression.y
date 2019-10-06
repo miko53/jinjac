@@ -35,7 +35,7 @@
   #include "parameter.h"
   #include "convert.h"
   #include "flex_decl.h"
-  #include "jinja_parse.h"
+  #include "jinjac_parse.h"
   
   
   #define stop_on_error(errorString)   \
