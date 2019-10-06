@@ -71,11 +71,11 @@ int parameter_insert2(char* key, parameter_type type, parameter_value value)
   param.type = type;
   param.value = value;
 
-  return parameter_insert(key, &param);
+  return jinjac_parameter_insert(key, &param);
 }
 
 
-J_STATUS parameter_insert(char* key, parameter* param)
+J_STATUS jinjac_parameter_insert(char* key, parameter* param)
 {
   ASSERT(key != NULL);
   ASSERT(param != NULL);
@@ -290,7 +290,7 @@ BOOL parameter_array_getProperties(char* key, parameter_type* type, int* nbItem)
 }
 
 
-J_STATUS parameter_array_insert(char* key, parameter_type type, int nbValue, ...)
+J_STATUS jinjac_parameter_array_insert(char* key, parameter_type type, int nbValue, ...)
 {
   ASSERT(key != NULL);
   va_list valist;
@@ -532,7 +532,7 @@ J_STATUS parameter_delete(char* key)
 }
 
 
-void parameter_delete_all(void)
+void jinjac_parameter_delete_all(void)
 {
   for (int i = 0; i < item_nb; i++)
   {

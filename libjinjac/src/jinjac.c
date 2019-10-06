@@ -43,6 +43,7 @@ extern void yy_delete_buffer(YY_BUFFER_STATE buffer);
 extern int yylex_destroy(void);
 
 #define LINE_SIZE   (1024)
+
 typedef enum
 {
   IN_TEXT,
@@ -73,14 +74,13 @@ void jinjac_destroy(void)
 void jinjac_parse_string(char* string)
 {
   YY_BUFFER_STATE buffer;
+  ast_status parserStatus;
 
   ast_clean();
   trace("parse only string = \"%s\"\n", string);
 
   buffer = yy_scan_string (string);
   yyparse();
-
-  ast_status parserStatus;
 
   parserStatus = ast_getStatus();
   switch (parserStatus)
@@ -324,10 +324,7 @@ typedef struct
   BOOL bIsBlockActive;
   BOOL bIsConditionActive;
   ast_status blockType;
-  //int level;
 } block;
-
-//STATIC block block_current;
 
 STATIC block block_stack[50];
 STATIC int block_level;
@@ -425,7 +422,6 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
           block_stack[block_level].bIsBlockActive = TRUE;
 
           ast_setBeginOfForStatement(ftell(in));
-          //*ignoreNextLine =
           block_stack[block_level].bIsConditionActive = !ast_forStmtIsLineToBeIgnored();
         }
         else

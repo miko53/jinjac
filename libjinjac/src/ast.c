@@ -707,10 +707,9 @@ char* ast_getTypeString(jobject_type type)
 void display_function_args(JArgs* argsObj)
 {
   int indexArgs;
-  trace("\n");
   for (indexArgs = 0; indexArgs < argsObj->nb_args; indexArgs++)
   {
-    trace( " arg[%d]: \"%s\" (%d)\n", indexArgs,
+    trace( "--> arg[%d]: \"%s\" (%d)\n", indexArgs,
            ast_getTypeString(argsObj->listArgs[indexArgs]->type),
            argsObj->listArgs[indexArgs]->type);
   }
@@ -719,9 +718,9 @@ void display_function_args(JArgs* argsObj)
 
 void display_range(JRange* range)
 {
-  trace( "> object associed (%p)\n", range->sequencedObject);
-  trace( "> current index (%d)\n", range->currentIndex);
-  trace( "> start (%d), stop (%d), step(%d)\n", range->start, range->stop, range->step);
+  trace( "--> object associed (%p)\n", range->sequencedObject);
+  trace( "--> current index (%d)\n", range->currentIndex);
+  trace( "--> start (%d), stop (%d), step(%d)\n", range->start, range->stop, range->step);
 }
 
 
@@ -733,31 +732,31 @@ void ast_dump_stack()
   trace( "nb item: %u\n", ast_root.ast_nb_object);
   for (i = 0; i < ast_root.ast_nb_object; i++)
   {
-    trace( "item[%u]: \"%s\" (%d)", i, ast_getTypeString(ast_root.ast_list[i]->type), ast_root.ast_list[i]->type);
+    trace( "item[%u]: \"%s\" (%d)\n", i, ast_getTypeString(ast_root.ast_list[i]->type), ast_root.ast_list[i]->type);
     switch (ast_root.ast_list[i]->type)
     {
       case J_STR_CONSTANTE:
-        trace( ": \"%s\"\n", ((JStringConstante*) ast_root.ast_list[i])->str_constant);
+        trace( "-> \"%s\"\n", ((JStringConstante*) ast_root.ast_list[i])->str_constant);
         break;
 
       case J_INTEGER:
-        trace( ": \"%d\"\n", ((JInteger*) ast_root.ast_list[i])->value);
+        trace( "-> \"%d\"\n", ((JInteger*) ast_root.ast_list[i])->value);
         break;
 
       case J_DOUBLE:
-        trace( ": \"%f\"\n", ((JDouble*) ast_root.ast_list[i])->value);
+        trace( "-> \"%f\"\n", ((JDouble*) ast_root.ast_list[i])->value);
         break;
 
       case J_BOOLEAN:
-        trace( ": \"%d\"\n", ((JBoolean*) ast_root.ast_list[i])->value);
+        trace( "-> \"%d\"\n", ((JBoolean*) ast_root.ast_list[i])->value);
         break;
 
       case J_IDENTIFIER:
-        trace( ": \"%s\"\n", ((JIdentifier*) ast_root.ast_list[i])->identifier);
+        trace( "-> \"%s\"\n", ((JIdentifier*) ast_root.ast_list[i])->identifier);
         break;
 
       case J_ARRAY:
-        trace( ": \"%s\"\n", ((JArray*) ast_root.ast_list[i])->identifier);
+        trace( "-> \"%s\"\n", ((JArray*) ast_root.ast_list[i])->identifier);
         break;
 
       case J_FUNCTION_ARGS:
@@ -767,13 +766,13 @@ void ast_dump_stack()
       case J_FUNCTION:
         if (((JFunction*) ast_root.ast_list[i])->argList != NULL)
         {
-          trace( "> Begin inner args:\n");
+          trace( "-> Begin inner args:\n");
           display_function_args(((JFunction*) ast_root.ast_list[i])->argList);
-          trace( "> End inner args\n");
+          trace( "-> End inner args\n");
         }
         else
         {
-          trace( ">> no args\n");
+          trace( "-> no args\n");
         }
         break;
 
@@ -789,7 +788,6 @@ void ast_dump_stack()
       case J_IF:
       case J_END_FOR:
       case J_END_IF:
-        trace("\n");
         break;
 
       default:

@@ -475,7 +475,7 @@ J_STATUS JFor_createIndexParameter(JFor* obj)
     parameter param;
     param.type = TYPE_INT;
     param.value.type_int = seq->currentIndex;
-    parameter_insert(obj->identifierOfIndex, &param);
+    jinjac_parameter_insert(obj->identifierOfIndex, &param);
   }
   else
   {
@@ -491,7 +491,7 @@ J_STATUS JFor_createIndexParameter(JFor* obj)
         {
           obj->sequencing->stop = nbItems;
           parameter_array_getValue(((JArray*) seq->sequencedObject)->identifier, seq->currentIndex, &param.value);
-          parameter_insert(obj->identifierOfIndex, &param);
+          jinjac_parameter_insert(obj->identifierOfIndex, &param);
         }
         else
         {

@@ -38,7 +38,7 @@ extern "C" {
 #endif
 
 extern void parameter_init(void);
-extern void parameter_delete_all();
+extern void jinjac_parameter_delete_all();
 
 extern J_STATUS parameter_delete(char* key);
 extern J_STATUS parameter_insert2(char* key, parameter_type type, parameter_value value);
