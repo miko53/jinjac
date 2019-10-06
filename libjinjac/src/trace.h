@@ -36,8 +36,14 @@
 extern "C" {
 #endif
 
-extern void print_trace(char* fileName, int32_t line, char* fmt, ...);
+typedef enum
+{
+  ERROR_LEVEL,
+  WARNING_LEVEL
+} error_level;
 
+extern void print_trace(char* fileName, int32_t line, char* fmt, ...);
+extern void print_error(error_level level, char* fmt, ...);
 
 #ifdef __cplusplus
 }

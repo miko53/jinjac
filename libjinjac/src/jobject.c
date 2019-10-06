@@ -47,7 +47,7 @@ BOOL JObject_getValue(JObject* pObject, jinjac_parameter* param)
   }
   else
   {
-    error("can't convert object type %d into value\n", pObject->type);
+    error(ERROR_LEVEL, "can't convert object type %d into value\n", pObject->type);
   }
 
   return bOk;
@@ -91,7 +91,7 @@ BOOL JIdentifier_getValue(struct JObjects* pObject, jinjac_parameter* param)
   bOk = parameter_get(pIdent->identifier, param, &isArray);
   if (!bOk)
   {
-    error("warning: unknown '%s' identifier\n", pIdent->identifier);
+    error(WARNING_LEVEL, "warning: unknown '%s' identifier\n", pIdent->identifier);
     param->type = TYPE_STRING;
     param->value.type_string = strdup("");
     bOk = TRUE;
@@ -146,7 +146,7 @@ BOOL JObject_toBoolean(JObject* pObject)
   }
   else
   {
-    error("can't convert object type %d into boolean\n", pObject->type);
+    error(ERROR_LEVEL, "can't convert object type %d into boolean\n", pObject->type);
     ASSERT(FALSE); // should not appear...
   }
 
@@ -495,7 +495,7 @@ J_STATUS JFor_createIndexParameter(JFor* obj)
         }
         else
         {
-          error("warning: %s unknow identifier\n", ((JIdentifier*) seq->sequencedObject)->identifier);
+          error(WARNING_LEVEL, "%s unknow identifier\n", ((JIdentifier*) seq->sequencedObject)->identifier);
           obj->sequencing->stop = 0;
           rc = J_ERROR;
         }
@@ -503,7 +503,7 @@ J_STATUS JFor_createIndexParameter(JFor* obj)
         break;
 
       default:
-        error("type = %d\n", seq->sequencedObject->type);
+        error(ERROR_LEVEL, "type = %d\n", seq->sequencedObject->type);
         rc = J_ERROR;
         ASSERT(FALSE);  //TODO
         break;

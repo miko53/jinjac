@@ -311,7 +311,7 @@ void jinjac_parse_file(FILE* in, FILE* out)
 
   if (bInError)
   {
-    error("Parsing error\n");
+    error(ERROR_LEVEL, "parsing error\n");
   }
 
 }
@@ -343,12 +343,12 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
     switch (parserStatus)
     {
       case IN_ERROR:
-        trace("error %d\n", __LINE__);
+        trace("parsing error\n");
         inError = TRUE;
         break;
 
       case OK_DONE:
-        error("a statement is expected not an expression\n");
+        error(ERROR_LEVEL, "a statement is expected not an expression\n");
         inError = TRUE;
         break;
 
@@ -396,7 +396,7 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
             }
             else
             {
-              trace("end For execution Error %d\n", __LINE__);
+              trace("end For execution Error\n");
               inError = TRUE;
             }
           }
@@ -408,7 +408,7 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
         }
         else
         {
-          trace("error, not in for stmt %d\n", __LINE__);
+          trace("error, not in for stmt\n");
           inError = TRUE;
         }
         break;
@@ -456,7 +456,7 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
         }
         else
         {
-          trace("error, not in IF stmt %d\n", __LINE__);
+          trace("error, not in an IF statement\n");
           inError = TRUE;
         }
         break;
@@ -477,7 +477,7 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
         break;
 
       case IN_ERROR:
-        error("parsing error %d \n", __LINE__);
+        error(ERROR_LEVEL, "parsing error\n");
         inError = TRUE;
         break;
 

@@ -322,7 +322,7 @@ BOOL setFormatConsistency(jinjac_parameter_type* typeToInsert, jinjac_parameter 
   }
   else if ((*typeToInsert == TYPE_DOUBLE) && (currentParameter.type == TYPE_STRING))
   {
-    error("error in input, a float is required instead of a string\n");
+    error(ERROR_LEVEL, "a float is required instead of a string\n");
     bOk = FALSE;
   }
   else if ((*typeToInsert == TYPE_INT) && (currentParameter.type == TYPE_DOUBLE))
@@ -331,7 +331,7 @@ BOOL setFormatConsistency(jinjac_parameter_type* typeToInsert, jinjac_parameter 
   }
   else if ((*typeToInsert == TYPE_INT) && (currentParameter.type == TYPE_STRING))
   {
-    error("error in input, a integer is required instead of a string\n");
+    error(ERROR_LEVEL, "a integer is required instead of a string\n");
     bOk = FALSE;
   }
   return bOk;
@@ -357,7 +357,7 @@ BOOL appendParameterToString(char* pModifierString, jinjac_parameter_type typeTo
   {
     if (param[currentParameterIndex].type != typeToInsert)
     {
-      error("warning: parameter type inconsistency %d versus %d\n", param[currentParameterIndex].type,
+      error(WARNING_LEVEL, "parameter type inconsistency %d versus %d\n", param[currentParameterIndex].type,
             typeToInsert);
       bOk = setFormatConsistency(&typeToInsert, param[currentParameterIndex], pModifierString, &paramDataToInsert);
     }
@@ -412,7 +412,7 @@ BOOL appendParameterToString(char* pModifierString, jinjac_parameter_type typeTo
   }
   else
   {
-    error("error: inconsistency number of parameter for format function (%d versus max %d)\n",
+    error(ERROR_LEVEL, "inconsistency number of parameter for format function (%d versus max %d)\n",
           currentParameterIndex, nbParameters);
     bOk = FALSE;
   }

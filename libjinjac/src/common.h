@@ -53,9 +53,14 @@ extern "C" {
 #define trace(...)
 #endif
 
-#define error(...)        fprintf(stderr, __VA_ARGS__)
+#define error(level, ...)        print_error(level, __VA_ARGS__)
 
-typedef enum { FALSE, TRUE } BOOL;
+typedef enum
+{
+  FALSE,
+  TRUE
+} BOOL;
+
 #define ASSERT      assert
 #define STATIC      static
 #define NEW(obj)    malloc(sizeof(obj))

@@ -40,3 +40,16 @@ void print_trace(char* fileName, int32_t line, char* fmt, ...)
   vfprintf(stderr, fmt, list);
   va_end(list);
 }
+
+void print_error(error_level level, char* fmt, ...)
+{
+  va_list list;
+  va_start(list, fmt);
+
+  char* levelStr[] = { "error", "warning" };
+
+  fprintf(stderr, "%s: ", levelStr[level]);
+  vfprintf(stderr, fmt, list);
+  va_end(list);
+}
+
