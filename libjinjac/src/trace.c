@@ -30,8 +30,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <libgen.h>
+#include "trace.h"
 
-void print_trace(char* fileName, int line, char* fmt, ...)
+void print_trace(char* fileName, int32_t line, char* fmt, ...)
 {
   va_list list;
   va_start(list, fmt);

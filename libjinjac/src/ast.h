@@ -60,7 +60,7 @@ extern char* ast_getStringResult(void);
 
 extern J_STATUS ast_insert_constante(char* name);
 extern J_STATUS ast_insert_identifier(char* name);
-extern J_STATUS ast_insert_integer(int i);
+extern J_STATUS ast_insert_integer(int32_t i);
 extern J_STATUS ast_insert_double(double d);
 extern J_STATUS ast_insert_boolean(BOOL b);
 extern J_STATUS ast_insert_function(char* fct);
@@ -76,9 +76,9 @@ extern J_STATUS ast_execute_filtered_function(void);
 
 //FOR END_FOR management
 extern J_STATUS ast_create_for_stmt(char* identifierName);
-extern BOOL ast_setBeginOfForStatement(long offset);
+extern BOOL ast_setBeginOfForStatement(int64_t offset);
 extern J_STATUS ast_create_end_for_stmt(void);
-extern BOOL ast_executeEndForStmt(long int* returnOffset);
+extern BOOL ast_executeEndForStmt(int64_t* returnOffset);
 extern BOOL ast_forStmtIsLineToBeIgnored(void);
 
 //expression

@@ -408,7 +408,7 @@ void JRange_delete(JObject* pObject)
 
 }
 
-JObject* JRange_new(JObject* objectToBeSequenced, int start, int stop, int step)
+JObject* JRange_new(JObject* objectToBeSequenced, int32_t start, int32_t stop, int32_t step)
 {
   JRange* o = NEW(JRange);
   o->base.type = J_RANGE;
@@ -458,7 +458,7 @@ JObject* JEndFor_new(void)
 }
 
 
-J_STATUS JFor_setStartPoint(JFor* obj, long offset)
+J_STATUS JFor_setStartPoint(JFor* obj, int64_t offset)
 {
   obj->startOffset = offset;
   return J_OK;
@@ -481,7 +481,7 @@ J_STATUS JFor_createIndexParameter(JFor* obj)
   {
     jinjac_parameter param;
     BOOL isArray;
-    int nbItems;
+    int32_t nbItems;
 
     switch (seq->sequencedObject->type)
     {
@@ -504,7 +504,7 @@ J_STATUS JFor_createIndexParameter(JFor* obj)
 
       default:
         error("type = %d\n", seq->sequencedObject->type);
-        rc = -1;
+        rc = J_ERROR;
         ASSERT(FALSE);  //TODO
         break;
     }
@@ -676,12 +676,12 @@ JRange* JObject_toRange(JObject* pObject)
   return jRange;
 }
 
-int JObject_toInteger(JObject* obj)
+int32_t JObject_toInteger(JObject* obj)
 {
   ASSERT(obj != NULL);
   jinjac_parameter param;
   BOOL bOk;
-  int r;
+  int32_t r;
   r = 0;
 
   bOk = JObject_getValue(obj, &param);
@@ -694,7 +694,7 @@ int JObject_toInteger(JObject* obj)
         break;
 
       case TYPE_DOUBLE:
-        r = (int) param.value.type_double;
+        r = (int32_t) param.value.type_double;
         break;
 
       case TYPE_INT:
@@ -748,9 +748,9 @@ STATIC const op_decision operation_array_decision[] =
   { TYPE_INT, TYPE_INT, TYPE_INT } //, calcul_iii},
 };
 
-STATIC int select_operation(jinjac_parameter_type t1, jinjac_parameter_type t2)
+STATIC int32_t select_operation(jinjac_parameter_type t1, jinjac_parameter_type t2)
 {
-  unsigned int i;
+  uint32_t i;
 
   for (i = 0; i < sizeof(operation_array_decision) / sizeof(op_decision); i++)
   {
@@ -800,7 +800,7 @@ JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperation)
 
   if ((bOk1 == TRUE) && (bOk2 == TRUE))
   {
-    int s = select_operation(paramOp1.type, paramOp2.type);
+    int32_t s = select_operation(paramOp1.type, paramOp2.type);
     switch (s)
     {
       case OPERATION_DDD:
@@ -872,7 +872,7 @@ JObject* JObject_execComparison(JObject* op1, JObject* op2, jobject_condition co
   }
   else
   {
-    int s = select_operation(paramOp1.type, paramOp2.type);
+    int32_t s = select_operation(paramOp1.type, paramOp2.type);
     switch (s)
     {
       case OPERATION_DDD:

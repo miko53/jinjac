@@ -56,7 +56,7 @@ typedef enum
   IN_JINJA_EXPRESSION
 } parse_file_mode;
 
-STATIC int no_line;
+STATIC int32_t no_line;
 
 STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNextLine, parse_file_mode previousMode);
 
@@ -111,7 +111,7 @@ void jinjac_parse_string(char* string)
   ast_clean();
 }
 
-int getLine(void)
+int32_t getLine(void)
 {
   return no_line;
 }
@@ -122,7 +122,7 @@ void jinjac_parse_file(FILE* in, FILE* out)
   ASSERT(out != NULL);
 
   char bufferJinja[LINE_SIZE];
-  int bufferIndex = 0;
+  int32_t bufferIndex = 0;
 
   BOOL bInError = FALSE;
   BOOL bIgnoreLine = FALSE;
@@ -327,7 +327,7 @@ typedef struct
 } block;
 
 STATIC block block_stack[50];
-STATIC int block_level;
+STATIC int32_t block_level;
 
 STATIC BOOL block_statement_isCurrentBlockActive(void)
 {
@@ -439,7 +439,7 @@ STATIC BOOL jinjac_parse_line(char* string, FILE* out, FILE* in, BOOL* ignoreNex
         {
           if (block_statement_isCurrentBlockActive() == TRUE)
           {
-            long int returnOffset;
+            int64_t returnOffset;
             BOOL bOk;
             bOk = ast_executeEndForStmt(&returnOffset);
             if (bOk)

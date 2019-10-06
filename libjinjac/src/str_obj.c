@@ -53,7 +53,7 @@ void str_obj_free(str_obj* obj)
   obj->allocatedSize = 0;
 }
 
-void str_obj_realloc(str_obj* obj, int newSize)
+void str_obj_realloc(str_obj* obj, int32_t newSize)
 {
   ASSERT(obj != NULL);
   char* n = realloc(obj->s, newSize);
@@ -73,7 +73,7 @@ void str_obj_insertChar(str_obj* obj, char src)
     str_obj_realloc(obj, obj->allocatedSize * 2);
   }
 
-  int size = obj->size;
+  int32_t size = obj->size;
   obj->s[size] = src;
   size++;
   obj->s[size] = '\0';
@@ -82,7 +82,7 @@ void str_obj_insertChar(str_obj* obj, char src)
 
 void str_obj_insert(str_obj* obj, char* src)
 {
-  int s = strlen(src);
+  int32_t s = strlen(src);
   if (obj->size + s + 1 >= obj->allocatedSize)
   {
     str_obj_realloc(obj, obj->allocatedSize * 2);

@@ -56,7 +56,7 @@ typedef struct
 {
   JObject base;
   JObject* listArgs[NB_MAX_ARGS];
-  int nb_args;
+  int32_t nb_args;
 } JArgs;
 
 typedef struct

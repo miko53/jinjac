@@ -38,18 +38,18 @@ extern "C" {
 #include "common.h"
 #include "jobject.h"
 
-extern char* intToStr(int value);
+extern char* intToStr(int32_t value);
 extern char* doubleToStr(double value);
 
 extern double calcul_ddd(double d1, double d2, char operation);
-extern double calcul_did(double d1, int i2, char operation);
-extern double calcul_idd(int i1, double d2, char operation);
-extern int calcul_iii(int i1, int i2, char operation);
+extern double calcul_did(double d1, int32_t i2, char operation);
+extern double calcul_idd(int32_t i1, double d2, char operation);
+extern int32_t calcul_iii(int32_t i1, int32_t i2, char operation);
 
 extern BOOL compare_ddd(double d1, double d2, jobject_condition condition);
-extern BOOL compare_did(double d1, int i2, jobject_condition condition);
-extern BOOL compare_idd(int i1, double d2, jobject_condition condition);
-extern BOOL compare_iii(int i1, int i2, jobject_condition condition);
+extern BOOL compare_did(double d1, int32_t i2, jobject_condition condition);
+extern BOOL compare_idd(int32_t i1, double d2, jobject_condition condition);
+extern BOOL compare_iii(int32_t i1, int32_t i2, jobject_condition condition);
 
 
 #ifdef __cplusplus

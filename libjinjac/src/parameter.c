@@ -47,12 +47,12 @@ typedef struct
   jinjac_parameter_value value;
   BOOL isArray;
   void* pArrayValue;
-  int arrayMaxValue;
+  int32_t arrayMaxValue;
 } param_item;
 
 STATIC param_item* item_array = NULL;
-STATIC int item_nb = 0;
-STATIC int item_allocated = 0;
+STATIC int32_t item_nb = 0;
+STATIC int32_t item_allocated = 0;
 
 
 STATIC void add_param_in_array(char* key, jinjac_parameter_type type, jinjac_parameter_value value);
@@ -152,7 +152,7 @@ STATIC void add_param_in_array(char* key, jinjac_parameter_type type, jinjac_par
 BOOL parameter_get(char* key, jinjac_parameter* param, BOOL* isArray)
 {
   BOOL bFounded;
-  int i;
+  int32_t i;
 
   bFounded = FALSE;
 
@@ -176,7 +176,7 @@ BOOL parameter_get(char* key, jinjac_parameter* param, BOOL* isArray)
 J_STATUS parameter_update(char* key, jinjac_parameter_value newValue)
 {
   J_STATUS rc;
-  int i;
+  int32_t i;
   rc = J_ERROR;
   if (item_nb > 0)
   {
@@ -214,7 +214,7 @@ J_STATUS parameter_update(char* key, jinjac_parameter_value newValue)
 
 BOOL parameter_array_getValue(char* key, int offset, jinjac_parameter_value* v)
 {
-  int i;
+  int32_t i;
   BOOL b;
   b = FALSE;
   ASSERT(v != NULL);
@@ -237,7 +237,7 @@ BOOL parameter_array_getValue(char* key, int offset, jinjac_parameter_value* v)
               b = TRUE;
               break;
             case TYPE_INT:
-              v->type_int = ((int*) current->pArrayValue)[offset];
+              v->type_int = ((int32_t*) current->pArrayValue)[offset];
               b = TRUE;
               break;
 
@@ -267,9 +267,9 @@ BOOL parameter_array_getValue(char* key, int offset, jinjac_parameter_value* v)
 }
 
 
-BOOL parameter_array_getProperties(char* key, jinjac_parameter_type* type, int* nbItem)
+BOOL parameter_array_getProperties(char* key, jinjac_parameter_type* type, int32_t* nbItem)
 {
-  int i;
+  int32_t i;
   ASSERT(key != NULL);
   ASSERT(type != NULL);
 
@@ -290,7 +290,7 @@ BOOL parameter_array_getProperties(char* key, jinjac_parameter_type* type, int* 
 }
 
 
-J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, int nbValue, ...)
+J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, int32_t nbValue, ...)
 {
   ASSERT(key != NULL);
   va_list valist;
@@ -340,7 +340,7 @@ J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, in
         break;
     }
 
-    for (int i = 0; i < nbValue; i++)
+    for (int32_t i = 0; i < nbValue; i++)
     {
       switch (type)
       {
@@ -349,7 +349,7 @@ J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, in
           break;
 
         case TYPE_INT:
-          ((int*) item_array[item_nb].pArrayValue)[i] = va_arg(valist, int);
+          ((int32_t*) item_array[item_nb].pArrayValue)[i] = va_arg(valist, int32_t);
           break;
 
         case TYPE_STRING:
@@ -384,7 +384,7 @@ J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, in
           break;
 
         case TYPE_INT:
-          item_array[item_nb].pArrayValue = malloc(nbValue * sizeof(int));
+          item_array[item_nb].pArrayValue = malloc(nbValue * sizeof(int32_t));
           break;
 
         case TYPE_STRING:
@@ -397,7 +397,7 @@ J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, in
       }
 
 
-      for (int i = 0; i < nbValue; i++)
+      for (int32_t i = 0; i < nbValue; i++)
       {
         switch (type)
         {
@@ -406,7 +406,7 @@ J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, in
             break;
 
           case TYPE_INT:
-            ((int*) item_array[item_nb].pArrayValue)[i] = va_arg(valist, int);
+            ((int32_t*) item_array[item_nb].pArrayValue)[i] = va_arg(valist, int32_t);
             break;
 
           case TYPE_STRING:
@@ -436,8 +436,8 @@ char* parameter_convertArrayToString(char* key)
   char* pString;
   BOOL bIsArray;
   jinjac_parameter_type type;
-  int nbItems;
-  int indexItem = -1;
+  int32_t nbItems;
+  int32_t indexItem = -1;
   str_obj arrayResult;
   char tampon[50];
 
@@ -447,7 +447,7 @@ char* parameter_convertArrayToString(char* key)
   if (bIsArray)
   {
     str_obj_create(&arrayResult);
-    for (int i = 0; i < item_nb; i++)
+    for (int32_t i = 0; i < item_nb; i++)
     {
       if ((item_array[i].isUsed == TRUE) && (strcmp(key, item_array[i].key) == 0))
       {
@@ -458,7 +458,7 @@ char* parameter_convertArrayToString(char* key)
     ASSERT(indexItem != -1); //it is not possible to not find the key...
 
     str_obj_insert(&arrayResult, "[");
-    for (int i = 0; i < nbItems; i++)
+    for (int32_t i = 0; i < nbItems; i++)
     {
       switch (type)
       {
@@ -467,7 +467,7 @@ char* parameter_convertArrayToString(char* key)
           break;
 
         case TYPE_INT:
-          snprintf(tampon, 50, "%d", ((int*) item_array[indexItem].pArrayValue)[i]);
+          snprintf(tampon, 50, "%d", ((int32_t*) item_array[indexItem].pArrayValue)[i]);
           break;
 
         case TYPE_STRING:
@@ -495,7 +495,7 @@ char* parameter_convertArrayToString(char* key)
 J_STATUS parameter_delete(char* key)
 {
   J_STATUS rc;
-  int i;
+  int32_t i;
   rc = J_ERROR;
 
   trace("delete parameter '%s'\n", key);
@@ -534,7 +534,7 @@ J_STATUS parameter_delete(char* key)
 
 void jinjac_parameter_delete_all(void)
 {
-  for (int i = 0; i < item_nb; i++)
+  for (int32_t i = 0; i < item_nb; i++)
   {
     if (item_array[i].isArray)
     {

@@ -42,7 +42,7 @@ typedef struct
 {
   BOOL inError;
   char* currentStringValue;
-  unsigned int ast_nb_object;
+  uint32_t ast_nb_object;
   JObject* ast_list[MAX_OBJECT];
 } ast;
 
@@ -70,7 +70,7 @@ void ast_clean()
     ast_root.currentStringValue = NULL;
   }
 
-  for (unsigned int i = 0; i < ast_root.ast_nb_object; i++)
+  for (uint32_t i = 0; i < ast_root.ast_nb_object; i++)
   {
     JObject_delete(ast_root.ast_list[i]);
     ast_root.ast_list[i] = NULL;
@@ -134,7 +134,7 @@ BOOL ast_getInError(void)
   return ast_root.inError;
 }
 
-BOOL ast_setBeginOfForStatement(long offset)
+BOOL ast_setBeginOfForStatement(int64_t offset)
 {
   BOOL bOk;
   bOk = FALSE;
@@ -180,7 +180,7 @@ J_STATUS ast_insert_identifier(char* name)
   return ast_insert(o);
 }
 
-J_STATUS ast_insert_integer(int i)
+J_STATUS ast_insert_integer(int32_t i)
 {
   JObject* o = JInteger_new(i);
   return ast_insert(o);
@@ -228,7 +228,7 @@ J_STATUS ast_insert_function(char* fct)
   return J_ERROR;
 }
 
-J_STATUS ast_insert_array(char* name, int offset)
+J_STATUS ast_insert_array(char* name, int32_t offset)
 {
   J_STATUS rc;
   JObject* o;
@@ -335,7 +335,7 @@ char* ast_getStringResult()
   return s;
 }
 
-BOOL ast_get_offset(JObject* pObject, int* pOffset)
+BOOL ast_get_offset(JObject* pObject, int32_t* pOffset)
 {
   ASSERT(pObject != NULL);
   ASSERT(pOffset != NULL);
@@ -348,7 +348,7 @@ J_STATUS ast_create_array_on_top(char* name)
 {
   if (ast_root.ast_nb_object != 0)
   {
-    int offset;
+    int32_t offset;
     BOOL b;
     b = ast_get_offset(ast_root.ast_list[ast_root.ast_nb_object - 1], &offset);
     if (b)
@@ -528,7 +528,7 @@ BOOL ast_forStmtIsLineToBeIgnored(void)
 
 J_STATUS ast_create_end_for_stmt()
 {
-  int rc;
+  J_STATUS rc;
   JObject* o;
   rc = J_ERROR;
 
@@ -541,7 +541,7 @@ J_STATUS ast_create_end_for_stmt()
   return rc;
 }
 
-BOOL ast_executeEndForStmt(long* returnOffset)
+BOOL ast_executeEndForStmt(int64_t* returnOffset)
 {
   BOOL bOK;
   bOK = FALSE;
@@ -610,7 +610,7 @@ BOOL ast_ifStmtIsLineToBeIgnored(void)
 
 J_STATUS ast_create_end_if_stmt(void)
 {
-  int rc;
+  J_STATUS rc;
   JObject* o;
   rc = J_ERROR;
 
@@ -625,7 +625,7 @@ J_STATUS ast_create_end_if_stmt(void)
 
 J_STATUS ast_create_else_stmt(void)
 {
-  int rc;
+  J_STATUS rc;
   JObject* o;
   rc = J_ERROR;
 
@@ -706,7 +706,7 @@ char* ast_getTypeString(jobject_type type)
 
 void display_function_args(JArgs* argsObj)
 {
-  int indexArgs;
+  int32_t indexArgs;
   for (indexArgs = 0; indexArgs < argsObj->nb_args; indexArgs++)
   {
     trace( "--> arg[%d]: \"%s\" (%d)\n", indexArgs,
@@ -726,7 +726,7 @@ void display_range(JRange* range)
 
 void ast_dump_stack()
 {
-  unsigned int i;
+  uint32_t i;
 
   trace( "---------- begin ast stack\n");
   trace( "nb item: %u\n", ast_root.ast_nb_object);

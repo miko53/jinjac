@@ -43,10 +43,9 @@ extern char* lower(char* s);
 extern char* capitalize(char* s);
 extern char* title(char* s);
 extern char* trim(char* s);
-extern char* truncate(char* origin, unsigned int truncSize, BOOL killwords, char* endSentence,
-                      unsigned int tolerateMargin);
-extern char* center(char* origin, unsigned int width);
-extern char* format(char* origin, int nbParameters, jinjac_parameter* param);
+extern char* truncate(char* origin, uint32_t truncSize, BOOL killwords, char* endSentence, uint32_t tolerateMargin);
+extern char* center(char* origin, uint32_t width);
+extern char* format(char* origin, int32_t nbParameters, jinjac_parameter* param);
 
 #ifdef __cplusplus
 }

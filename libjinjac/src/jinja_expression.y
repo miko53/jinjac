@@ -40,7 +40,7 @@
   extern int yyparse();
   extern FILE *yyin;
  
-  extern int getLine(void);
+  extern int32_t getLine(void);
   
   void yyerror(const char *s);
   
@@ -53,7 +53,7 @@
 %}
 
 %union {
-  int integerData;
+  int32_t integerData;
   double doubleData;
   char *stringData;
 }

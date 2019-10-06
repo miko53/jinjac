@@ -85,7 +85,7 @@ typedef struct
 typedef struct
 {
   JObject base;
-  int value;
+  int32_t value;
 } JInteger;
 
 typedef struct
@@ -110,17 +110,17 @@ typedef struct
 {
   JObject base;
   char* identifier;
-  int offset;
+  int32_t offset;
 } JArray;
 
 typedef struct
 {
   JObject base;
   JObject* sequencedObject;
-  int start;
-  int stop;
-  int step;
-  int currentIndex;
+  int32_t start;
+  int32_t stop;
+  int32_t step;
+  int32_t currentIndex;
 } JRange;
 
 typedef struct
@@ -128,7 +128,7 @@ typedef struct
   JObject base;
   char* identifierOfIndex;
   JRange* sequencing;
-  long startOffset;
+  int64_t startOffset;
 } JFor;
 
 
@@ -156,19 +156,19 @@ typedef struct
 //constructor
 extern JObject* JStringConstante_new(char* name);
 extern JObject* JIdentifier_new(char* name);
-extern JObject* JInteger_new(int i);
+extern JObject* JInteger_new(int32_t i);
 extern JObject* JDouble_new(double d);
 extern JObject* JBoolean_new(BOOL b);
 extern JObject* JFunction_new(char* fct);
 extern JObject* JArgs_new(void);
-extern JObject* JArray_new(char* name, int offset);
+extern JObject* JArray_new(char* name, int32_t offset);
 extern JObject* JFor_new(char* nameIdentifier, JRange* sequence);
 extern JObject* JEndFor_new(void);
 
 //JObject
 extern char* JObject_toString(JObject* pObject);
 extern BOOL JObject_getValue(JObject* pObject, jinjac_parameter* param);
-extern int JObject_toInteger(JObject* obj);
+extern int32_t JObject_toInteger(JObject* obj);
 extern BOOL JObject_toBoolean(JObject* pObject);
 
 extern JObject* JObject_doOperation(JObject* op1, JObject* op2, char mathOperation);
@@ -176,12 +176,12 @@ extern void JObject_delete(JObject* pObject);
 extern JRange* JObject_toRange(JObject* pObject);
 
 //JFor
-extern J_STATUS JFor_setStartPoint(JFor* obj, long offset);
+extern J_STATUS JFor_setStartPoint(JFor* obj, int64_t offset);
 extern J_STATUS JFor_createIndexParameter(JFor* obj);
 extern BOOL JFor_isDone(JFor* obj);
 
 //JRange
-extern JObject* JRange_new(JObject* objectToBeSequenced, int start, int stop, int step);
+extern JObject* JRange_new(JObject* objectToBeSequenced, int32_t start, int32_t stop, int32_t step);
 extern BOOL JRange_step(JRange* obj, char* indexIdentifierName);
 
 extern JObject* JObject_execComparison(JObject* op1, JObject* op2, jobject_condition condition);

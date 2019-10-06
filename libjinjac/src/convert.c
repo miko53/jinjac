@@ -32,9 +32,9 @@
 #include <stdlib.h>
 #include "convert.h"
 
-char* intToStr(int value)
+char* intToStr(int32_t value)
 {
-  int size = 0;
+  int32_t size = 0;
   char* p = NULL;
   size = snprintf(p, size, "%d", value);
   if (size < 0)
@@ -54,7 +54,7 @@ char* intToStr(int value)
 
 char* doubleToStr(double value)
 {
-  int size = 0;
+  int32_t size = 0;
   char* p = NULL;
   size = snprintf(p, size, "%f", value);
   if (size < 0)
@@ -103,7 +103,7 @@ double calcul_ddd(double d1, double d2, char operation)
   return r;
 }
 
-double calcul_did(double d1, int i2, char operation)
+double calcul_did(double d1, int32_t i2, char operation)
 {
   double r;
 
@@ -134,7 +134,7 @@ double calcul_did(double d1, int i2, char operation)
   return r;
 }
 
-double calcul_idd(int i1, double d2, char operation)
+double calcul_idd(int32_t i1, double d2, char operation)
 {
   double r;
 
@@ -165,9 +165,9 @@ double calcul_idd(int i1, double d2, char operation)
   return r;
 }
 
-int calcul_iii(int i1, int i2, char operation)
+int32_t calcul_iii(int32_t i1, int32_t i2, char operation)
 {
-  int r;
+  int32_t r;
 
   switch (operation)
   {
@@ -234,7 +234,7 @@ BOOL compare_ddd(double d1, double d2, jobject_condition condition)
   return r;
 }
 
-BOOL compare_did(double d1, int i2, jobject_condition condition)
+BOOL compare_did(double d1, int32_t i2, jobject_condition condition)
 {
   BOOL r;
 
@@ -272,7 +272,7 @@ BOOL compare_did(double d1, int i2, jobject_condition condition)
   return r;
 }
 
-BOOL compare_idd(int i1, double d2, jobject_condition condition)
+BOOL compare_idd(int32_t i1, double d2, jobject_condition condition)
 {
   BOOL r;
 
@@ -310,7 +310,7 @@ BOOL compare_idd(int i1, double d2, jobject_condition condition)
   return r;
 }
 
-BOOL compare_iii(int i1, int i2, jobject_condition condition)
+BOOL compare_iii(int32_t i1, int32_t i2, jobject_condition condition)
 {
   BOOL r;
 

@@ -45,8 +45,8 @@ extern J_STATUS parameter_insert2(char* key, jinjac_parameter_type type, jinjac_
 extern BOOL parameter_get(char* key, jinjac_parameter* param, BOOL* isArray);
 extern J_STATUS parameter_update(char* key, jinjac_parameter_value newValue);
 
-extern BOOL parameter_array_getProperties(char* key, jinjac_parameter_type* type, int* nbItem);
-extern BOOL parameter_array_getValue(char* key, int offset, jinjac_parameter_value* v);
+extern BOOL parameter_array_getProperties(char* key, jinjac_parameter_type* type, int32_t* nbItem);
+extern BOOL parameter_array_getValue(char* key, int32_t offset, jinjac_parameter_value* v);
 extern char* parameter_convertArrayToString(char* key);
 
 //destructor

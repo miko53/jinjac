@@ -146,10 +146,10 @@ char* trim(char* s)
   return n;
 }
 
-char* truncate(char* origin, unsigned int truncSize, BOOL killwords, char* endSentence, unsigned int tolerateMargin)
+char* truncate(char* origin, uint32_t truncSize, BOOL killwords, char* endSentence, uint32_t tolerateMargin)
 {
-  unsigned int lenString;
-  unsigned int lenEndSentence;
+  uint32_t lenString;
+  uint32_t lenEndSentence;
   char* r;
 
   r = origin;
@@ -185,10 +185,10 @@ char* truncate(char* origin, unsigned int truncSize, BOOL killwords, char* endSe
   return r;
 }
 
-char* center(char* origin, unsigned int width)
+char* center(char* origin, uint32_t width)
 {
-  unsigned int lenString;
-  unsigned int offset;
+  uint32_t lenString;
+  uint32_t offset;
   char* r;
   lenString = strlen(origin);
   r = origin;
@@ -281,7 +281,7 @@ BOOL findModifier(char* src, jinjac_parameter_type* type, char** pModifierEnd, B
 
 char* getModifierString(char* pModifierBegin, char* pModifierEnd)
 {
-  int size = pModifierEnd + 1 - pModifierBegin;
+  int32_t size = pModifierEnd + 1 - pModifierBegin;
   trace("modifier (%d) ==> %.*s\n", size, size, pModifierBegin);
 
   char* modifierString = malloc(size + 1);
@@ -327,26 +327,26 @@ BOOL setFormatConsistency(jinjac_parameter_type* typeToInsert, jinjac_parameter 
   }
   else if ((*typeToInsert == TYPE_INT) && (currentParameter.type == TYPE_DOUBLE))
   {
-    (*paramDataToInsert).type_int = (int) currentParameter.value.type_double;
+    (*paramDataToInsert).type_int = (int32_t) currentParameter.value.type_double;
   }
   else if ((*typeToInsert == TYPE_INT) && (currentParameter.type == TYPE_STRING))
   {
-    error("error in input, a int is required instead of a string\n");
+    error("error in input, a integer is required instead of a string\n");
     bOk = FALSE;
   }
   return bOk;
 }
 
 BOOL appendParameterToString(char* pModifierString, jinjac_parameter_type typeToInsert,
-                             str_obj* strDestination, int currentParameterIndex,
-                             int nbParameters, jinjac_parameter* param, BOOL hasNoArg
+                             str_obj* strDestination, int32_t currentParameterIndex,
+                             int32_t nbParameters, jinjac_parameter* param, BOOL hasNoArg
                             )
 {
   ASSERT(pModifierString != NULL);
   ASSERT(strDestination != NULL);
   ASSERT(param != NULL);
 
-  int addedSize = 0;
+  int32_t addedSize = 0;
   char* extraStringToAdd;
   BOOL bOk;
   extraStringToAdd = NULL;
@@ -420,9 +420,9 @@ BOOL appendParameterToString(char* pModifierString, jinjac_parameter_type typeTo
   return bOk;
 }
 
-char* format(char* origin, int nbParameters, jinjac_parameter* param)
+char* format(char* origin, int32_t nbParameters, jinjac_parameter* param)
 {
-  int currentParameterIndex = 0;
+  int32_t currentParameterIndex = 0;
   char* src;
   char* pModifierBegin;
   char* pModifierEnd;

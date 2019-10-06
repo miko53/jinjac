@@ -34,11 +34,13 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 typedef struct
 {
   char* s;
-  int size;
-  int allocatedSize;
+  int32_t size;
+  int32_t allocatedSize;
 } str_obj;
 
 extern void str_obj_create(str_obj* obj);

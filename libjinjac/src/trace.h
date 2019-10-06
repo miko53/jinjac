@@ -30,12 +30,13 @@
 #ifndef _TRACE_H
 #define _TRACE_H
 
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern void print_trace(char* fileName, int line, char* fmt, ...);
+extern void print_trace(char* fileName, int32_t line, char* fmt, ...);
 
 
 #ifdef __cplusplus

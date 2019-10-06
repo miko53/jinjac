@@ -47,7 +47,7 @@ typedef struct
 {
   buildin_fct fct;
   const char* name;
-  int nb_args;
+  int32_t nb_args;
   args_type args_type[NB_MAX_ARGS];
   void* args_default[NB_MAX_ARGS];
 } fct_converter;
@@ -79,10 +79,10 @@ fct_converter tab_fct_converter[] =
 };
 
 
-STATIC int getFunctionID(char* fctName)
+STATIC int32_t getFunctionID(char* fctName)
 {
-  int sizeMax = sizeof(tab_fct_converter) / sizeof(fct_converter);
-  int i;
+  int32_t sizeMax = sizeof(tab_fct_converter) / sizeof(fct_converter);
+  int32_t i;
 
   for (i = 0; i < sizeMax; i++)
   {
@@ -107,7 +107,7 @@ void JFunction_delete(JObject* pObject)
 
 JObject* JFunction_new(char* fct)
 {
-  int functionID = getFunctionID(fct);
+  int32_t functionID = getFunctionID(fct);
   if (functionID != -1)
   {
     JFunction* o = NEW(JFunction);
@@ -138,7 +138,7 @@ BOOL JFunction_toBoolean(JObject* pObject)
 void JArgs_delete(JObject* pObject)
 {
   JArgs* args = ((JArgs*) pObject);
-  int i;
+  int32_t i;
   for (i = 0; i < args->nb_args; i++)
   {
     JObject_delete(args->listArgs[i]);
@@ -196,7 +196,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
     //function with 4 arguments
     case FCT_TRUNCATE:
       {
-        int minNbArgs = 0;
+        int32_t minNbArgs = 0;
         void* a[4];
 
         if (f->argList != NULL)
@@ -204,7 +204,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
           minNbArgs = f->argList->nb_args > fct_item->nb_args ? fct_item->nb_args : f->argList->nb_args;
         }
 
-        for (int i = 0; i < minNbArgs; i++)
+        for (int32_t i = 0; i < minNbArgs; i++)
         {
           switch (fct_item->args_type[i])
           {
@@ -213,7 +213,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
 
             case INT:
             case BOOLEAN:
-              a[i] = (void*) (long) JObject_toInteger(f->argList->listArgs[i]);
+              a[i] = (void*) (int64_t) JObject_toInteger(f->argList->listArgs[i]);
               break;
 
             case STRING:
@@ -227,7 +227,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
         }
 
         //set default value now.
-        for (int i = minNbArgs; i < fct_item->nb_args; i++)
+        for (int32_t i = minNbArgs; i < fct_item->nb_args; i++)
         {
           a[i] = fct_item->args_default[i];
         }
@@ -240,7 +240,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
         }
 
         //dessallocate the allocated string argument after execution
-        for (int i = 0; i < minNbArgs; i++)
+        for (int32_t i = 0; i < minNbArgs; i++)
         {
           switch (fct_item->args_type[i])
           {
@@ -258,7 +258,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
     //function with one argument
     case FCT_CENTER:
       {
-        int minNbArgs = 0;
+        int32_t minNbArgs = 0;
         void* a[1];
 
         if (f->argList != NULL)
@@ -266,7 +266,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
           minNbArgs = f->argList->nb_args > fct_item->nb_args ? fct_item->nb_args : f->argList->nb_args;
         }
 
-        for (int i = 0; i < minNbArgs; i++)
+        for (int32_t i = 0; i < minNbArgs; i++)
         {
           switch (fct_item->args_type[i])
           {
@@ -275,7 +275,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
 
             case INT:
             case BOOLEAN:
-              a[i] = (void*) (long) JObject_toInteger(f->argList->listArgs[i]);
+              a[i] = (void*) (int64_t) JObject_toInteger(f->argList->listArgs[i]);
               break;
 
             case STRING:
@@ -289,7 +289,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
         }
 
         //set default value now.
-        for (int i = minNbArgs; i < fct_item->nb_args; i++)
+        for (int32_t i = minNbArgs; i < fct_item->nb_args; i++)
         {
           a[i] = fct_item->args_default[i];
         }
@@ -302,7 +302,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
         }
 
         //dessallocate the allocated string argument after execution
-        for (int i = 0; i < minNbArgs; i++)
+        for (int32_t i = 0; i < minNbArgs; i++)
         {
           switch (fct_item->args_type[i])
           {
@@ -319,7 +319,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
 
     case FCT_FORMAT:
       {
-        int nbArgs = 0;
+        int32_t nbArgs = 0;
         jinjac_parameter par[NB_MAX_ARGS];
 
         if (f->argList != NULL)
@@ -331,13 +331,13 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
           nbArgs = 10;
         }
 
-        for (int i = 0; i < nbArgs; i++)
+        for (int32_t i = 0; i < nbArgs; i++)
         {
           /*BOOL bOk;
           bOk =*/ JObject_getValue(f->argList->listArgs[i], &par[i]);
         }
 
-        for (int i = nbArgs; i < NB_MAX_ARGS; i++)
+        for (int32_t i = nbArgs; i < NB_MAX_ARGS; i++)
         {
           par[i].type = TYPE_STRING;
           par[i].value.type_string = NULL;
@@ -351,7 +351,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
         }
 
         //dessallocate the allocated string argument after execution
-        for (int i = 0; i < nbArgs; i++)
+        for (int32_t i = 0; i < nbArgs; i++)
         {
           switch (par[i].type)
           {
@@ -369,7 +369,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
     case FCT_RANGE:
       //give number of argument
       {
-        int nbArgs = f->argList->nb_args;
+        int32_t nbArgs = f->argList->nb_args;
         switch (nbArgs)
         {
           case 0: // not possible error...

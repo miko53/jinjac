@@ -31,6 +31,7 @@
 #define _JINJA_H
 
 #include <stdio.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,7 +53,7 @@ typedef enum
 typedef union
 {
   char* type_string;
-  int type_int;
+  int32_t type_int;
   double type_double;
 } jinjac_parameter_value;
 
@@ -69,7 +70,7 @@ extern void jinjac_parse_string(char* string);
 extern void jinjac_parse_file(FILE* in, FILE* out);
 
 extern J_STATUS jinjac_parameter_insert(char* key, jinjac_parameter* param);
-extern J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, int nbValue, ...);
+extern J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, int32_t nbValue, ...);
 extern void jinjac_parameter_delete_all(void);
 
 #ifdef __cplusplus
