@@ -35,17 +35,20 @@
 
 static void create_example_parameter(void);
 static void delete_example_parameter(void);
-
+static void parse_file(char* inputFile, char* outputfile);
+static void parse_buffer(char* inputFile, char* outputfile);
 
 int main(int argc, char* argv[])
 {
   // Parse through the input:
   int opt;
+  int useBuffer;
+  useBuffer = 0;
   char* inputFile = NULL;
   char* outputfile = NULL;
   char* test_string = NULL;
 
-  while ((opt = getopt(argc, argv, "i:o:hs:")) != -1)
+  while ((opt = getopt(argc, argv, "i:o:hbs:")) != -1)
   {
     switch (opt)
     {
@@ -57,13 +60,19 @@ int main(int argc, char* argv[])
         outputfile = optarg;
         break;
 
+      case 'b':
+        useBuffer = 1;
+        break;
+
       case 's':
         test_string = optarg;
         break;
 
       case 'h':
       default:
-        fprintf(stderr, "usage %s -i <input file> -o <output file>\nusage %s -s \"jinja expression\"\n", argv[0], argv[0]);
+        fprintf(stderr,
+                "usage %s -i <input file> -o <output file> <-b> use buffer when set\nusage %s -s \"jinja expression\"\n", argv[0],
+                argv[0]);
         exit(EXIT_FAILURE);
         break;
     }
@@ -86,39 +95,17 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
 
-  FILE* in = NULL;
-  FILE* out = NULL;
-
-  if (outputfile == NULL)
+  if (useBuffer == 0)
   {
-    out = stdout;
+    parse_file(inputFile, outputfile);
   }
   else
   {
-    out = fopen(outputfile, "w");
+    parse_buffer(inputFile, outputfile);
   }
-
-  in = fopen(inputFile, "r");
-  if (in == NULL)
-  {
-    fprintf(stderr, "unable to open %s file in read mode\n", inputFile);
-    delete_example_parameter();
-    exit(EXIT_FAILURE);
-  }
-
-  if (out == NULL)
-  {
-    fprintf(stderr, "unable to open %s file in write mode\n", outputfile);
-    delete_example_parameter();
-    exit(EXIT_FAILURE);
-  }
-
-  jinjac_parse_file(in, out);
 
   jinjac_destroy();
 
-  fclose(in);
-  fclose(out);
 
   delete_example_parameter();
 
@@ -158,3 +145,47 @@ static void delete_example_parameter(void)
 {
   jinjac_parameter_delete_all();
 }
+
+static void parse_file(char* inputFile, char* outputfile)
+{
+  FILE* in = NULL;
+  FILE* out = NULL;
+
+  if (outputfile == NULL)
+  {
+    out = stdout;
+  }
+  else
+  {
+    out = fopen(outputfile, "w");
+  }
+
+  in = fopen(inputFile, "r");
+  if (in == NULL)
+  {
+    fprintf(stderr, "unable to open %s file in read mode\n", inputFile);
+    delete_example_parameter();
+    exit(EXIT_FAILURE);
+  }
+
+  if (out == NULL)
+  {
+    fprintf(stderr, "unable to open %s file in write mode\n", outputfile);
+    delete_example_parameter();
+    exit(EXIT_FAILURE);
+  }
+
+  jinjac_parse_file(in, out);
+
+  fclose(in);
+  fclose(out);
+
+}
+
+
+void parse_buffer(char* inputFile, char* outputfile)
+{
+
+}
+
+
