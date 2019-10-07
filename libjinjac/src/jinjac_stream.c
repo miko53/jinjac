@@ -29,6 +29,7 @@
 */
 
 #include "jinjac_stream.h"
+#include "buffer.h"
 
 STATIC int32_t jinjac_file_readNextChar(jinjac_stream* ctxt);
 STATIC int32_t jinjac_file_endOfFile(jinjac_stream* ctxt);
@@ -130,37 +131,37 @@ int64_t jinjac_file_tell(jinjac_stream* ctxt)
 int32_t jinjac_buffer_readNextChar(jinjac_stream* ctxt)
 {
   ASSERT(ctxt->type == JINJAC_PARSE_BUFFER);
-  return fgetc(ctxt->file);
+  return buffer_getc(ctxt->buffer);
 }
 
 int32_t jinjac_buffer_endOfFile(jinjac_stream* ctxt)
 {
   ASSERT(ctxt->type == JINJAC_PARSE_BUFFER);
-  return feof(ctxt->file);
+  return buffer_eof(ctxt->buffer);
 }
 
 int32_t jinjac_buffer_writeChar(jinjac_stream* ctxt, int32_t c)
 {
   ASSERT(ctxt->type == JINJAC_PARSE_BUFFER);
-  return fputc(c, ctxt->file);
+  return buffer_putc(ctxt->buffer, c);
 }
 
 int32_t jinjac_buffer_writeString(jinjac_stream* ctxt, char* s)
 {
   ASSERT(ctxt->type == JINJAC_PARSE_BUFFER);
-  return fputs(s, ctxt->file);
+  return buffer_puts(ctxt->buffer, s);
 }
 
 int32_t jinjac_buffer_seek(jinjac_stream* ctxt, int64_t offset)
 {
   ASSERT(ctxt->type == JINJAC_PARSE_BUFFER);
-  return fseek(ctxt->file, offset, SEEK_SET);
+  return buffer_seek(ctxt->buffer, offset);
 }
 
 
 int64_t jinjac_buffer_tell(jinjac_stream* ctxt)
 {
   ASSERT(ctxt->type == JINJAC_PARSE_BUFFER);
-  return ftell(ctxt->file);
+  return buffer_tell(ctxt->buffer);
 }
 

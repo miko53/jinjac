@@ -27,54 +27,34 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#ifndef _BUFFER_H
+#define _BUFFER_H
 
-#ifndef _JINJAC_STREAM_H
-#define _JINJAC_STREAM_H
-
-#include "common.h"
-#include <stdio.h>
-#include "buffer.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum
-{
-  JINJAC_PARSE_FILE,
-  JINJAC_PARSE_BUFFER
-} jinjac_parsing_type;
-
-struct jinjac_streamS;
-
 typedef struct
 {
-  int32_t (*fgetc)(struct jinjac_streamS* ctxt);
-  int32_t (*feof)(struct jinjac_streamS* ctxt);
-  int32_t (*fputc)(struct jinjac_streamS* ctxt, int32_t c);
-  int32_t (*fputs)(struct jinjac_streamS* ctxt, char* s);
-  int32_t (*fseek)(struct jinjac_streamS* ctxt, int64_t offset);
-  int64_t (*ftell)(struct jinjac_streamS* ctxt);
-} steam_ops;
+  uint8_t* buffer;
+  int32_t size;
+  int64_t pReadOffset;
+  int64_t pWriteOffset;
+} BUFFER;
 
-typedef struct jinjac_streamS
-{
-  jinjac_parsing_type type;
-  union
-  {
-    FILE* file;
-    BUFFER* buffer;
-  };
-  steam_ops ops;
-} jinjac_stream;
-
-extern int32_t jinjac_stream_initFile(jinjac_stream* ctxt, FILE* file);
-extern int32_t jinjac_stream_initBuffer(jinjac_stream* ctxt, BUFFER* buffer);
+extern int32_t buffer_init(BUFFER* b, uint8_t* pData, int32_t size);
+extern int32_t buffer_getc(BUFFER* b);
+extern int32_t buffer_eof(BUFFER* b);
+extern int32_t buffer_putc(BUFFER* b, int32_t c);
+extern int32_t buffer_puts(BUFFER* b, char* str);
+extern int32_t buffer_seek(BUFFER* b, int64_t offset);
+extern int64_t buffer_tell(BUFFER* b);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _JINJAC_STREAM_H */
 
-
+#endif /* _BUFFER_H */

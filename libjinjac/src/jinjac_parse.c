@@ -118,7 +118,20 @@ int32_t getLine(void)
 
 void jinjac_parse_buffer(char* in, int32_t sizeIn, char** pOut, int32_t* pSizeOut)
 {
+  jinjac_stream streamIn;
+  jinjac_stream streamOut;
+  BUFFER bufferIn;
+  BUFFER bufferOut;
 
+  buffer_init(&bufferIn, (uint8_t*) in, sizeIn);
+  buffer_init(&bufferOut, NULL, 0);
+
+  jinjac_stream_initBuffer(&streamIn, &bufferIn);
+  jinjac_stream_initBuffer(&streamOut, &bufferOut);
+  jinjac_parse_stream(&streamIn, &streamOut);
+
+  *pOut = (char*) bufferOut.buffer;
+  *pSizeOut = bufferOut.pWriteOffset;
 }
 
 void jinjac_parse_file(FILE* in, FILE* out)
