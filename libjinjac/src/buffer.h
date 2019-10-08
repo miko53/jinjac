@@ -31,6 +31,7 @@
 #define _BUFFER_H
 
 #include <stdint.h>
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,6 +43,7 @@ typedef struct
   int32_t size;
   int64_t pReadOffset;
   int64_t pWriteOffset;
+  BOOL    bEndOfFile;
 } BUFFER;
 
 extern int32_t buffer_init(BUFFER* b, uint8_t* pData, int32_t size);

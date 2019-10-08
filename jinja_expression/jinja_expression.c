@@ -31,6 +31,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "jinjac.h"
 
 static void create_example_parameter(void);
@@ -61,6 +63,7 @@ int main(int argc, char* argv[])
         break;
 
       case 'b':
+        fprintf(stderr, "buffer mode\n");
         useBuffer = 1;
         break;
 
@@ -182,10 +185,42 @@ static void parse_file(char* inputFile, char* outputfile)
 
 }
 
-
 void parse_buffer(char* inputFile, char* outputfile)
 {
+  struct stat statInputFile;
+  int rc;
+  rc = stat(inputFile, &statInputFile);
+  if (rc == 0)
+  {
+    uint8_t* inputFileBuffer;
+    int32_t sizeInputFile;
+    uint8_t* outputFileBuffer;
+    int32_t sizeOutputFile;
 
+    inputFileBuffer = malloc(statInputFile.st_size);
+    if (inputFileBuffer != NULL)
+    {
+      sizeInputFile = statInputFile.st_size;
+      outputFileBuffer = NULL;
+      sizeOutputFile = 0;
+
+      FILE* in = fopen(inputFile, "r");
+      fread(inputFileBuffer, sizeInputFile, 1, in);
+
+      jinjac_parse_buffer((char*) inputFileBuffer, sizeInputFile, (char**) &outputFileBuffer, &sizeOutputFile);
+      FILE* out = fopen(outputfile, "w");
+      fwrite(outputFileBuffer, sizeOutputFile, 1, out);
+      //fputc('\n', out);
+      fclose(out);
+      fclose(in);
+      free(inputFileBuffer);
+      free(outputFileBuffer);
+    }
+  }
+  else
+  {
+    fprintf(stderr, "unable to open %s file\n", inputFile);
+  }
 }
 
 
