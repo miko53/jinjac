@@ -27,8 +27,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef _JINJA_H
-#define _JINJA_H
+#ifndef _JINJAC_H
+#define _JINJAC_H
 
 #include <stdio.h>
 #include <stdint.h>
@@ -78,4 +78,4 @@ extern void jinjac_parameter_delete_all(void);
 }
 #endif
 
-#endif /* _JINJA_H */
+#endif /* _JINJAC_H */

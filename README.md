@@ -96,9 +96,9 @@ Here we are the list of limitation.
 - filters as statement
 - assignment in function argument
 - include
-- autoespacted
+- autoescape
 
 ### To improve
 
 - parameter management
-It should be preferable to improve search or use a index when multiple search are performed.
+It should be preferable to improve search or use a index when multiple searches are performed.
