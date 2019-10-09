@@ -17,5 +17,5 @@ set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -D_GNU_SOURCE -W -Wall -Wno-aggregate-return -Wno-suggest-attribute=format -Wno-undef -fms-extensions -fstack-protector-all -Wstack-protector -fno-omit-frame-pointer")
 
 add_subdirectory(libjinjac)
-add_subdirectory(jinja_expression)
+add_subdirectory(jinja_test_app)
 add_subdirectory(test)

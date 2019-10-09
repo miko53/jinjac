@@ -1,10 +1,10 @@
 
 function(create_test test_title test_file)
 add_test(NAME ${test_title}
-         COMMAND autotest.rb $<TARGET_FILE:jinja_expression> ${test_file} 0
+         COMMAND autotest.rb $<TARGET_FILE:jinja_test> ${test_file} 0
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_test(NAME ${test_title}_memcheck
-         COMMAND autotest.rb $<TARGET_FILE:jinja_expression> ${test_file} 1
+         COMMAND autotest.rb $<TARGET_FILE:jinja_test> ${test_file} 1
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endfunction()
 
