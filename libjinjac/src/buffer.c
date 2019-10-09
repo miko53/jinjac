@@ -73,7 +73,7 @@ STATIC int32_t buffer_allocate(BUFFER* b, int32_t nbToAdd)
   int32_t rc;
   int32_t minToAllocate;
 
-  minToAllocate = 10;
+  minToAllocate = 50;
   rc = -1;
 
   if (nbToAdd > minToAllocate)
@@ -81,13 +81,14 @@ STATIC int32_t buffer_allocate(BUFFER* b, int32_t nbToAdd)
     minToAllocate = nbToAdd;
   }
 
-  if (b->size > minToAllocate)
+  if (((b->size - minToAllocate) <  (b->size * 2)) && (b->size != 0))
   {
-    minToAllocate =  (b->size * 2) > minToAllocate ? b->size * 2 : minToAllocate;
+    minToAllocate = (b->size * 2);
   }
 
   if ((b->buffer == NULL) || (b->size == 0))
   {
+    //trace("buffer allocation %d bytes\n", minToAllocate);
     b->buffer = malloc(minToAllocate);
     if (b->buffer != NULL)
     {
@@ -97,6 +98,7 @@ STATIC int32_t buffer_allocate(BUFFER* b, int32_t nbToAdd)
   }
   else
   {
+    //trace("buffer reallocation %d bytes\n", minToAllocate);
     uint8_t* newBuffer = realloc(b->buffer, minToAllocate);
     if (newBuffer != NULL)
     {
