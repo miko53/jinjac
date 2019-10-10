@@ -1,7 +1,7 @@
 # jinjac
 
 [![Language](https://img.shields.io/badge/language-c99-blue.svg)](https://en.wikipedia.org/wiki/C99)
-[![License](https://img.shields.io/github/license/miko53/jinjac)](https://raw.githubusercontent.com/miko53/jinjac/master/LICENSE.txt)
+
 
 Jinjac is a library which adapt the jinja templating language for C.
 its aim is to be very minimalistic and with few dependancies in order to be able to use it in a embedded software.
