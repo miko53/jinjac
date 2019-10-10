@@ -60,6 +60,22 @@ STATIC BOOL jinjac_parse_line(char* string, jinjac_stream* out, jinjac_stream* i
                               parse_file_mode previousMode);
 STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out);
 
+STATIC void jinja_parse_setNoLine(int32_t currentLine)
+{
+  no_line = currentLine;
+}
+
+int32_t jinja_parse_getNoLine(void)
+{
+  return no_line;
+}
+
+STATIC void jinja_parse_incrNoLine(void)
+{
+  no_line++;
+}
+
+
 void jinjac_init(void)
 {
   ast_init();
@@ -111,11 +127,6 @@ void jinjac_parse_string(char* string)
   ast_clean();
 }
 
-int32_t getLine(void)
-{
-  return no_line;
-}
-
 void jinjac_parse_buffer(char* in, int32_t sizeIn, char** pOut, int32_t* pSizeOut)
 {
   jinjac_stream streamIn;
@@ -162,7 +173,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
   parse_file_mode mode;
   parse_file_mode previousMode;
 
-  no_line = 0;
+  jinja_parse_setNoLine(1);
 
   mode = IN_TEXT;
   previousMode = IN_JINJA_EXPRESSION;
@@ -173,7 +184,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
   {
     if (current == '\n')
     {
-      no_line++;
+      jinja_parse_incrNoLine();
       //clear buffer
       bufferIndex = 0;
       if (mode != IN_JINJA_COMMENT)
@@ -362,7 +373,7 @@ STATIC BOOL jinjac_parse_line(char* string, jinjac_stream* out, jinjac_stream* i
 
   inError = FALSE;
 
-  trace("line %d: string to parse = \"%s\"\n", no_line, string);
+  trace("line %d: string to parse = \"%s\"\n", jinja_parse_getNoLine(), string);
   trace("Previous mode = %d\n", previousMode);
 
   buffer = yy_scan_string ( string );
@@ -390,7 +401,7 @@ STATIC BOOL jinjac_parse_line(char* string, jinjac_stream* out, jinjac_stream* i
         if ((block_statement_isCurrentBlockActive() == TRUE) && (block_statement_isCurrentBlockConditionActive() == TRUE))
         {
           bBlockActive = TRUE;
-          ast_setBeginOfForStatement(in->ops.ftell(in));
+          ast_setBeginOfForStatement(in->ops.ftell(in), jinja_parse_getNoLine());
           bConditionActive = !ast_forStmtIsLineToBeIgnored();
         }
         else
@@ -410,13 +421,15 @@ STATIC BOOL jinjac_parse_line(char* string, jinjac_stream* out, jinjac_stream* i
           if (block_statement_isCurrentBlockActive() == TRUE)
           {
             int64_t returnOffset;
+            int32_t previousLine;
             BOOL bOk;
-            bOk = ast_executeEndForStmt(&returnOffset);
+            bOk = ast_executeEndForStmt(&returnOffset, &previousLine);
             if (bOk)
             {
               if (returnOffset != -1)
               {
                 in->ops.fseek(in, returnOffset);
+                jinja_parse_setNoLine(previousLine);
               }
               else
               {

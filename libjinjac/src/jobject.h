@@ -129,6 +129,7 @@ typedef struct
   char* identifierOfIndex;
   JRange* sequencing;
   int64_t startOffset;
+  int32_t startLine;
 } JFor;
 
 
@@ -176,7 +177,7 @@ extern void JObject_delete(JObject* pObject);
 extern JRange* JObject_toRange(JObject* pObject);
 
 //JFor
-extern J_STATUS JFor_setStartPoint(JFor* obj, int64_t offset);
+extern J_STATUS JFor_setStartPoint(JFor* obj, int64_t offset, int32_t noLine);
 extern J_STATUS JFor_createIndexParameter(JFor* obj);
 extern BOOL JFor_isDone(JFor* obj);
 

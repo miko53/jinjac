@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-extern int32_t getLine(void);
+extern int32_t jinja_parse_getNoLine(void);
 
 #ifdef __cplusplus
 }

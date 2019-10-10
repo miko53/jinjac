@@ -246,7 +246,7 @@ condition_expr:
 
 void yyerror(const char *s) 
 {
-  dbg_print("line %d: error: '%s'\n",getLine(), s);
+  dbg_print("line %d: error: '%s'\n",jinja_parse_getNoLine(), s);
   ast_setInError("global error");
 }
 
