@@ -53,7 +53,7 @@ void str_obj_free(str_obj* obj)
   obj->allocatedSize = 0;
 }
 
-void str_obj_realloc(str_obj* obj, int32_t newSize)
+STATIC void str_obj_realloc(str_obj* obj, int32_t newSize)
 {
   ASSERT(obj != NULL);
   char* n = realloc(obj->s, newSize);

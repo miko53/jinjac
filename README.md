@@ -20,7 +20,7 @@ It comes from with several unit tests (see test folders)
 
 ## build-in function
 
-Here we are the list of build-in function which are implemented
+Here we are the list of build-in functions to implement and current status
 
 |function|description|status|
 |--------|-----------|------|
@@ -100,6 +100,7 @@ Here we are the list of limitation.
 - assignment in function argument
 - include
 - autoescape
+- no array or tuple 
 
 ### To improve
 
