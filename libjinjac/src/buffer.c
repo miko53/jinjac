@@ -52,6 +52,7 @@ int32_t buffer_getc(BUFFER* b)
   {
     c = b->buffer[b->pReadOffset];
     b->pReadOffset++;
+    b->pWriteOffset = b->pReadOffset;
   }
   else
   {
@@ -126,6 +127,7 @@ int32_t buffer_putc(BUFFER* b, int32_t c)
       b->buffer[b->pWriteOffset] = c;
       rc = c;
       b->pWriteOffset++;
+      b->pReadOffset = b->pWriteOffset;
     }
   }
   else
@@ -133,6 +135,7 @@ int32_t buffer_putc(BUFFER* b, int32_t c)
     b->buffer[b->pWriteOffset] = c;
     rc = c;
     b->pWriteOffset++;
+    b->pReadOffset = b->pWriteOffset;
   }
 
   return rc;
@@ -156,6 +159,7 @@ int32_t buffer_puts(BUFFER* b, char* str)
     {
       memcpy(&b->buffer[b->pWriteOffset], str, size);
       b->pWriteOffset += size;
+      b->pReadOffset = b->pWriteOffset;
       rc = size;
     }
   }
@@ -163,6 +167,7 @@ int32_t buffer_puts(BUFFER* b, char* str)
   {
     memcpy(&b->buffer[b->pWriteOffset], str, size);
     b->pWriteOffset += size;
+    b->pReadOffset = b->pWriteOffset;
     rc = size;
   }
 
