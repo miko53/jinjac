@@ -54,10 +54,19 @@ typedef enum
   IN_JINJA_EXPRESSION
 } parse_file_mode;
 
+typedef struct
+{
+  char* string;
+  jinjac_stream* out;
+  jinjac_stream* in;
+  BOOL bIgnoreLine;
+  parse_file_mode previousMode;
+  BOOL wsCtrl[2];
+} jinjac_parse_context;
+
 STATIC int32_t no_line;
 
-STATIC BOOL jinjac_parse_line(char* string, jinjac_stream* out, jinjac_stream* in, BOOL* ignoreNextLine,
-                              parse_file_mode previousMode);
+STATIC BOOL jinjac_parse_line(jinjac_parse_context* context);
 STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out);
 
 STATIC void jinja_parse_setNoLine(int32_t currentLine)
@@ -160,23 +169,29 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
   ASSERT(in != NULL);
   ASSERT(out != NULL);
 
+  jinjac_parse_context parse_context;
+
   char bufferJinja[LINE_SIZE];
   int32_t bufferIndex = 0;
 
   BOOL bInError = FALSE;
-  BOOL bIgnoreLine = FALSE;
 
   char current;
   char previous;
   char stringChar;
-
   parse_file_mode mode;
-  parse_file_mode previousMode;
+
+  parse_context.string = bufferJinja;
+  parse_context.in = in;
+  parse_context.out = out;
+  parse_context.wsCtrl[0] = FALSE;
+  parse_context.wsCtrl[1] = FALSE;
+  parse_context.bIgnoreLine = FALSE;
+  parse_context.previousMode = IN_JINJA_EXPRESSION;
 
   jinja_parse_setNoLine(1);
 
   mode = IN_TEXT;
-  previousMode = IN_JINJA_EXPRESSION;
   previous = '\0';
   current = in->ops.fgetc(in);
 
@@ -194,7 +209,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
           bInError = TRUE;
         }
 
-        if (!bIgnoreLine)
+        if (!parse_context.bIgnoreLine)
         {
           out->ops.fputc(out, current);
         }
@@ -211,7 +226,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
           }
           else
           {
-            if (!bIgnoreLine)
+            if (!parse_context.bIgnoreLine)
             {
               out->ops.fputc(out, current);
             }
@@ -226,7 +241,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
               break;
 
             case '{':
-              if (bIgnoreLine)
+              if (parse_context.bIgnoreLine)
               {
                 mode = IN_TEXT;
               }
@@ -271,7 +286,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
           switch (current)
           {
             case '%':
-              previousMode = IN_JINJA_STATEMENT;
+              parse_context.previousMode = IN_JINJA_STATEMENT;
               mode = DETECTION_STOP_DELIMITER;
               break;
 
@@ -279,7 +294,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
             case '\"':
               stringChar = current;
               bufferJinja[bufferIndex++] = current;
-              previousMode = IN_JINJA_STATEMENT;
+              parse_context.previousMode = IN_JINJA_STATEMENT;
               mode = IN_JINJA_SCRIPT_STRING;
               break;
 
@@ -295,7 +310,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
           switch (current)
           {
             case '}':
-              previousMode = IN_JINJA_EXPRESSION;
+              parse_context.previousMode = IN_JINJA_EXPRESSION;
               mode = DETECTION_STOP_DELIMITER;
               break;
 
@@ -303,7 +318,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
             case '\"':
               stringChar = current;
               bufferJinja[bufferIndex++] = current;
-              previousMode = IN_JINJA_EXPRESSION;
+              parse_context.previousMode = IN_JINJA_EXPRESSION;
               mode = IN_JINJA_SCRIPT_STRING;
               break;
 
@@ -317,7 +332,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
         case IN_JINJA_SCRIPT_STRING:
           if (current == stringChar)
           {
-            mode = previousMode;
+            mode = parse_context.previousMode;
           }
 
           bufferJinja[bufferIndex++] = current;
@@ -328,7 +343,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
           {
             //launch parsing
             bufferJinja[bufferIndex++] = '\0';
-            bInError = jinjac_parse_line(bufferJinja, out, in, &bIgnoreLine, previousMode);
+            bInError = jinjac_parse_line(&parse_context);
             mode = IN_TEXT;
             bufferIndex = 0;
           }
@@ -336,7 +351,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
           {
             bufferJinja[bufferIndex++] = previous;
             bufferJinja[bufferIndex++] = current;
-            mode = previousMode;
+            mode = parse_context.previousMode;
           }
           break;
 
@@ -355,42 +370,39 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
   {
     error(ERROR_LEVEL, "parsing error\n");
   }
-
 }
 
-
-STATIC void jinjac_check_ws_control(char* string, BOOL* bwsctrl)
+STATIC void jinjac_check_ws_control(jinjac_parse_context* context)
 {
   int32_t len;
-  len = strlen(string);
+  len = strlen(context->string);
 
   if (len > 0)
   {
-    if (string[0] == '-')
+    if (context->string[0] == '-')
     {
-      bwsctrl[0] = TRUE;
-      string[0] = ' ';
+      context->wsCtrl[0] = TRUE;
+      context->string[0] = ' ';
     }
     else
     {
-      bwsctrl[0] = FALSE;
+      context->wsCtrl[0] = FALSE;
     }
 
-    if (string[len - 1] == '-')
+    if (context->string[len - 1] == '-')
     {
-      bwsctrl[1] = TRUE;
-      string[len - 1] = ' ';
+      context->wsCtrl[1] = TRUE;
+      context->string[len - 1] = ' ';
     }
     else
     {
-      bwsctrl[1] = FALSE;
+      context->wsCtrl[1] = FALSE;
     }
-    trace("whitespace ctrl begin:%d, end:%d\n", bwsctrl[0], bwsctrl[1]);
+    trace("whitespace ctrl begin:%d, end:%d\n", context->wsCtrl[0], context->wsCtrl[1]);
   }
 }
 
-STATIC BOOL jinjac_parse_line(char* string, jinjac_stream* out, jinjac_stream* in, BOOL* ignoreNextLine,
-                              parse_file_mode previousMode)
+STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
 {
   YY_BUFFER_STATE buffer;
   ast_status parserStatus;
@@ -398,28 +410,28 @@ STATIC BOOL jinjac_parse_line(char* string, jinjac_stream* out, jinjac_stream* i
   BOOL bBlockActive = FALSE;
   BOOL bConditionActive = FALSE;
 
-  ASSERT(string != NULL);
-  ASSERT(out != NULL);
-  ASSERT(ignoreNextLine != NULL);
+  ASSERT(context != NULL);
+  ASSERT(context->string != NULL);
+  ASSERT(context->out != NULL);
+  jinjac_stream* out = context->out;
+  jinjac_stream* in = context->in;
 
   inError = FALSE;
-  BOOL wsCtrl[2];
 
-  if (previousMode == IN_JINJA_STATEMENT)
+  if (context->previousMode == IN_JINJA_STATEMENT)
   {
-    jinjac_check_ws_control(string, wsCtrl);
+    jinjac_check_ws_control(context);
   }
 
+  trace("line %d: string to parse = \"%s\"\n", jinja_parse_getNoLine(), context->string);
+  trace("Previous mode = %d\n", context->previousMode);
 
-  trace("line %d: string to parse = \"%s\"\n", jinja_parse_getNoLine(), string);
-  trace("Previous mode = %d\n", previousMode);
-
-  buffer = yy_scan_string ( string );
+  buffer = yy_scan_string ( context->string );
   yyparse();
 
   parserStatus = ast_getStatus();
 
-  if (previousMode == IN_JINJA_STATEMENT)
+  if (context->previousMode == IN_JINJA_STATEMENT)
   {
     switch (parserStatus)
     {
@@ -446,7 +458,6 @@ STATIC BOOL jinjac_parse_line(char* string, jinjac_stream* out, jinjac_stream* i
         {
           bBlockActive = FALSE;
           ast_removeLastResultItem(); // remove from executive stack
-
         }
 
         block_statement_createNewBlock(FOR_STATEMENT, bBlockActive, bConditionActive);
@@ -548,9 +559,9 @@ STATIC BOOL jinjac_parse_line(char* string, jinjac_stream* out, jinjac_stream* i
         break;
     }
 
-    *ignoreNextLine = !block_statement_isCurrentBlockConditionActive();
+    context->bIgnoreLine = !block_statement_isCurrentBlockConditionActive();
   }
-  else if (previousMode == IN_JINJA_EXPRESSION)
+  else if (context->previousMode == IN_JINJA_EXPRESSION)
   {
     switch (parserStatus)
     {
