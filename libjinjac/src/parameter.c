@@ -295,6 +295,7 @@ J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, in
   ASSERT(key != NULL);
   va_list valist;
 
+  trace("insert (array) item '%s' (nb=%d) at %d\n", key, nbValue, item_nb);
   va_start(valist, nbValue);
 
   switch (type)

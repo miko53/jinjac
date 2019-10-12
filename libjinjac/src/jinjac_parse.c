@@ -358,6 +358,37 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
 
 }
 
+
+STATIC void jinjac_check_ws_control(char* string, BOOL* bwsctrl)
+{
+  int32_t len;
+  len = strlen(string);
+
+  if (len > 0)
+  {
+    if (string[0] == '-')
+    {
+      bwsctrl[0] = TRUE;
+      string[0] = ' ';
+    }
+    else
+    {
+      bwsctrl[0] = FALSE;
+    }
+
+    if (string[len - 1] == '-')
+    {
+      bwsctrl[1] = TRUE;
+      string[len - 1] = ' ';
+    }
+    else
+    {
+      bwsctrl[1] = FALSE;
+    }
+    trace("whitespace ctrl begin:%d, end:%d\n", bwsctrl[0], bwsctrl[1]);
+  }
+}
+
 STATIC BOOL jinjac_parse_line(char* string, jinjac_stream* out, jinjac_stream* in, BOOL* ignoreNextLine,
                               parse_file_mode previousMode)
 {
@@ -372,6 +403,13 @@ STATIC BOOL jinjac_parse_line(char* string, jinjac_stream* out, jinjac_stream* i
   ASSERT(ignoreNextLine != NULL);
 
   inError = FALSE;
+  BOOL wsCtrl[2];
+
+  if (previousMode == IN_JINJA_STATEMENT)
+  {
+    jinjac_check_ws_control(string, wsCtrl);
+  }
+
 
   trace("line %d: string to parse = \"%s\"\n", jinja_parse_getNoLine(), string);
   trace("Previous mode = %d\n", previousMode);

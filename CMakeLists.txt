@@ -21,6 +21,7 @@ if (TRACE)
 endif() 
 
 message(STATUS "COVERAGE: ${COVERAGE}")
+message(STATUS "TRACE: ${TRACE}")
 
 set (COVERAGE_OPTIONS "--coverage -UJINJAC_DEBUG")
 
