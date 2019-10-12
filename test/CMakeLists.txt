@@ -1,10 +1,10 @@
 
 function(create_test test_title test_file)
 add_test(NAME ${test_title}
-         COMMAND autotest.rb $<TARGET_FILE:jinjac_test> ${test_file} 0
+         COMMAND autotest.rb $<TARGET_FILE:jinjac_test> ${test_file} 0 0
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_test(NAME ${test_title}_memcheck
-         COMMAND autotest.rb $<TARGET_FILE:jinjac_test> ${test_file} 1
+         COMMAND autotest.rb $<TARGET_FILE:jinjac_test> ${test_file} 1 0
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endfunction()
 
@@ -71,7 +71,7 @@ set(TEST_TITLE
   "19c_for_inside_inactif_if" ;
   "19d_multiple_if_with_first_inative" ;
   "19e_multiple_if_with_first_actif" ;
-  "19f_multiple_fi_with_loop" ;
+  "19f_multiple_if_with_loop" ;
   )
   
 set(INDEX 0)
@@ -87,3 +87,11 @@ while(INDEX LESS MAX)
   math(EXPR T "${INDEX} + 1")
   set(INDEX "${T}")
 endwhile()
+
+add_test(NAME test_19f_with_buffer
+         COMMAND autotest.rb $<TARGET_FILE:jinjac_test> test_19f 0 1
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_test(NAME test_19f_with_buffer_memcheck
+         COMMAND autotest.rb $<TARGET_FILE:jinjac_test> test_19f 1 1
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+

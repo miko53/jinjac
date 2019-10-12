@@ -43,7 +43,7 @@ typedef struct
   int32_t allocatedSize;
 } str_obj;
 
-extern void str_obj_create(str_obj* obj);
+extern void str_obj_create(str_obj* obj, int32_t minToAllocate);
 extern void str_obj_free(str_obj* obj);
 extern void str_obj_insertChar(str_obj* obj, char src);
 extern void str_obj_insert(str_obj* obj, char* src);

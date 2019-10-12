@@ -446,7 +446,7 @@ char* parameter_convertArrayToString(char* key)
   bIsArray = parameter_array_getProperties(key, &type, &nbItems);
   if (bIsArray)
   {
-    str_obj_create(&arrayResult);
+    str_obj_create(&arrayResult, 10);
     for (int32_t i = 0; i < item_nb; i++)
     {
       if ((item_array[i].isUsed == TRUE) && (strcmp(key, item_array[i].key) == 0))

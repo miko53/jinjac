@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
 DIFF = "diff"
-BUFFER_MODE = ""
+$buffer_mode = ""
 
 def check_memleak(valgrind_result)
   
@@ -28,9 +28,9 @@ end
 
 
 def launch_test(test)
-  r = `#{EXE_JINJAC} #{BUFFER_MODE} -i #{test}.jinja -o #{test}.result`
+  r = `#{EXE_JINJAC} #{$buffer_mode} -i #{test}.jinja -o #{test}.result`
   process_status = $?
-  puts("#{EXE_JINJAC} #{BUFFER_MODE} -i #{test}.jinja -o #{test}.result")
+  puts("#{EXE_JINJAC} #{$buffer_mode} -i #{test}.jinja -o #{test}.result")
   if (process_status.exitstatus != 0)
     puts("launch test failed for #{test} result = #{r.to_i}")
     exit(-1)
@@ -54,9 +54,9 @@ end
 
 def launch_memcheck(test)
 
-  r = `valgrind --leak-check=full #{EXE_JINJAC} #{BUFFER_MODE} -i #{test}.jinja -o #{test}.result 2>&1`
+  r = `valgrind --leak-check=full #{EXE_JINJAC} #{$buffer_mode} -i #{test}.jinja -o #{test}.result 2>&1`
   process_status = $?
-  puts("valgrind --leak-check=full #{EXE_JINJAC} #{BUFFER_MODE} -i #{test}.jinja -o #{test}.result 2>&1")
+  puts("valgrind --leak-check=full #{EXE_JINJAC} #{$buffer_mode} -i #{test}.jinja -o #{test}.result 2>&1")
   if (process_status.exitstatus != 0)
     puts("launch test failed for #{test} result = #{r.to_i}")
     exit(-1)
@@ -66,6 +66,10 @@ def launch_memcheck(test)
 end  
 
 EXE_JINJAC=ARGV[0]
+
+if (ARGV[3].to_i == 1)
+  $buffer_mode = "-b"
+end
 
 if (ARGV[2].to_i == 0)
   launch_test(ARGV[1])

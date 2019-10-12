@@ -38,22 +38,22 @@
 extern "C" {
 #endif
 
-#define DBG_PRINT
-#define TRACE
 
-#ifdef DBG_PRINT
-#define dbg_print(...)     fprintf(stdout, __VA_ARGS__)
+#ifdef JINJAC_DEBUG
+#define dbg_print(...)       fprintf(stdout, __VA_ARGS__)
+#define ASSERT(expr)         assert
 #else
 #define dbg_print(...)
-#endif /* DBG_PRINT*/
+#define ASSERT(expr)         ((void) 0)
+#endif /* JINJAC_DEBUG*/
 
 #ifdef TRACE
-#define trace(...)        print_trace(__FILE__, __LINE__, __VA_ARGS__)
+#define trace(...)           print_trace(__FILE__, __LINE__, __VA_ARGS__)
 #else
-#define trace(...)
+#define trace(...)           ((void) (0))
 #endif
 
-#define error(level, ...)        print_error(level, __VA_ARGS__)
+#define error(level, ...)    print_error(level, __VA_ARGS__)
 
 typedef enum
 {
@@ -61,7 +61,6 @@ typedef enum
   TRUE
 } BOOL;
 
-#define ASSERT      assert
 #define STATIC      static
 #define NEW(obj)    malloc(sizeof(obj))
 

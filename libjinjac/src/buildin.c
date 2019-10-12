@@ -428,7 +428,7 @@ char* format(char* origin, int32_t nbParameters, jinjac_parameter* param)
   char* pModifierEnd;
   str_obj dst;
 
-  str_obj_create(&dst);
+  str_obj_create(&dst, 10);
   src = origin;
   BOOL isModifier;
   isModifier = FALSE;

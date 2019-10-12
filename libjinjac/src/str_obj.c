@@ -32,12 +32,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-void str_obj_create(str_obj* obj)
+void str_obj_create(str_obj* obj, int32_t minToAllocate)
 {
-  obj->s = malloc(10);
+  if ((minToAllocate == 0) || (minToAllocate < 10))
+  {
+    obj->allocatedSize = 10;
+  }
+  else
+  {
+    obj->allocatedSize = minToAllocate;
+  }
+
+  obj->s = malloc(obj->allocatedSize);
   ASSERT(obj->s != NULL);
   obj->s[0] = '\0';
-  obj->allocatedSize = 10;
   obj->size = 0;
 }
 
