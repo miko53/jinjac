@@ -41,7 +41,7 @@ extern "C" {
 
 #ifdef JINJAC_DEBUG
 #define dbg_print(...)       fprintf(stdout, __VA_ARGS__)
-#define ASSERT(expr)         assert
+#define ASSERT(expr)         assert(expr)
 #else
 #define dbg_print(...)
 #define ASSERT(expr)         ((void) 0)
