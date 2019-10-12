@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 #include "parameter.h"
 #include "common.h"
 #include "ast.h"
@@ -62,6 +63,7 @@ typedef struct
   BOOL bIgnoreLine;
   parse_file_mode previousMode;
   BOOL wsCtrl[2];
+  BOOL forHack;
 } jinjac_parse_context;
 
 STATIC int32_t no_line;
@@ -188,6 +190,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
   parse_context.wsCtrl[1] = FALSE;
   parse_context.bIgnoreLine = FALSE;
   parse_context.previousMode = IN_JINJA_EXPRESSION;
+  parse_context.forHack = FALSE;
 
   jinja_parse_setNoLine(1);
 
@@ -209,9 +212,14 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
           bInError = TRUE;
         }
 
-        if (!parse_context.bIgnoreLine)
+        if ((!parse_context.bIgnoreLine) && (parse_context.wsCtrl[1] == FALSE))
         {
           out->ops.fputc(out, current);
+        }
+
+        if (parse_context.forHack == TRUE)
+        {
+          parse_context.wsCtrl[1] = TRUE;
         }
       }
     }
@@ -228,7 +236,18 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
           {
             if (!parse_context.bIgnoreLine)
             {
-              out->ops.fputc(out, current);
+              if (parse_context.wsCtrl[1] == FALSE)
+              {
+                out->ops.fputc(out, current);
+              }
+              else
+              {
+                if (!isspace(current))
+                {
+                  parse_context.wsCtrl[1] = FALSE;
+                  out->ops.fputc(out, current);
+                }
+              }
             }
           }
           break;
@@ -421,6 +440,25 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
   if (context->previousMode == IN_JINJA_STATEMENT)
   {
     jinjac_check_ws_control(context);
+
+    if (context->wsCtrl[0] == TRUE)
+    {
+      //strip file
+      int64_t offset;
+      offset = out->ops.ftell(out);
+      while (offset > 0)
+      {
+        offset--;
+        out->ops.fseek(out, offset);
+        char c = out->ops.fgetc(out);
+        if (!isspace(c))
+        {
+          break;
+        }
+      }
+
+      context->wsCtrl[0] = FALSE;
+    }
   }
 
   trace("line %d: string to parse = \"%s\"\n", jinja_parse_getNoLine(), context->string);
@@ -479,6 +517,7 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
               {
                 in->ops.fseek(in, returnOffset);
                 jinja_parse_setNoLine(previousLine);
+                context->forHack = TRUE;
               }
               else
               {
