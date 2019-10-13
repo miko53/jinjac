@@ -62,7 +62,7 @@ typedef struct
   jinjac_stream* in;
   BOOL bIgnoreLine;
   parse_file_mode previousMode;
-  BOOL wsCtrl[2];
+  BOOL wsCtrlStripFromEnd; //NOTE: activate when a minus is detected at the end of statement e.g. {% for ttt in range() -%}
 } jinjac_parse_context;
 
 STATIC int32_t no_line;
@@ -185,8 +185,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
   parse_context.string = bufferJinja;
   parse_context.in = in;
   parse_context.out = out;
-  parse_context.wsCtrl[0] = FALSE;
-  parse_context.wsCtrl[1] = FALSE;
+  parse_context.wsCtrlStripFromEnd = FALSE;
   parse_context.bIgnoreLine = FALSE;
   parse_context.previousMode = IN_JINJA_EXPRESSION;
 
@@ -210,15 +209,10 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
           bInError = TRUE;
         }
 
-        if ((!parse_context.bIgnoreLine) && (parse_context.wsCtrl[1] == FALSE))
+        if ((!parse_context.bIgnoreLine) && (parse_context.wsCtrlStripFromEnd == FALSE))
         {
           out->ops.fputc(out, current);
         }
-
-        /*if (parse_context.forHack == TRUE)
-        {
-          parse_context.wsCtrl[1] = TRUE;
-        }*/
       }
     }
     else
@@ -229,13 +223,13 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
           if (current == '{')
           {
             mode = DETECTION_START_DELIMITER;
-            parse_context.wsCtrl[1] = FALSE;
+            parse_context.wsCtrlStripFromEnd = FALSE;
           }
           else
           {
             if (!parse_context.bIgnoreLine)
             {
-              if (parse_context.wsCtrl[1] == FALSE)
+              if (parse_context.wsCtrlStripFromEnd == FALSE)
               {
                 out->ops.fputc(out, current);
               }
@@ -243,7 +237,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
               {
                 if (!isspace(current))
                 {
-                  parse_context.wsCtrl[1] = FALSE;
+                  parse_context.wsCtrlStripFromEnd = FALSE;
                   out->ops.fputc(out, current);
                 }
               }
@@ -390,33 +384,33 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
   }
 }
 
-STATIC void jinjac_check_ws_control(jinjac_parse_context* context)
+STATIC void jinjac_check_ws_control(char* string, BOOL* bWsCtrlBegin, BOOL* bWsCtrlEnd)
 {
   int32_t len;
-  len = strlen(context->string);
+  len = strlen(string);
 
   if (len > 0)
   {
-    if (context->string[0] == '-')
+    if (string[0] == '-')
     {
-      context->wsCtrl[0] = TRUE;
-      context->string[0] = ' ';
+      *bWsCtrlBegin = TRUE;
+      string[0] = ' ';
     }
     else
     {
-      context->wsCtrl[0] = FALSE;
+      *bWsCtrlBegin = FALSE;
     }
 
-    if (context->string[len - 1] == '-')
+    if (string[len - 1] == '-')
     {
-      context->wsCtrl[1] = TRUE;
-      context->string[len - 1] = ' ';
+      *bWsCtrlEnd = TRUE;
+      string[len - 1] = ' ';
     }
     else
     {
-      context->wsCtrl[1] = FALSE;
+      *bWsCtrlEnd = FALSE;
     }
-    trace("whitespace ctrl begin:%d, end:%d\n", context->wsCtrl[0], context->wsCtrl[1]);
+    trace("whitespace ctrl begin:%d, end:%d\n", *bWsCtrlBegin, *bWsCtrlEnd);
   }
 }
 
@@ -427,9 +421,11 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
   BOOL inError;
   BOOL bBlockActive = FALSE;
   BOOL bConditionActive = FALSE;
+  BOOL wsCtrlBegin, wsCtrlEnd;
 
   ASSERT(context != NULL);
   ASSERT(context->string != NULL);
+  ASSERT(context->in != NULL);
   ASSERT(context->out != NULL);
   jinjac_stream* out = context->out;
   jinjac_stream* in = context->in;
@@ -438,26 +434,7 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
 
   if (context->previousMode == IN_JINJA_STATEMENT)
   {
-    jinjac_check_ws_control(context);
-
-    if (context->wsCtrl[0] == TRUE)
-    {
-      //strip file
-      int64_t offset;
-      offset = out->ops.ftell(out);
-      while (offset > 0)
-      {
-        offset--;
-        out->ops.fseek(out, offset);
-        char c = out->ops.fgetc(out);
-        if (!isspace(c))
-        {
-          break;
-        }
-      }
-
-      context->wsCtrl[0] = FALSE;
-    }
+    jinjac_check_ws_control(context->string, &wsCtrlBegin, &wsCtrlEnd);
   }
 
   trace("line %d: string to parse = \"%s\"\n", jinja_parse_getNoLine(), context->string);
@@ -488,7 +465,7 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
         if ((block_statement_isCurrentBlockActive() == TRUE) && (block_statement_isCurrentBlockConditionActive() == TRUE))
         {
           bBlockActive = TRUE;
-          ast_setBeginOfForStatement(in->ops.ftell(in), jinja_parse_getNoLine(), context->wsCtrl[1]);
+          ast_setBeginOfForStatement(in->ops.ftell(in), jinja_parse_getNoLine(), wsCtrlEnd);
           bConditionActive = !ast_forStmtIsLineToBeIgnored();
         }
         else
@@ -517,7 +494,7 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
               {
                 in->ops.fseek(in, returnOffset);
                 jinja_parse_setNoLine(previousLine);
-                context->wsCtrl[1] = bStripWhiteSpace;
+                wsCtrlEnd = bStripWhiteSpace; //restore state of whitespace
               }
               else
               {
@@ -599,6 +576,26 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
     }
 
     context->bIgnoreLine = !block_statement_isCurrentBlockConditionActive();
+    if (block_statement_isCurrentBlockActive())
+    {
+      if (wsCtrlBegin == TRUE)
+      {
+        //strip file
+        int64_t offset;
+        offset = out->ops.ftell(out);
+        while (offset > 0)
+        {
+          offset--;
+          out->ops.fseek(out, offset);
+          char c = out->ops.fgetc(out);
+          if (!isspace(c))
+          {
+            break;
+          }
+        }
+      }
+      context->wsCtrlStripFromEnd = wsCtrlEnd;
+    }
   }
   else if (context->previousMode == IN_JINJA_EXPRESSION)
   {

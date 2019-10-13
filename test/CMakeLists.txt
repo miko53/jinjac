@@ -96,4 +96,6 @@ add_test(NAME test_19f_with_buffer
 add_test(NAME test_19f_with_buffer_memcheck
          COMMAND autotest.rb $<TARGET_FILE:jinjac_test> test_19f 1 1
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-
+add_test(NAME test_20_whitespace_with_buffer
+         COMMAND autotest.rb $<TARGET_FILE:jinjac_test> test_20 0 1
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
