@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 
   if (test_string != NULL)
   {
-    jinjac_parse_string(test_string);
+    jinjac_dbg_parse_string(test_string);
     delete_example_parameter();
     exit(EXIT_SUCCESS);
   }
@@ -178,7 +178,7 @@ static void parse_file(char* inputFile, char* outputfile)
     exit(EXIT_FAILURE);
   }
 
-  jinjac_parse_file(in, out);
+  jinjac_render_with_file(in, out);
 
   fclose(in);
   fclose(out);
@@ -207,7 +207,7 @@ void parse_buffer(char* inputFile, char* outputfile)
       FILE* in = fopen(inputFile, "r");
       fread(inputFileBuffer, sizeInputFile, 1, in);
 
-      jinjac_parse_buffer((char*) inputFileBuffer, sizeInputFile, (char**) &outputFileBuffer, &sizeOutputFile);
+      jinjac_render_with_buffer((char*) inputFileBuffer, sizeInputFile, (char**) &outputFileBuffer, &sizeOutputFile);
       FILE* out = fopen(outputfile, "w");
       fwrite(outputFileBuffer, sizeOutputFile, 1, out);
       //fputc('\n', out);

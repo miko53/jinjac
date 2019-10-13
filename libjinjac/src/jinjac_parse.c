@@ -69,6 +69,7 @@ STATIC int32_t no_line;
 
 STATIC BOOL jinjac_parse_line(jinjac_parse_context* context);
 STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out);
+STATIC void jinjac_parse_stripWhiteSpaceAtEndOfFile(jinjac_stream* out);
 
 STATIC void jinja_parse_setNoLine(int32_t currentLine)
 {
@@ -97,7 +98,7 @@ void jinjac_destroy(void)
   ast_clean();
 }
 
-void jinjac_parse_string(char* string)
+void jinjac_dbg_parse_string(char* string)
 {
   YY_BUFFER_STATE buffer;
   ast_status parserStatus;
@@ -137,7 +138,7 @@ void jinjac_parse_string(char* string)
   ast_clean();
 }
 
-void jinjac_parse_buffer(char* in, int32_t sizeIn, char** pOut, int32_t* pSizeOut)
+void jinjac_render_with_buffer(char* in, int32_t sizeIn, char** pOut, int32_t* pSizeOut)
 {
   jinjac_stream streamIn;
   jinjac_stream streamOut;
@@ -155,7 +156,7 @@ void jinjac_parse_buffer(char* in, int32_t sizeIn, char** pOut, int32_t* pSizeOu
   *pSizeOut = bufferOut.pWriteOffset;
 }
 
-void jinjac_parse_file(FILE* in, FILE* out)
+void jinjac_render_with_file(FILE* in, FILE* out)
 {
   jinjac_stream streamIn;
   jinjac_stream streamOut;
@@ -580,19 +581,7 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
     {
       if (wsCtrlBegin == TRUE)
       {
-        //strip file
-        int64_t offset;
-        offset = out->ops.ftell(out);
-        while (offset > 0)
-        {
-          offset--;
-          out->ops.fseek(out, offset);
-          char c = out->ops.fgetc(out);
-          if (!isspace(c))
-          {
-            break;
-          }
-        }
+        jinjac_parse_stripWhiteSpaceAtEndOfFile(out);
       }
       context->wsCtrlStripFromEnd = wsCtrlEnd;
     }
@@ -629,4 +618,19 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
   return inError;
 }
 
-
+STATIC void jinjac_parse_stripWhiteSpaceAtEndOfFile(jinjac_stream* out)
+{
+  //strip file
+  int64_t offset;
+  offset = out->ops.ftell(out);
+  while (offset > 0)
+  {
+    offset--;
+    out->ops.fseek(out, offset);
+    char c = out->ops.fgetc(out);
+    if (!isspace(c))
+    {
+      break;
+    }
+  }
+}

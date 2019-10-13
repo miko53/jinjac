@@ -17,6 +17,7 @@ It comes from with several unit tests (see test folders)
 - function execution
 - for statement
 - if statement
+- strip whitespace (with minus characters in statement)
 
 ## build-in function
 
@@ -85,7 +86,8 @@ Here we are the list of limitation.
 - missing function of previous table
 - in if statement
   * logical are not completed (not, and, or, is, ...)
-- whitespace control (with '-' characters)
+- whitespace control (with '+' characters)
+  * in fact it has the default behavior and you can control whitespace strip with '-'
 - raw statement
 - set statement
 - template inheritance

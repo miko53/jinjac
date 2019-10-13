@@ -66,9 +66,9 @@ typedef struct
 extern void jinjac_init(void);
 extern void jinjac_destroy(void);
 
-extern void jinjac_parse_string(char* string);
-extern void jinjac_parse_file(FILE* in, FILE* out);
-extern void jinjac_parse_buffer(char* in, int32_t sizeIn, char** pOut, int32_t* pSizeOut);
+extern void jinjac_dbg_parse_string(char* string);
+extern void jinjac_render_with_file(FILE* in, FILE* out);
+extern void jinjac_render_with_buffer(char* in, int32_t sizeIn, char** pOut, int32_t* pSizeOut);
 
 extern J_STATUS jinjac_parameter_insert(char* key, jinjac_parameter* param);
 extern J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, int32_t nbValue, ...);
