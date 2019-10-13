@@ -458,10 +458,11 @@ JObject* JEndFor_new(void)
 }
 
 
-J_STATUS JFor_setStartPoint(JFor* obj, int64_t offset, int32_t noLine)
+J_STATUS JFor_setStartPoint(JFor* obj, int64_t offset, int32_t noLine, BOOL bStripWhiteSpace)
 {
   obj->startOffset = offset;
   obj->startLine = noLine;
+  obj->bStripWhiteSpace = bStripWhiteSpace;
   return J_OK;
 }
 

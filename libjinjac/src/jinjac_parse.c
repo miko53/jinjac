@@ -63,7 +63,6 @@ typedef struct
   BOOL bIgnoreLine;
   parse_file_mode previousMode;
   BOOL wsCtrl[2];
-  BOOL forHack;
 } jinjac_parse_context;
 
 STATIC int32_t no_line;
@@ -190,7 +189,6 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
   parse_context.wsCtrl[1] = FALSE;
   parse_context.bIgnoreLine = FALSE;
   parse_context.previousMode = IN_JINJA_EXPRESSION;
-  parse_context.forHack = FALSE;
 
   jinja_parse_setNoLine(1);
 
@@ -217,10 +215,10 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
           out->ops.fputc(out, current);
         }
 
-        if (parse_context.forHack == TRUE)
+        /*if (parse_context.forHack == TRUE)
         {
           parse_context.wsCtrl[1] = TRUE;
-        }
+        }*/
       }
     }
     else
@@ -231,6 +229,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
           if (current == '{')
           {
             mode = DETECTION_START_DELIMITER;
+            parse_context.wsCtrl[1] = FALSE;
           }
           else
           {
@@ -489,7 +488,7 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
         if ((block_statement_isCurrentBlockActive() == TRUE) && (block_statement_isCurrentBlockConditionActive() == TRUE))
         {
           bBlockActive = TRUE;
-          ast_setBeginOfForStatement(in->ops.ftell(in), jinja_parse_getNoLine());
+          ast_setBeginOfForStatement(in->ops.ftell(in), jinja_parse_getNoLine(), context->wsCtrl[1]);
           bConditionActive = !ast_forStmtIsLineToBeIgnored();
         }
         else
@@ -510,14 +509,15 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
             int64_t returnOffset;
             int32_t previousLine;
             BOOL bOk;
-            bOk = ast_executeEndForStmt(&returnOffset, &previousLine);
+            BOOL bStripWhiteSpace;
+            bOk = ast_executeEndForStmt(&returnOffset, &previousLine, &bStripWhiteSpace);
             if (bOk)
             {
               if (returnOffset != -1)
               {
                 in->ops.fseek(in, returnOffset);
                 jinja_parse_setNoLine(previousLine);
-                context->forHack = TRUE;
+                context->wsCtrl[1] = bStripWhiteSpace;
               }
               else
               {

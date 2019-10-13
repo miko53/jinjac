@@ -160,7 +160,7 @@ static void parse_file(char* inputFile, char* outputfile)
   }
   else
   {
-    out = fopen(outputfile, "w");
+    out = fopen(outputfile, "w+");
   }
 
   in = fopen(inputFile, "r");

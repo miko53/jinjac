@@ -76,9 +76,9 @@ extern J_STATUS ast_execute_filtered_function(void);
 
 //FOR END_FOR management
 extern J_STATUS ast_create_for_stmt(char* identifierName);
-extern BOOL ast_setBeginOfForStatement(int64_t offset, int32_t noLine);
+extern BOOL ast_setBeginOfForStatement(int64_t offset, int32_t noLine, BOOL bStripWhiteSpace);
 extern J_STATUS ast_create_end_for_stmt(void);
-extern BOOL ast_executeEndForStmt(int64_t* returnOffset, int32_t* previousLine);
+extern BOOL ast_executeEndForStmt(int64_t* returnOffset, int32_t* previousLine, BOOL* bStripWhiteSpace);
 extern BOOL ast_forStmtIsLineToBeIgnored(void);
 
 //expression

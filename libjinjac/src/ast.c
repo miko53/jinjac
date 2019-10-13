@@ -134,7 +134,7 @@ BOOL ast_getInError(void)
   return ast_root.inError;
 }
 
-BOOL ast_setBeginOfForStatement(int64_t offset, int32_t noLine)
+BOOL ast_setBeginOfForStatement(int64_t offset, int32_t noLine, BOOL bStripWhiteSpace)
 {
   BOOL bOk;
   bOk = FALSE;
@@ -143,7 +143,7 @@ BOOL ast_setBeginOfForStatement(int64_t offset, int32_t noLine)
     JObject* top = ast_root.ast_list[ast_root.ast_nb_object - 1];
     if (top->type == J_FOR)
     {
-      JFor_setStartPoint((JFor*) top, offset, noLine);
+      JFor_setStartPoint((JFor*) top, offset, noLine, bStripWhiteSpace);
       bOk = TRUE;
     }
   }
@@ -541,7 +541,7 @@ J_STATUS ast_create_end_for_stmt()
   return rc;
 }
 
-BOOL ast_executeEndForStmt(int64_t* returnOffset, int32_t* previousLine)
+BOOL ast_executeEndForStmt(int64_t* returnOffset, int32_t* previousLine, BOOL* bStripWhiteSpace)
 {
   BOOL bOK;
   bOK = FALSE;
@@ -564,6 +564,7 @@ BOOL ast_executeEndForStmt(int64_t* returnOffset, int32_t* previousLine)
       {
         *returnOffset = pForStmt->startOffset;
         *previousLine = pForStmt->startLine;
+        *bStripWhiteSpace = pForStmt->bStripWhiteSpace;
       }
       bOK = TRUE;
     }
