@@ -158,3 +158,34 @@ Here we are the list of limitation.
 
 - parameter management
 It should be preferable to improve search or use a index when multiple searches are performed.
+
+
+## Dependancies
+
+The library uses standard glibc library and need flex and bison to build.
+cmake is used to construct make system.
+To perform coverage analysis, you need to install lcov package.
+It uses dynamic memory allocation (`malloc()` and `free()`).
+
+## Build
+
+It exists 3 scripts which can be used to configure the build of the library:
+  - `build_debug.sh`
+ This one configures to build library in debug mode (with trace and assertion)
+ 
+ - `build_release.sh`
+ This one configure in release mode.
+ Example:
+ ```
+ $ ./build_release.sh
+ $ cd build_release
+ $ make all 
+ $ ctest 
+ ```
+ 
+ - `build_coverage.sh`
+ this one configures and builds the library, performs unit tests and retrieves the coverage.
+
+ 
+ruby and valgrind are used to perform tests.
+
