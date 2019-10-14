@@ -9,6 +9,54 @@ Nevertheless it tries to implement a large set feature.
 
 It comes from with several unit tests (see test folders)
 
+## usage example
+
+```c
+  char* template =
+  "Hello from jinjac {{ user }} !\n"
+  "{% for x in data -%}\n"
+  " -> data {{ x }}\n"
+  "{% endfor %}\n"
+  "end template\n"
+  ;
+
+  jinjac_init();
+
+  jinjac_parameter john;
+  john.type = TYPE_STRING;
+  john.value.type_string = "John";
+
+  jinjac_parameter_insert("user", &john);
+  jinjac_parameter_array_insert("data", TYPE_INT, 10, 5, 8, 987, 16, 1, 5, 9, 8, 58, 6);
+
+  char* pResult = NULL;
+  int sizeResult = 0;
+
+  jinjac_render_with_buffer(template, strlen(template), &pResult, &sizeResult);
+  fprintf(stdout, "%s\n", pResult);
+
+  free(pResult);
+  jinjac_destroy();
+```
+
+It will return 
+
+```
+Hello from jinjac John !
+-> data 5
+-> data 8
+-> data 987
+-> data 16
+-> data 1
+-> data 5
+-> data 9
+-> data 8
+-> data 58
+-> data 6
+
+end template
+```
+
 ## list of implemented features
 
 - basic template replacing (with all types of data e.g. string, integer, double)

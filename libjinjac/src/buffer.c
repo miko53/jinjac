@@ -39,7 +39,7 @@ int32_t buffer_init(BUFFER* b, uint8_t* pData, int32_t size)
   b->size = size;
   b->buffer = pData;
   b->pReadOffset = 0;
-  b->pWriteOffset = size;
+  b->pWriteOffset = 0;
   b->bEndOfFile = FALSE;
   return 0;
 }
