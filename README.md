@@ -11,6 +11,8 @@ It comes from with several unit tests (see test folders)
 
 ## usage example
 
+Here we are an example with the buffer API. It rules similar with file API.
+
 ```c
   char* template =
   "Hello from jinjac {{ user }} !\n"
