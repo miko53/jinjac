@@ -69,6 +69,73 @@ end template
 - if statement
 - strip whitespace (with minus characters in statement)
 
+
+## TODO
+
+### To implement / not implemented
+
+Here we are the list of limitation.
+(or the aim of this library some of thems are not really necessary)
+
+- missing function of previous table
+- in if statement
+  * logical are not completed (not, and, or, is, ...)
+- whitespace control (with '+' characters)
+  * in fact it has the default behavior and you can control whitespace strip with '-'
+- raw statement
+- set statement
+- template inheritance
+- child template
+- super block
+- extends
+- html espacing
+- in for the loop variables doesn't exist
+- in for the else is not managed
+- macros / call
+- filters as statement
+- assignment in function argument
+- include
+- autoescape
+- no array or tuple 
+
+### To improve
+
+- parameter management
+It should be preferable to improve search or use a index when multiple searches are performed.
+Use a callback to provide another search (avoid to enter parameter in multiple arrays, if exists already in one.
+
+- robustness
+error and limit management (currently some limit in stack of token is not managed)
+
+## Dependancies
+
+The library uses standard glibc library and need flex and bison to build.
+cmake is used to construct make system.
+To perform coverage analysis, you need to install lcov package.
+It uses dynamic memory allocation (`malloc()` and `free()`).
+
+## Build
+
+It exists 3 scripts which can be used to configure the build of the library:
+  - `build_debug.sh`
+ This one configures to build library in debug mode (with trace and assertion)
+ 
+ - `build_release.sh`
+ This one configure in release mode.
+ Example:
+ ```
+ $ ./build_release.sh
+ $ cd build_release
+ $ make all 
+ $ ctest 
+ ```
+ 
+ - `build_coverage.sh`
+ this one configures and builds the library, performs unit tests and retrieves the coverage.
+
+ 
+ruby and valgrind are used to perform tests.
+
 ## build-in function
 
 Here we are the list of build-in functions to implement and current status
@@ -125,67 +192,4 @@ Here we are the list of build-in functions to implement and current status
 |wordcount()|| not implemented
 |wordwrap()|| low prio
 |xmlattr()|| not implemented
-
-## TODO
-
-### To implement / not implemented
-
-Here we are the list of limitation.
-(or the aim of this library some of thems are not really necessary)
-
-- missing function of previous table
-- in if statement
-  * logical are not completed (not, and, or, is, ...)
-- whitespace control (with '+' characters)
-  * in fact it has the default behavior and you can control whitespace strip with '-'
-- raw statement
-- set statement
-- template inheritance
-- child template
-- super block
-- extends
-- html espacing
-- in for the loop variables doesn't exist
-- in for the else is not managed
-- macros / call
-- filters as statement
-- assignment in function argument
-- include
-- autoescape
-- no array or tuple 
-
-### To improve
-
-- parameter management
-It should be preferable to improve search or use a index when multiple searches are performed.
-
-
-## Dependancies
-
-The library uses standard glibc library and need flex and bison to build.
-cmake is used to construct make system.
-To perform coverage analysis, you need to install lcov package.
-It uses dynamic memory allocation (`malloc()` and `free()`).
-
-## Build
-
-It exists 3 scripts which can be used to configure the build of the library:
-  - `build_debug.sh`
- This one configures to build library in debug mode (with trace and assertion)
- 
- - `build_release.sh`
- This one configure in release mode.
- Example:
- ```
- $ ./build_release.sh
- $ cd build_release
- $ make all 
- $ ctest 
- ```
- 
- - `build_coverage.sh`
- this one configures and builds the library, performs unit tests and retrieves the coverage.
-
- 
-ruby and valgrind are used to perform tests.
 
