@@ -370,7 +370,7 @@ BOOL appendParameterToString(char* pModifierString, jinjac_parameter_type typeTo
     {
       if (hasNoArg)
       {
-        addedSize = snprintf(NULL, addedSize, pModifierString);
+        addedSize = snprintf(NULL, 0, pModifierString);
         addedSize++;
         extraStringToAdd = malloc(addedSize);
         snprintf(extraStringToAdd, addedSize, pModifierString);
@@ -380,21 +380,21 @@ BOOL appendParameterToString(char* pModifierString, jinjac_parameter_type typeTo
         switch (typeToInsert)
         {
           case TYPE_INT:
-            addedSize = snprintf(NULL, addedSize, pModifierString, paramDataToInsert.type_int);
+            addedSize = snprintf(NULL, 0, pModifierString, paramDataToInsert.type_int);
             addedSize++;
             extraStringToAdd = malloc(addedSize);
             snprintf(extraStringToAdd, addedSize, pModifierString, paramDataToInsert.type_int);
             break;
 
           case TYPE_DOUBLE:
-            addedSize = snprintf(NULL, addedSize, pModifierString, paramDataToInsert.type_double);
+            addedSize = snprintf(NULL, 0, pModifierString, paramDataToInsert.type_double);
             addedSize++;
             extraStringToAdd = malloc(addedSize);
             snprintf(extraStringToAdd, addedSize, pModifierString, paramDataToInsert.type_double);
             break;
 
           case TYPE_STRING:
-            addedSize = snprintf(NULL, addedSize, pModifierString, paramDataToInsert.type_string);
+            addedSize = snprintf(NULL, 0, pModifierString, paramDataToInsert.type_string);
             addedSize++;
             extraStringToAdd = malloc(addedSize);
             snprintf(extraStringToAdd, addedSize, pModifierString, paramDataToInsert.type_string);
