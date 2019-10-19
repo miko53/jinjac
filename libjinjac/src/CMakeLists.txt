@@ -15,7 +15,7 @@ ADD_FLEX_BISON_DEPENDENCY(JinjacFlex JinjacBison)
 
 set(LIBJINJAC_SRC_FILES
       ast.c jinjac_parse.c jinjac_stream.c parameter.c 
-      convert.c buildin.c jobject.c 
+      convert.c buildin.c jobject.c jlist.c
       jfunction.c str_obj.c buffer.c
       trace.c block_statement.c
       ${BISON_JinjacBison_OUTPUTS} ${FLEX_JinjacFlex_OUTPUTS}

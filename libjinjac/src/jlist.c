@@ -27,46 +27,48 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef _COMMON_H
-#define _COMMON_H
-
-#include <assert.h>
-#include <stdlib.h>
-#include "trace.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "jlist.h"
 
 
-#ifdef JINJAC_DEBUG
-#define dbg_print(...)       fprintf(stdout, __VA_ARGS__)
-#define ASSERT(expr)         assert(expr)
-#else
-#define dbg_print(...)
-#define ASSERT(expr)         ((void) 0)
-#endif /* JINJAC_DEBUG*/
-
-#ifdef TRACE
-#define trace(...)           print_trace(__FILE__, __LINE__, __VA_ARGS__)
-#else
-#define trace(...)           ((void) (0))
-#endif
-
-#define error(level, ...)    print_error(level, __VA_ARGS__)
-
-typedef enum
+JObject* JList_new()
 {
-  FALSE,
-  TRUE
-} BOOL;
-
-#define STATIC      static
-#define NEW(obj)    malloc(sizeof(obj))
-
-#ifdef __cplusplus
+  JList* o = NEW(JList);
+  o->base.type = J_LIST;
+  o->base.delete = NULL;
+  o->base.getValue = NULL;
+  o->base.toBoolean = NULL;
+  o->list = NULL;
+  return (JObject*) o;
 }
-#endif
 
-#endif /* _COMMON_H */
+J_STATUS JList_insert(JList* list, JObject* o)
+{
+  J_STATUS s;
+  JListItem* currenItem;
+
+  s = J_OK;
+
+  JListItem* item = NEW(JListItem);
+
+  item->object = o;
+  item->next = NULL;
+
+  if (list->list == NULL)
+  {
+    list->list = item;
+  }
+  else
+  {
+    currenItem = list->list;
+    while (currenItem->next != NULL)
+    {
+      currenItem = currenItem->next;
+    }
+
+    currenItem->next = item;
+  }
+  return s;
+}
+
+
+

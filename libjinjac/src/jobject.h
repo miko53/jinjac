@@ -52,7 +52,8 @@ typedef enum
   J_END_FOR,
   J_IF,
   J_ELSE,
-  J_END_IF
+  J_END_IF,
+  J_LIST
 } jobject_type;
 
 typedef enum
@@ -65,7 +66,6 @@ typedef enum
   AST_LOWER_THAN,
   AST_IS
 } jobject_condition;
-
 
 
 typedef struct JObjects
@@ -155,6 +155,18 @@ typedef struct
   JObject base;
 } JElse;
 
+typedef struct JListItemS
+{
+  JObject* object;
+  struct JListItemS* next;
+} JListItem;
+
+typedef struct
+{
+  JObject base;
+  JListItem* list;
+} JList;
+
 //constructor
 extern JObject* JStringConstante_new(char* name);
 extern JObject* JIdentifier_new(char* name);
@@ -194,6 +206,7 @@ extern BOOL JIF_getIfConditionIsActive(JIF* pIf);
 extern JObject* JEndIf_new(void);
 
 extern JObject* JElse_new(void);
+
 
 #ifdef __cplusplus
 }

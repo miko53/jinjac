@@ -35,6 +35,7 @@
 #include "buildin.h"
 #include "jobject.h"
 #include "jfunction.h"
+#include "jlist.h"
 
 #define MAX_OBJECT (50)
 
@@ -640,6 +641,49 @@ J_STATUS ast_create_else_stmt(void)
   return rc;
 }
 
+
+J_STATUS ast_create_list_on_top()
+{
+  J_STATUS rc;
+  rc = J_ERROR;
+
+  if (ast_root.ast_nb_object != 0)
+  {
+    JObject* firstItemOfList = ast_root.ast_list[ast_root.ast_nb_object - 1];
+    ast_remove_last(FALSE);
+
+    JList* l = (JList*) JList_new();
+    if (l != NULL)
+    {
+      rc = JList_insert(l, firstItemOfList);
+      if (rc == J_OK)
+      {
+        rc = ast_insert((JObject*) l);
+      }
+    }
+  }
+
+  return rc;
+}
+
+J_STATUS ast_list_insert_item()
+{
+  J_STATUS rc;
+  rc = J_ERROR;
+
+  if (ast_root.ast_nb_object >= 2)
+  {
+    JList* l = (JList*) ast_root.ast_list[ast_root.ast_nb_object - 2];
+    ASSERT(l->base.type == J_LIST);
+    JObject* nextItemOfList = ast_root.ast_list[ast_root.ast_nb_object - 1];
+    ast_remove_last(FALSE);
+    rc = JList_insert(l, nextItemOfList);
+  }
+
+  return rc;
+}
+
+
 char* ast_getTypeString(jobject_type type)
 {
   char* s = NULL;
@@ -698,6 +742,10 @@ char* ast_getTypeString(jobject_type type)
       s = "End If";
       break;
 
+    case J_LIST:
+      s = "List (array/tuple)";
+      break;
+
     default:
       ASSERT(FALSE);
       break;
@@ -725,6 +773,21 @@ void display_range(JRange* range)
   trace( "--> start (%d), stop (%d), step(%d)\n", range->start, range->stop, range->step);
 }
 
+void display_list(JList* list)
+{
+  int32_t index;
+  index = 0;
+  JListItem* item;
+
+  item = list->list;
+  while (item != NULL)
+  {
+    trace( "--> item %d: (type %d)\n", index, item->object->type);
+    item = item->next;
+    index++;
+  }
+
+}
 
 void ast_dump_stack()
 {
@@ -790,6 +853,10 @@ void ast_dump_stack()
       case J_IF:
       case J_END_FOR:
       case J_END_IF:
+        break;
+
+      case J_LIST:
+        display_list((JList*) ast_root.ast_list[i]);
         break;
 
       default:

@@ -133,6 +133,7 @@ void jinjac_dbg_parse_string(char* string)
       break;
   }
 
+  ast_dump_stack();
   yy_delete_buffer(buffer);
   yylex_destroy();
   ast_clean();

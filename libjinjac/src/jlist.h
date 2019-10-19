@@ -27,46 +27,24 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#ifndef _JLIST_H
+#define _JLIST_H
 
-#ifndef _COMMON_H
-#define _COMMON_H
-
-#include <assert.h>
-#include <stdlib.h>
-#include "trace.h"
+#include "common.h"
+#include "jobject.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+//JList
+extern JObject* JList_new(void);
+extern J_STATUS JList_insert(JList* list, JObject* o);
 
-#ifdef JINJAC_DEBUG
-#define dbg_print(...)       fprintf(stdout, __VA_ARGS__)
-#define ASSERT(expr)         assert(expr)
-#else
-#define dbg_print(...)
-#define ASSERT(expr)         ((void) 0)
-#endif /* JINJAC_DEBUG*/
-
-#ifdef TRACE
-#define trace(...)           print_trace(__FILE__, __LINE__, __VA_ARGS__)
-#else
-#define trace(...)           ((void) (0))
-#endif
-
-#define error(level, ...)    print_error(level, __VA_ARGS__)
-
-typedef enum
-{
-  FALSE,
-  TRUE
-} BOOL;
-
-#define STATIC      static
-#define NEW(obj)    malloc(sizeof(obj))
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _COMMON_H */
+
+#endif /* _JLIST_H */

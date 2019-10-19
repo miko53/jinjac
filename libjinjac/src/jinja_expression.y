@@ -139,6 +139,21 @@ postfix_expression:
                                    //TODO: Check id IDENTIFIER --> postfix_expression
                                    dbg_print("a dot- identifier (%s)\n", $1);
                                 }
+   | array                      { dbg_print("array\n"); }
+   
+   
+array:
+   '[' array_list ']'      { dbg_print("array\n"); }
+   | '(' array_list ')'    { dbg_print("tuple\n"); }
+  
+array_list:
+   postfix_expression                { dbg_print("insert item-1\n");  
+                                       ast_create_list_on_top();
+                                     }
+   |
+   array_list ',' postfix_expression { dbg_print("insert item-2\n"); 
+                                       ast_list_insert_item();
+                                     }
 
 
 function_expression:
@@ -162,7 +177,7 @@ jinja_arg_list:
                                                //ast_dump_stack();
                                             }
 
-                                            
+
 expression:
   multiplicative_expr
   | 
@@ -175,7 +190,8 @@ expression:
                                         dbg_print("SUB\n");
                                         ast_do_operation('-'); 
                                      }
-  
+
+
 multiplicative_expr:
   jinja_primary_expr
   |

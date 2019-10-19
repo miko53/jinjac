@@ -90,6 +90,10 @@ extern BOOL ast_ifStmtIsLineToBeIgnored(void);
 extern void ast_dump_stack(void);
 extern J_STATUS ast_create_end_if_stmt(void);
 
+//list
+extern J_STATUS ast_create_list_on_top(void);
+extern J_STATUS ast_list_insert_item(void);
+
 #ifdef __cplusplus
 }
 #endif
