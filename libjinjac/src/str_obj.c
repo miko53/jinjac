@@ -34,7 +34,7 @@
 
 void str_obj_create(str_obj* obj, int32_t minToAllocate)
 {
-  if ((minToAllocate == 0) || (minToAllocate < 10))
+  if (minToAllocate < 10)
   {
     obj->allocatedSize = 10;
   }
