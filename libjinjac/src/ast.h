@@ -93,6 +93,7 @@ extern J_STATUS ast_create_end_if_stmt(void);
 //list
 extern J_STATUS ast_create_list_on_top(void);
 extern J_STATUS ast_list_insert_item(void);
+extern J_STATUS ast_set_list_type(BOOL isTuple);
 
 #ifdef __cplusplus
 }

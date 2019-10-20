@@ -139,12 +139,17 @@ postfix_expression:
                                    //TODO: Check id IDENTIFIER --> postfix_expression
                                    dbg_print("a dot- identifier (%s)\n", $1);
                                 }
-   | array                      { dbg_print("array\n"); }
+   | array                      { dbg_print("array-(biis)\n"); }
    
    
 array:
-   '[' array_list ']'      { dbg_print("array\n"); }
-   | '(' array_list ')'    { dbg_print("tuple\n"); }
+   '[' array_list ']'      { dbg_print("array\n");
+                             ast_set_list_type(FALSE);
+                           }
+   | '(' array_list ')'    { 
+                              dbg_print("tuple\n");
+                              ast_set_list_type(TRUE);
+                           }
   
 array_list:
    postfix_expression                { dbg_print("insert item-1\n");  

@@ -684,6 +684,26 @@ J_STATUS ast_list_insert_item()
 }
 
 
+J_STATUS ast_set_list_type(BOOL isTuple)
+{
+  J_STATUS rc;
+  rc = J_ERROR;
+
+  if (ast_root.ast_nb_object != 0)
+  {
+    JList* list = (JList*) ast_root.ast_list[ast_root.ast_nb_object - 1];
+
+    if (list->base.type == J_LIST)
+    {
+      JList_setTuple(list, isTuple);
+      rc = J_OK;
+    }
+  }
+
+  return rc;
+}
+
+
 char* ast_getTypeString(jobject_type type)
 {
   char* s = NULL;

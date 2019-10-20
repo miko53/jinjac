@@ -28,15 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include "jlist.h"
+#include "str_obj.h"
 
+STATIC BOOL JList_getValue(JObject* pObject, jinjac_parameter* param);
+STATIC void JList_delete(JObject* pObject);
 
 JObject* JList_new()
 {
   JList* o = NEW(JList);
   o->base.type = J_LIST;
-  o->base.delete = NULL;
-  o->base.getValue = NULL;
+  o->base.delete = JList_delete;
+  o->base.getValue = JList_getValue;
   o->base.toBoolean = NULL;
+  o->isTuple = FALSE;
   o->list = NULL;
   return (JObject*) o;
 }
@@ -70,5 +74,104 @@ J_STATUS JList_insert(JList* list, JObject* o)
   return s;
 }
 
+void JList_delete(JObject* pObject)
+{
+  JList* pList = (JList*) pObject;
+  JListItem* pItem;
+  JListItem* toDelete;
 
+  pItem = pList->list;
 
+  while (pItem != NULL)
+  {
+    toDelete = pItem;
+    pItem = pItem->next;
+    JObject_delete(toDelete->object);
+    free(toDelete);
+  }
+}
+
+BOOL JList_getValue(JObject* pObject, jinjac_parameter* param)
+{
+  JList* pList = (JList*) pObject;
+  JListItem* pItem;
+  char* strItem;
+  jinjac_parameter itemParam;
+  BOOL b;
+  b = TRUE;
+
+  param->type = TYPE_STRING;
+  param->value.type_string = NULL;
+  pItem = pList->list;
+
+  str_obj arrayResult;
+  str_obj_create(&arrayResult, 20);
+
+  if (pList->isTuple)
+  {
+    str_obj_insertChar(&arrayResult, '(');
+  }
+  else
+  {
+    str_obj_insertChar(&arrayResult, '[');
+  }
+
+  while ((pItem != NULL) && (b == TRUE))
+  {
+    b = JObject_getValue(pItem->object, &itemParam);
+    if (b)
+    {
+      switch (itemParam.type)
+      {
+        case TYPE_DOUBLE:
+        case TYPE_INT:
+          strItem = JObject_toString(pItem->object);
+          str_obj_insert(&arrayResult, strItem);
+          free(strItem);
+          break;
+
+        case TYPE_STRING:
+          str_obj_insert(&arrayResult, "'");
+          str_obj_insert(&arrayResult, itemParam.value.type_string);
+          free(itemParam.value.type_string);
+          str_obj_insert(&arrayResult, "'");
+          break;
+
+        default:
+          ASSERT(FALSE);
+          break;
+
+      }
+      pItem = pItem->next;
+
+      if (pItem != NULL)
+      {
+        str_obj_insert(&arrayResult, ", ");
+      }
+    }
+  }
+
+  if (pList->isTuple)
+  {
+    str_obj_insertChar(&arrayResult, ')');
+  }
+  else
+  {
+    str_obj_insertChar(&arrayResult, ']');
+  }
+
+  param->value.type_string = arrayResult.s;
+  return b;
+}
+
+void JList_setTuple(JList* list, BOOL isTuple)
+{
+  if (isTuple)
+  {
+    list->isTuple = TRUE;
+  }
+  else
+  {
+    list->isTuple = FALSE;
+  }
+}

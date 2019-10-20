@@ -164,6 +164,7 @@ typedef struct JListItemS
 typedef struct
 {
   JObject base;
+  BOOL isTuple;
   JListItem* list;
 } JList;
 

@@ -40,7 +40,7 @@ extern "C" {
 //JList
 extern JObject* JList_new(void);
 extern J_STATUS JList_insert(JList* list, JObject* o);
-
+extern void JList_setTuple(JList* list, BOOL isTuple);
 
 #ifdef __cplusplus
 }
