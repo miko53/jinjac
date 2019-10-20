@@ -420,6 +420,36 @@ BOOL appendParameterToString(char* pModifierString, jinjac_parameter_type typeTo
   return bOk;
 }
 
+char* join(JObject* pObject, char* separator)
+{
+  str_obj strResult;
+  JList* pList;
+  char* pTemp;
+
+  pList = (JList*) pObject;
+  ASSERT(pList->base.type == J_LIST);
+
+  str_obj_create(&strResult, 0);
+
+  JListItem* item;
+  item = pList->list;
+
+  while (item != NULL)
+  {
+    pTemp = JObject_toString(item->object);
+    str_obj_insert(&strResult, pTemp);
+    free(pTemp);
+    if (item->next != NULL)
+    {
+      str_obj_insert(&strResult, separator);
+    }
+    item = item->next;
+  }
+
+  return strResult.s;
+}
+
+
 char* format(char* origin, int32_t nbParameters, jinjac_parameter* param)
 {
   int32_t currentParameterIndex = 0;

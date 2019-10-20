@@ -40,7 +40,8 @@ set(TEST_LIST
   "test_19e" ;
   "test_19f" ;
   "test_20" ;
-  "test_21" 
+  "test_21" ;
+  "test_22" 
   )
   
 set(TEST_TITLE 
@@ -75,7 +76,8 @@ set(TEST_TITLE
   "19e_multiple_if_with_first_actif" ;
   "19f_multiple_if_with_loop" ;
   "20_whitespace_strip" ;
-  "21_static_list"
+  "21_static_list" ;
+  "22_join_buildin_function"
   )
   
 set(INDEX 0)

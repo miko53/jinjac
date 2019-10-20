@@ -62,6 +62,7 @@ fct_converter tab_fct_converter[] =
     .args_default = { (void*) 80 }
   },
   { .fct = (buildin_fct) format, .name = "format", .nb_args = NB_MAX_ARGS },
+  { .fct = (buildin_fct) join, .name = "join", .nb_args = 1, .args_type = { STRING }, .args_default = { (void*) "" }},
   { .fct = (buildin_fct) lower, .name = "lower", .nb_args = 0 },
   { .fct = (buildin_fct) upper, .name = "upper", .nb_args = 0 },
   {
@@ -313,6 +314,36 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
             default:
               break;
           }
+        }
+      }
+      break;
+
+    case FCT_JOIN:
+      {
+        if (pCurrentObject->type == J_LIST)
+        {
+          char* pArg;
+          BOOL toDelete = FALSE;
+          if ((f->argList == NULL) || (f->argList->nb_args == 0))
+          {
+            pArg = fct_item->args_default[0];
+          }
+          else
+          {
+            pArg = JObject_toString(f->argList->listArgs[0]);
+            toDelete = TRUE;
+          }
+
+          s = join(pCurrentObject, pArg);
+          resultObject = JStringConstante_new(s);
+          if (toDelete)
+          {
+            free(pArg);
+          }
+        }
+        else
+        {
+          error(ERROR_LEVEL, "join only work with list\n"); //TODO convertion to sequence (list) of object
         }
       }
       break;

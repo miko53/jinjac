@@ -33,6 +33,7 @@
 
 #include "common.h"
 #include "parameter.h"
+#include "jobject.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,6 +47,7 @@ extern char* trim(char* s);
 extern char* truncate(char* origin, uint32_t truncSize, BOOL killwords, char* endSentence, uint32_t tolerateMargin);
 extern char* center(char* origin, uint32_t width);
 extern char* format(char* origin, int32_t nbParameters, jinjac_parameter* param);
+extern char* join(JObject* pObject, char* separator);
 
 #ifdef __cplusplus
 }
