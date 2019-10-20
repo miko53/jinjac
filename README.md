@@ -96,7 +96,6 @@ Here we are the list of limitation.
 - assignment in function argument
 - include
 - autoescape
-- no array or tuple 
 
 ### To improve
 
