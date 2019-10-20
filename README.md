@@ -157,7 +157,7 @@ Here we are the list of build-in functions to implement and current status
 |groupby()|| not implemented
 |indent()|| low prio
 |int()|| not implemented
-|join()| convert a sequence into string| [OK] - only with static list
+|join()| concatenate the sequence into a string| [OK] - only with static list
 |last()|| low prio
 |length()|| low prio
 |list()|| not implemented

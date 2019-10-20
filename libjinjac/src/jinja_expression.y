@@ -52,6 +52,7 @@
   char *stringData;
 }
 
+%define parse.error verbose
 %token<stringData> STRING_LITERAL
 %token<stringData> IDENTIFIER
 %token<doubleData> FLOAT
@@ -68,6 +69,8 @@
 %token FOR END_FOR IN IF IS ELSE END_IF ELIF L_TRUE L_FALSE BLOCK END_BLOCK EXTENDS RAW END_RAW SET
 %token EQUAL HIGH_AND_EQUAL_THAN LOWER_AND_EQUAL_THAN DIFFERENT AND OR NOT
 %token LOWER_THAN HIGHER_THAN
+
+%destructor { free($$); } IDENTIFIER STRING_LITERAL
 
 %%
 jinja_stmt:
