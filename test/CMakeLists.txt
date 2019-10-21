@@ -41,7 +41,8 @@ set(TEST_LIST
   "test_19f" ;
   "test_20" ;
   "test_21" ;
-  "test_22" 
+  "test_22" ;
+  "test_22a" 
   )
   
 set(TEST_TITLE 
@@ -77,7 +78,8 @@ set(TEST_TITLE
   "19f_multiple_if_with_loop" ;
   "20_whitespace_strip" ;
   "21_static_list" ;
-  "22_join_buildin_function"
+  "22_join_buildin_function" ;
+  "22a_join_with_iterable_string_int_double"
   )
   
 set(INDEX 0)

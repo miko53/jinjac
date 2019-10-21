@@ -34,6 +34,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "str_obj.h"
+#include "convert.h"
 
 char* upper(char* s)
 {
@@ -420,15 +421,97 @@ BOOL appendParameterToString(char* pModifierString, jinjac_parameter_type typeTo
   return bOk;
 }
 
+STATIC char* join_withList(JList* pList, char* separator);
+STATIC char* join_withArray(char* key, jinjac_parameter_type type, int32_t nbItems, char* separator);
+STATIC char* join_withString(char* s, char* separator);
+
 char* join(JObject* pObject, char* separator)
 {
+  char* r;
+  r = NULL;
+
+  switch (pObject->type)
+  {
+    case J_LIST:
+      r = join_withList((JList*) pObject, separator);
+      break;
+
+    case J_IDENTIFIER:
+      {
+        jinjac_parameter param;
+        BOOL bOk;
+        BOOL isArray;
+        JIdentifier* pIdent = (JIdentifier*) pObject;
+        bOk = parameter_get(pIdent->identifier, &param, &isArray);
+        if (bOk)
+        {
+          if (isArray)
+          {
+            //iterable on array
+            int32_t nbItems;
+            parameter_array_getProperties(pIdent->identifier, &param.type, &nbItems);
+            r = join_withArray(pIdent->identifier, param.type, nbItems, separator);
+          }
+          else
+          {
+            //depend of object type
+            switch (param.type)
+            {
+              case TYPE_DOUBLE:
+              case TYPE_INT:
+                error(WARNING_LEVEL, "object is not iterable\n");
+                r = NULL;
+                break;
+
+              case TYPE_STRING:
+                r = join_withString(param.value.type_string, separator);
+                break;
+
+              default:
+                ASSERT(FALSE);
+                break;
+            }
+          }
+        }
+        else
+        {
+          error(WARNING_LEVEL, "unknown identifier\n");
+          r = NULL; //strdup("");
+        }
+      }
+      break;
+
+    case J_ARRAY:
+    case J_STR_CONSTANTE:
+      {
+        jinjac_parameter param;
+        JObject_getValue(pObject, &param);
+        switch (param.type)
+        {
+          case TYPE_STRING:
+            r = join_withString(param.value.type_string, separator);
+            free(param.value.type_string);
+            break;
+
+          default:
+            error(ERROR_LEVEL, "object is not iterable\n");
+            break;
+        }
+      }
+      break;
+
+    default:
+      error(ERROR_LEVEL, "object is not iterable\n");
+      break;
+  }
+
+  return r;
+}
+
+char* join_withList(JList* pList, char* separator)
+{
   str_obj strResult;
-  JList* pList;
   char* pTemp;
-
-  pList = (JList*) pObject;
-  ASSERT(pList->base.type == J_LIST);
-
   str_obj_create(&strResult, 0);
 
   JListItem* item;
@@ -444,6 +527,69 @@ char* join(JObject* pObject, char* separator)
       str_obj_insert(&strResult, separator);
     }
     item = item->next;
+  }
+
+  return strResult.s;
+}
+
+char* join_withArray(char* key, jinjac_parameter_type type, int32_t nbItems, char* separator)
+{
+  BOOL bOK;
+  str_obj strResult;
+  jinjac_parameter_value temp;
+  str_obj_create(&strResult, 0);
+  char* strTemp;
+
+  for (int32_t i = 0; i < nbItems; i++)
+  {
+    bOK = parameter_array_getValue(key, i, &temp);
+    ASSERT(bOK == TRUE);
+    switch (type)
+    {
+      case TYPE_DOUBLE:
+        strTemp = doubleToStr(temp.type_double);
+        str_obj_insert(&strResult, strTemp);
+        free(strTemp);
+        break;
+
+      case TYPE_STRING:
+        str_obj_insert(&strResult, temp.type_string);
+        break;
+
+      case TYPE_INT:
+        strTemp = intToStr(temp.type_int);
+        str_obj_insert(&strResult, strTemp);
+        free(strTemp);
+        break;
+
+      default:
+        ASSERT(FALSE);
+        break;
+    }
+    if (i != (nbItems - 1))
+    {
+      str_obj_insert(&strResult, separator);
+    }
+  }
+
+  return strResult.s;
+}
+
+
+char* join_withString(char* s, char* separator)
+{
+  str_obj strResult;
+  int32_t len;
+
+  len = strlen(s);
+  str_obj_create(&strResult, 0);
+  for (int32_t i = 0; i < len; i++)
+  {
+    str_obj_insertChar(&strResult, s[i]);
+    if (i != (len - 1))
+    {
+      str_obj_insert(&strResult, separator);
+    }
   }
 
   return strResult.s;

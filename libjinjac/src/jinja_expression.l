@@ -53,7 +53,7 @@ HEXCONSTANT ([0][xX][0-9A-Fa-f]+)
   return STRING_LITERAL;
   }
   
-\'(\\.|[^"\\])*\' { 
+\'(\\.|[^'\\])*\' { 
   yytext[strlen(yytext)-1] = '\0';
   yylval.stringData = strdup(yytext+1);
   return STRING_LITERAL;

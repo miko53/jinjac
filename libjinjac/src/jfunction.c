@@ -320,30 +320,23 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
 
     case FCT_JOIN:
       {
-        if (pCurrentObject->type == J_LIST)
+        char* pArg;
+        BOOL toDelete = FALSE;
+        if ((f->argList == NULL) || (f->argList->nb_args == 0))
         {
-          char* pArg;
-          BOOL toDelete = FALSE;
-          if ((f->argList == NULL) || (f->argList->nb_args == 0))
-          {
-            pArg = fct_item->args_default[0];
-          }
-          else
-          {
-            pArg = JObject_toString(f->argList->listArgs[0]);
-            toDelete = TRUE;
-          }
-
-          s = join(pCurrentObject, pArg);
-          resultObject = JStringConstante_new(s);
-          if (toDelete)
-          {
-            free(pArg);
-          }
+          pArg = fct_item->args_default[0];
         }
         else
         {
-          error(ERROR_LEVEL, "join only work with list\n"); //TODO convertion to sequence (list) of object
+          pArg = JObject_toString(f->argList->listArgs[0]);
+          toDelete = TRUE;
+        }
+
+        s = join(pCurrentObject, pArg);
+        resultObject = JStringConstante_new(s);
+        if (toDelete)
+        {
+          free(pArg);
         }
       }
       break;
