@@ -333,7 +333,15 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
         }
 
         s = join(pCurrentObject, pArg);
-        resultObject = JStringConstante_new(s);
+        if (s != NULL)
+        {
+          resultObject = JStringConstante_new(s);
+        }
+        else
+        {
+          resultObject = JStringConstante_new(strdup(""));
+        }
+
         if (toDelete)
         {
           free(pArg);

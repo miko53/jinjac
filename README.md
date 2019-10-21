@@ -106,6 +106,9 @@ Use a callback to provide another search (avoid to enter parameter in multiple a
 - robustness
 error and limit management (currently some limit in stack of token is not managed)
 
+- object management
+Separate parameter and ast object and add a object form for parameter (design improvement)
+
 ## Dependancies
 
 The library uses standard glibc library and need flex and bison to build.
@@ -157,7 +160,7 @@ Here we are the list of build-in functions to implement and current status
 |groupby()|| not implemented
 |indent()|| low prio
 |int()|| not implemented
-|join()| concatenate the sequence into a string| [OK] - only with static list
+|join()| concatenate the sequence into a string| [OK]
 |last()|| low prio
 |length()|| low prio
 |list()|| not implemented
