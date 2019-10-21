@@ -100,13 +100,16 @@ Here we are the list of limitation.
 ### To improve
 
 - parameter management
+
 It should be preferable to improve search or use a index when multiple searches are performed.
 Use a callback to provide another search (avoid to enter parameter in multiple arrays, if exists already in one.
 
 - robustness
+
 error and limit management (currently some limit in stack of token is not managed)
 
 - object management
+
 Separate parameter and ast object and add a object form for parameter (design improvement)
 
 ## Dependancies
