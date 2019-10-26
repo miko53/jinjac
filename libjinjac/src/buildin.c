@@ -422,7 +422,7 @@ BOOL appendParameterToString(char* pModifierString, jinjac_parameter_type typeTo
 }
 
 STATIC char* join_withList(JList* pList, char* separator);
-STATIC char* join_withArray(char* key, jinjac_parameter_type type, int32_t nbItems, char* separator);
+STATIC char* join_withArray(int64_t privKey, jinjac_parameter_type type, int32_t nbItems, char* separator);
 STATIC char* join_withString(char* s, char* separator);
 
 char* join(JObject* pObject, char* separator)
@@ -441,20 +441,22 @@ char* join(JObject* pObject, char* separator)
         jinjac_parameter param;
         BOOL bOk;
         BOOL isArray;
+        int64_t privKey;
         JIdentifier* pIdent = (JIdentifier*) pObject;
-        bOk = parameter_get(pIdent->identifier, &param, &isArray);
+        bOk = parameter_search(pIdent->identifier, &privKey, &isArray);
         if (bOk)
         {
           if (isArray)
           {
             //iterable on array
             int32_t nbItems;
-            parameter_array_getProperties(pIdent->identifier, &param.type, &nbItems);
-            r = join_withArray(pIdent->identifier, param.type, nbItems, separator);
+            parameter_array_getProperties(privKey, &param.type, &nbItems);
+            r = join_withArray(privKey, param.type, nbItems, separator);
           }
           else
           {
             //depend of object type
+            parameter_get(privKey, &param);
             switch (param.type)
             {
               case TYPE_DOUBLE:
@@ -476,7 +478,7 @@ char* join(JObject* pObject, char* separator)
         else
         {
           error(WARNING_LEVEL, "unknown identifier\n");
-          r = NULL; //strdup("");
+          r = NULL;
         }
       }
       break;
@@ -532,18 +534,18 @@ char* join_withList(JList* pList, char* separator)
   return strResult.s;
 }
 
-char* join_withArray(char* key, jinjac_parameter_type type, int32_t nbItems, char* separator)
+char* join_withArray(int64_t privKey, jinjac_parameter_type type, int32_t nbItems, char* separator)
 {
-  BOOL bOK;
   str_obj strResult;
+  J_STATUS status;
   jinjac_parameter_value temp;
   str_obj_create(&strResult, 0);
   char* strTemp;
 
   for (int32_t i = 0; i < nbItems; i++)
   {
-    bOK = parameter_array_getValue(key, i, &temp);
-    ASSERT(bOK == TRUE);
+    status = parameter_array_getValue(privKey, i, &temp);
+    ASSERT(status == J_OK);
     switch (type)
     {
       case TYPE_DOUBLE:

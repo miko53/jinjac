@@ -86,9 +86,10 @@ BOOL JIdentifier_getValue(struct JObjects* pObject, jinjac_parameter* param)
 {
   BOOL bOk;
   BOOL isArray;
+  int64_t privKey;
   JIdentifier* pIdent;
   pIdent = (JIdentifier*) pObject;
-  bOk = parameter_get(pIdent->identifier, param, &isArray);
+  bOk = parameter_search(pIdent->identifier, &privKey, &isArray);
   if (!bOk)
   {
     error(WARNING_LEVEL, "warning: unknown '%s' identifier\n", pIdent->identifier);
@@ -101,13 +102,17 @@ BOOL JIdentifier_getValue(struct JObjects* pObject, jinjac_parameter* param)
     if (isArray)
     {
       bOk = TRUE;
-      param->value.type_string = parameter_convertArrayToString(pIdent->identifier);
+      param->value.type_string = parameter_convertArrayToString(privKey);
       param->type = TYPE_STRING;
       trace("array ==> %s\n", param->value.type_string);
     }
-    else if (param->type == TYPE_STRING)
+    else
     {
-      param->value.type_string = strdup(param->value.type_string);
+      parameter_get(privKey, param);
+      if (param->type == TYPE_STRING)
+      {
+        param->value.type_string = strdup(param->value.type_string);
+      }
     }
   }
   return bOk;
@@ -117,17 +122,28 @@ BOOL JIdentifier_getValue(struct JObjects* pObject, jinjac_parameter* param)
 BOOL JArray_getValue(struct JObjects* pObject, jinjac_parameter* param)
 {
   BOOL bOk;
+  J_STATUS status;
+  int64_t privKey;
   JArray* pArray;
   pArray = (JArray*) pObject;
-  bOk = parameter_array_getProperties(pArray->identifier, &param->type, NULL);
+
+  bOk = parameter_search(pArray->identifier, &privKey, NULL);
   if (bOk)
   {
-    bOk = parameter_array_getValue(pArray->identifier, pArray->offset, &param->value);
+    bOk = parameter_array_getProperties(privKey, &param->type, NULL);
     if (bOk)
     {
-      if (param->type == TYPE_STRING)
+      status = parameter_array_getValue(privKey, pArray->offset, &param->value);
+      if (status == J_OK)
       {
-        param->value.type_string = strdup(param->value.type_string);
+        if (param->type == TYPE_STRING)
+        {
+          param->value.type_string = strdup(param->value.type_string);
+        }
+      }
+      else
+      {
+        bOk = FALSE;
       }
     }
   }
@@ -205,11 +221,11 @@ BOOL JIdentifier_toBoolean(JObject* pObject)
 {
   BOOL bOk;
   BOOL isArray;
+  int64_t privKey;
   jinjac_parameter param;
   JIdentifier* pIdent;
   pIdent = (JIdentifier*) pObject;
-  bOk = parameter_get(pIdent->identifier, &param, &isArray);
-
+  bOk = parameter_search(pIdent->identifier, &privKey, &isArray);
   if (bOk)
   {
     if (isArray)
@@ -218,6 +234,7 @@ BOOL JIdentifier_toBoolean(JObject* pObject)
     }
     else
     {
+      parameter_get(privKey, &param);
       switch (param.type)
       {
         case TYPE_STRING:
@@ -245,7 +262,6 @@ BOOL JIdentifier_toBoolean(JObject* pObject)
           ASSERT(FALSE);
           break;
       }
-      //param_delete(&param);
     }
   }
 
@@ -255,45 +271,57 @@ BOOL JIdentifier_toBoolean(JObject* pObject)
 BOOL JArray_toBoolean(JObject* pObject)
 {
   BOOL bOk;
+  int64_t privKey;
+  J_STATUS status;
   jinjac_parameter param;
   JArray* pArray;
   pArray = (JArray*) pObject;
-  bOk = parameter_array_getProperties(pArray->identifier, &param.type, NULL);
+
+  bOk = parameter_search(pArray->identifier, &privKey, NULL);
   if (bOk)
   {
-    bOk = parameter_array_getValue(pArray->identifier, pArray->offset, &param.value);
-    if (bOk)
+    BOOL bIsArray;
+    bIsArray = parameter_array_getProperties(privKey, &param.type, NULL);
+    if (bIsArray)
     {
-      switch (param.type)
+      status = parameter_array_getValue(privKey, pArray->offset, &param.value);
+      if (status == J_OK)
       {
-        case TYPE_STRING:
-          if (strcmp(param.value.type_string, "") == 0)
-          {
-            bOk = FALSE;
-          }
-          break;
-        case TYPE_DOUBLE:
-          if (param.value.type_double == 0.0)
-          {
-            bOk = FALSE;
-          }
-          break;
+        switch (param.type)
+        {
+          case TYPE_STRING:
+            if (strcmp(param.value.type_string, "") == 0)
+            {
+              bOk = FALSE;
+            }
+            break;
+          case TYPE_DOUBLE:
+            if (param.value.type_double == 0.0)
+            {
+              bOk = FALSE;
+            }
+            break;
 
-        case TYPE_INT:
-          if (param.value.type_int == 0)
-          {
-            bOk = FALSE;
-          }
-          break;
+          case TYPE_INT:
+            if (param.value.type_int == 0)
+            {
+              bOk = FALSE;
+            }
+            break;
 
-        default:
-          bOk = FALSE;
-          ASSERT(FALSE);
-          break;
+          default:
+            bOk = FALSE;
+            ASSERT(FALSE);
+            break;
+        }
       }
-      //param_delete(&param);
+      else
+      {
+        bOk = FALSE;
+      }
     }
   }
+
   return bOk;
 }
 
@@ -483,17 +511,27 @@ J_STATUS JFor_createIndexParameter(JFor* obj)
   {
     jinjac_parameter param;
     BOOL isArray;
+    BOOL bOk;
+    int64_t privKey;
     int32_t nbItems;
 
     switch (seq->sequencedObject->type)
     {
       case J_IDENTIFIER:
-        isArray = parameter_array_getProperties(((JIdentifier*)seq->sequencedObject)->identifier, &param.type, &nbItems);
-        if (isArray)
+        bOk = parameter_search(((JIdentifier*)seq->sequencedObject)->identifier, &privKey, NULL);
+        if (bOk)
         {
-          obj->sequencing->stop = nbItems;
-          parameter_array_getValue(((JArray*) seq->sequencedObject)->identifier, seq->currentIndex, &param.value);
-          jinjac_parameter_insert(obj->identifierOfIndex, &param);
+          isArray = parameter_array_getProperties(privKey, &param.type, &nbItems);
+          if (isArray)
+          {
+            obj->sequencing->stop = nbItems;
+            parameter_array_getValue(privKey, seq->currentIndex, &param.value);
+            jinjac_parameter_insert(obj->identifierOfIndex, &param);
+          }
+          else
+          {
+            obj->sequencing->stop = 0;
+          }
         }
         else
         {
@@ -501,7 +539,6 @@ J_STATUS JFor_createIndexParameter(JFor* obj)
           obj->sequencing->stop = 0;
           rc = J_ERROR;
         }
-
         break;
 
       default:
@@ -557,11 +594,21 @@ BOOL JRange_step(JRange* obj, char* indexIdentifierName)
     else
     {
       jinjac_parameter_value paramValue;
+      int64_t privKey;
+      BOOL bOk;
+      BOOL bIsArray;
+
       switch (obj->sequencedObject->type)
       {
         case J_IDENTIFIER:
-          parameter_array_getValue(((JIdentifier*) obj->sequencedObject)->identifier, obj->currentIndex, &paramValue);
-          parameter_update(indexIdentifierName, paramValue);
+          bOk = parameter_search(((JIdentifier*) obj->sequencedObject)->identifier, &privKey, &bIsArray);
+          ASSERT(bOk == TRUE);
+          if ((bOk) && (bIsArray))
+          {
+            J_STATUS status = parameter_array_getValue(privKey, obj->currentIndex, &paramValue);
+            ASSERT(status == J_OK);
+            parameter_update(indexIdentifierName, paramValue);
+          }
           break;
 
         default:

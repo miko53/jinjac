@@ -36,6 +36,16 @@
 #include <stdarg.h>
 #include "str_obj.h"
 
+
+// jinjac_search_callback jinjac_parameter_userSearch = NULL;
+//
+// J_STATUS jinjac_parameter_set_search_callback(jinjac_search_callback searchFct)
+// {
+//   jinjac_parameter_userSearch = searchFct;
+//   return J_OK;
+// }
+
+
 //TODO add test to check unicity of variables
 
 
@@ -53,7 +63,6 @@ typedef struct
 STATIC param_item* item_array = NULL;
 STATIC int32_t item_nb = 0;
 STATIC int32_t item_allocated = 0;
-
 
 STATIC void add_param_in_array(char* key, jinjac_parameter_type type, jinjac_parameter_value value);
 
@@ -149,28 +158,50 @@ STATIC void add_param_in_array(char* key, jinjac_parameter_type type, jinjac_par
   item_nb++;
 }
 
-BOOL parameter_get(char* key, jinjac_parameter* param, BOOL* isArray)
+
+BOOL parameter_search(char* key, int64_t* privKey, BOOL* isArray)
 {
   BOOL bFounded;
   int32_t i;
+  ASSERT(key != NULL);
+  ASSERT(privKey != NULL);
 
   bFounded = FALSE;
 
-  for (i = 0; i < item_nb; i++)
+  for (i = 0; ((i < item_nb) && (bFounded == FALSE)); i++)
   {
     if ((item_array[i].isUsed == TRUE) && (strcmp(key, item_array[i].key) == 0))
     {
-      param->type = item_array[i].type;
-      param->value = item_array[i].value;
+      *privKey = i;
       if (isArray != NULL)
       {
         *isArray = item_array[i].isArray;
       }
-      return TRUE;
+      bFounded = TRUE;
     }
   }
 
   return bFounded;
+}
+
+J_STATUS parameter_get(int64_t privKey, jinjac_parameter* param)
+{
+  J_STATUS s;
+  ASSERT(param != NULL);
+
+  s = J_OK;
+  if (privKey < item_nb)
+  {
+    param->type = item_array[privKey].type;
+    param->value = item_array[privKey].value;
+  }
+  else
+  {
+    ASSERT(FALSE);
+    s = J_ERROR;
+  }
+
+  return s;
 }
 
 J_STATUS parameter_update(char* key, jinjac_parameter_value newValue)
@@ -211,84 +242,83 @@ J_STATUS parameter_update(char* key, jinjac_parameter_value newValue)
   return rc;
 }
 
-
-BOOL parameter_array_getValue(char* key, int offset, jinjac_parameter_value* v)
+J_STATUS parameter_array_getValue(int64_t privKey, int32_t offset, jinjac_parameter_value* v)
 {
-  int32_t i;
-  BOOL b;
-  b = FALSE;
-  ASSERT(v != NULL);
+  J_STATUS s;
+  s = J_OK;
 
-  for (i = 0; i < item_nb; i++)
+  if (privKey < item_nb)
   {
-    if ((item_array[i].isUsed == TRUE) && (strcmp(key, item_array[i].key) == 0))
+    param_item* current;
+    current = &item_array[privKey];
+    if (current->isArray == TRUE)
     {
-      param_item* current;
-      current = &item_array[i];
-
-      if (current->isArray == TRUE)
+      if (offset < current->arrayMaxValue)
       {
-        if (offset < current->arrayMaxValue)
+        switch (current->type)
         {
-          switch (current->type)
-          {
-            case TYPE_DOUBLE:
-              v->type_double = ((double*) current->pArrayValue)[offset];
-              b = TRUE;
-              break;
-            case TYPE_INT:
-              v->type_int = ((int32_t*) current->pArrayValue)[offset];
-              b = TRUE;
-              break;
+          case TYPE_DOUBLE:
+            v->type_double = ((double*) current->pArrayValue)[offset];
+            break;
+          case TYPE_INT:
+            v->type_int = ((int32_t*) current->pArrayValue)[offset];
+            break;
 
-            case TYPE_STRING:
-              v->type_string = ((char**) current->pArrayValue)[offset];
-              b = TRUE;
-              break;
+          case TYPE_STRING:
+            v->type_string = ((char**) current->pArrayValue)[offset];
+            break;
 
-            default:
-              ASSERT(FALSE);
-              break;
-          }
-        }
-        else
-        {
-          fprintf(stdout, "array '%s' out of range %d > %d\n", key, offset,   current->arrayMaxValue);
+          default:
+            ASSERT(FALSE);
+            s = J_ERROR;
+            break;
         }
       }
       else
       {
-        fprintf(stdout, "'%s' is not an array\n", key);
+        fprintf(stdout, "array '%s' out of range %d > %d\n", current->key, offset, current->arrayMaxValue);
+        s = J_ERROR;
       }
     }
-  }
-
-  return b;
-}
-
-
-BOOL parameter_array_getProperties(char* key, jinjac_parameter_type* type, int32_t* nbItem)
-{
-  int32_t i;
-  ASSERT(key != NULL);
-  ASSERT(type != NULL);
-
-  for (i = 0; i < item_nb; i++)
-  {
-    if ((item_array[i].isUsed == TRUE) && (strcmp(key, item_array[i].key) == 0))
+    else
     {
-      if (nbItem != NULL)
-      {
-        *nbItem = item_array[i].arrayMaxValue;
-      }
-
-      *type = item_array[i].type;
-      return item_array[i].isArray;
+      fprintf(stdout, "'%s' is not an array\n", current->key);
+      s = J_ERROR;
     }
   }
-  return FALSE;
+  else
+  {
+    s = J_ERROR;
+    ASSERT(FALSE);
+  }
+
+
+  return s;
 }
 
+BOOL parameter_array_getProperties(int64_t privKey, jinjac_parameter_type* type, int32_t* nbItem)
+{
+  BOOL bIsArray;
+  ASSERT(type != NULL);
+  bIsArray = FALSE;
+
+  if (privKey < item_nb)
+  {
+    if (nbItem != NULL)
+    {
+      *nbItem = item_array[privKey].arrayMaxValue;
+    }
+    *type = item_array[privKey].type;
+    bIsArray = TRUE;
+  }
+  else
+  {
+    ASSERT(FALSE);
+  }
+
+
+  return bIsArray;
+}
 
 J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, int32_t nbValue, ...)
 {
@@ -432,47 +462,36 @@ J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, in
   return status;
 }
 
-char* parameter_convertArrayToString(char* key)
+char* parameter_convertArrayToString(int64_t privKey)
 {
   char* pString;
   BOOL bIsArray;
   jinjac_parameter_type type;
   int32_t nbItems;
-  int32_t indexItem = -1;
   str_obj arrayResult;
   char tampon[50];
 
   pString = NULL;
 
-  bIsArray = parameter_array_getProperties(key, &type, &nbItems);
+  bIsArray = parameter_array_getProperties(privKey, &type, &nbItems);
   if (bIsArray)
   {
     str_obj_create(&arrayResult, 10);
-    for (int32_t i = 0; i < item_nb; i++)
-    {
-      if ((item_array[i].isUsed == TRUE) && (strcmp(key, item_array[i].key) == 0))
-      {
-        indexItem = i;
-        break;
-      }
-    }
-    ASSERT(indexItem != -1); //it is not possible to not find the key...
-
     str_obj_insert(&arrayResult, "[");
     for (int32_t i = 0; i < nbItems; i++)
     {
       switch (type)
       {
         case TYPE_DOUBLE:
-          snprintf(tampon, 50, "%f", ((double*) item_array[indexItem].pArrayValue)[i]);
+          snprintf(tampon, 50, "%f", ((double*) item_array[privKey].pArrayValue)[i]);
           break;
 
         case TYPE_INT:
-          snprintf(tampon, 50, "%d", ((int32_t*) item_array[indexItem].pArrayValue)[i]);
+          snprintf(tampon, 50, "%d", ((int32_t*) item_array[privKey].pArrayValue)[i]);
           break;
 
         case TYPE_STRING:
-          snprintf(tampon, 50, "u'%s'", ((char**) item_array[indexItem].pArrayValue)[i]);
+          snprintf(tampon, 50, "u'%s'", ((char**) item_array[privKey].pArrayValue)[i]);
           break;
 
         default:
