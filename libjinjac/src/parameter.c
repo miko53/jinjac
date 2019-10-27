@@ -36,6 +36,7 @@
 #include <stdarg.h>
 #include "str_obj.h"
 
+#define PARAM_USER_KEY_MARK          (0x8000000000000000)
 
 STATIC jinjac_parameter_callback jinjac_parameter_userSearch;
 
@@ -192,6 +193,28 @@ BOOL parameter_search(char* key, int64_t* privKey, BOOL* isArray)
     }
   }
 
+  if ((!bFounded) && (jinjac_parameter_userSearch.search != NULL))
+  {
+    int32_t userKey;
+    int32_t bIsArray;
+    bFounded = jinjac_parameter_userSearch.search(key, &userKey, &bIsArray);
+    if (isArray != NULL)
+    {
+      if (bIsArray == 1)
+      {
+        *isArray = TRUE;
+      }
+      else
+      {
+        *isArray = FALSE;
+      }
+    }
+    if (bFounded)
+    {
+      *privKey = PARAM_USER_KEY_MARK | userKey;
+    }
+  }
+
   return bFounded;
 }
 
@@ -199,6 +222,20 @@ J_STATUS parameter_get(int64_t privKey, jinjac_parameter* param)
 {
   J_STATUS s;
   ASSERT(param != NULL);
+
+  if ((privKey & PARAM_USER_KEY_MARK) == PARAM_USER_KEY_MARK)
+  {
+    int32_t userKey = (privKey & 0xFFFFFFFF);
+    if (jinjac_parameter_userSearch.get != NULL)
+    {
+      s = jinjac_parameter_userSearch.get(userKey, param);
+    }
+    else
+    {
+      s = J_ERROR;
+    }
+    return s;
+  }
 
   s = J_OK;
   if (privKey < item_nb)
@@ -258,6 +295,21 @@ J_STATUS parameter_array_getValue(int64_t privKey, int32_t offset, jinjac_parame
   J_STATUS s;
   s = J_OK;
 
+  if ((privKey & PARAM_USER_KEY_MARK) == PARAM_USER_KEY_MARK)
+  {
+    int32_t userKey = (privKey & 0xFFFFFFFF);
+    if (jinjac_parameter_userSearch.array_getValue != NULL)
+    {
+      s = jinjac_parameter_userSearch.array_getValue(userKey, offset, v);
+    }
+    else
+    {
+      s = J_ERROR;
+    }
+    return s;
+  }
+
+
   if (privKey < item_nb)
   {
     param_item* current;
@@ -312,6 +364,30 @@ BOOL parameter_array_getProperties(int64_t privKey, jinjac_parameter_type* type,
   BOOL bIsArray;
   ASSERT(type != NULL);
   bIsArray = FALSE;
+
+  if ((privKey & PARAM_USER_KEY_MARK) == PARAM_USER_KEY_MARK)
+  {
+    int32_t userKey = (privKey & 0xFFFFFFFF);
+    if (jinjac_parameter_userSearch.array_getProperties != NULL)
+    {
+      int32_t bArray = FALSE;
+      bArray = jinjac_parameter_userSearch.array_getProperties(userKey, type, nbItem);
+      if (bArray == 1)
+      {
+        bIsArray = TRUE;
+      }
+      else
+      {
+        bIsArray = FALSE;
+      }
+
+    }
+    else
+    {
+      bIsArray = FALSE;
+    }
+    return bIsArray;
+  }
 
   if (privKey < item_nb)
   {

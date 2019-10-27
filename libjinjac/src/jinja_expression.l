@@ -88,7 +88,7 @@ set                       { return SET; }
 \<                        { return LOWER_THAN; }
 \>                        { return HIGHER_THAN; }
 \!\=                      { return DIFFERENT;}
-[_a-zA-Z][_a-zA-Z0-9]*  {
+[_a-z\@\$A-Z][_a-zA-Z0-9]*  {
   // We have to strdup yytext because Flex will change it for the next token.
   // Note that this memory must be freed somewhere, so that's why we call
   // free() above in the Bison section.  (Aside: we use free() instead of
