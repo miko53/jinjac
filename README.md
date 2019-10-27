@@ -58,6 +58,23 @@ Hello from jinjac John !
 
 end template
 ```
+It can be possible to user an other variable management, by implementing the parameter callback as indicated in this example
+```c
+// map search and get callback 
+jinjac_parameter_callback jinjac_specific_search_cb =
+{
+  .search = p_search,
+  .get = p_get,
+  .array_getProperties = p_array_getProperties,
+  .array_getValue = p_array_getValue
+};
+
+//after initialisation register it
+jinjac_parameter_registerUserParameter(&jinjac_specific_search_cb);
+
+```
+See example in file jinjac_test_app.c
+
 
 ## list of implemented features
 
@@ -68,6 +85,7 @@ end template
 - for statement
 - if statement
 - strip whitespace (with minus characters in statement)
+- possibly to manage variables from other management system 
 
 
 ## TODO
@@ -101,8 +119,7 @@ Here we are the list of limitation.
 
 - parameter management
 
-It should be preferable to improve search or use a index when multiple searches are performed.
-Use a callback to provide another search (avoid to enter parameter in multiple arrays, if exists already in one.
+Search of parameter could be improved by using a hash table on variable name
 
 - robustness
 

@@ -40,7 +40,7 @@
 
 STATIC jinjac_parameter_callback jinjac_parameter_userSearch;
 
-J_STATUS jinjac_parameter_setExtraParameterCallBack(jinjac_parameter_callback* callback)
+J_STATUS jinjac_parameter_registerUserParameter(jinjac_parameter_callback* callback)
 {
   J_STATUS s;
   s = J_ERROR;

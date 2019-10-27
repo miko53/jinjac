@@ -82,7 +82,7 @@ typedef struct
   J_STATUS (*array_getValue)(int32_t privKey, int32_t offset, jinjac_parameter_value* v);
 } jinjac_parameter_callback;
 
-extern J_STATUS jinjac_parameter_setExtraParameterCallBack(jinjac_parameter_callback* callback);
+extern J_STATUS jinjac_parameter_registerUserParameter(jinjac_parameter_callback* callback);
 
 
 #ifdef __cplusplus

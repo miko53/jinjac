@@ -46,7 +46,7 @@ static J_STATUS p_get(int32_t privKey, jinjac_parameter* param);
 static int p_array_getProperties(int32_t privKey, jinjac_parameter_type* type, int32_t* nbItem);
 static J_STATUS p_array_getValue(int32_t privKey, int32_t offset, jinjac_parameter_value* v);
 
-jinjac_parameter_callback jinjac_specic_search_cb =
+jinjac_parameter_callback jinjac_specific_search_cb =
 {
   .search = p_search,
   .get = p_get,
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
   }
 
   jinjac_init();
-  jinjac_parameter_setExtraParameterCallBack(&jinjac_specic_search_cb);
+  jinjac_parameter_registerUserParameter(&jinjac_specific_search_cb);
   create_example_parameter();
 
   if (test_string != NULL)
