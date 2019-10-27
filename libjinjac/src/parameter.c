@@ -37,13 +37,24 @@
 #include "str_obj.h"
 
 
-// jinjac_search_callback jinjac_parameter_userSearch = NULL;
-//
-// J_STATUS jinjac_parameter_set_search_callback(jinjac_search_callback searchFct)
-// {
-//   jinjac_parameter_userSearch = searchFct;
-//   return J_OK;
-// }
+STATIC jinjac_parameter_callback jinjac_parameter_userSearch;
+
+J_STATUS jinjac_parameter_setExtraParameterCallBack(jinjac_parameter_callback* callback)
+{
+  J_STATUS s;
+  s = J_ERROR;
+
+  if ((callback->search != NULL) &&
+      (callback->get != NULL) &&
+      (callback->array_getValue != NULL) &&
+      (callback->array_getProperties != NULL))
+  {
+    jinjac_parameter_userSearch = *callback;
+    s = J_OK;
+  }
+
+  return s;
+}
 
 
 //TODO add test to check unicity of variables

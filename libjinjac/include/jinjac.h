@@ -74,6 +74,17 @@ extern J_STATUS jinjac_parameter_insert(char* key, jinjac_parameter* param);
 extern J_STATUS jinjac_parameter_array_insert(char* key, jinjac_parameter_type type, int32_t nbValue, ...);
 extern void jinjac_parameter_delete_all(void);
 
+typedef struct
+{
+  int (*search)(char* key, int32_t* privKey, int* isArray);
+  J_STATUS (*get)(int32_t privKey, jinjac_parameter* param);
+  int (*array_getProperties)(int32_t privKey, jinjac_parameter_type* type, int32_t* nbItem);
+  J_STATUS (*array_getValue)(int32_t privKey, int32_t offset, jinjac_parameter_value* v);
+} jinjac_parameter_callback;
+
+extern J_STATUS jinjac_parameter_setExtraParameterCallBack(jinjac_parameter_callback* callback);
+
+
 #ifdef __cplusplus
 }
 #endif

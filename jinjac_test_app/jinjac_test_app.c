@@ -30,6 +30,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -39,6 +40,19 @@ static void create_example_parameter(void);
 static void delete_example_parameter(void);
 static void parse_file(char* inputFile, char* outputfile);
 static void parse_buffer(char* inputFile, char* outputfile);
+
+static int p_search(char* key, int32_t* privKey, int* isArray);
+static J_STATUS p_get(int32_t privKey, jinjac_parameter* param);
+static int p_array_getProperties(int32_t privKey, jinjac_parameter_type* type, int32_t* nbItem);
+static J_STATUS p_array_getValue(int32_t privKey, int32_t offset, jinjac_parameter_value* v);
+
+jinjac_parameter_callback jinjac_specic_search_cb =
+{
+  .search = p_search,
+  .get = p_get,
+  .array_getProperties = p_array_getProperties,
+  .array_getValue = p_array_getValue
+};
 
 int main(int argc, char* argv[])
 {
@@ -82,6 +96,7 @@ int main(int argc, char* argv[])
   }
 
   jinjac_init();
+  jinjac_parameter_setExtraParameterCallBack(&jinjac_specic_search_cb);
   create_example_parameter();
 
   if (test_string != NULL)
@@ -223,4 +238,166 @@ void parse_buffer(char* inputFile, char* outputfile)
   }
 }
 
+
+int p_search(char* key, int32_t* privKey, int* isArray)
+{
+  //simulate another array of data to test
+  int r = 1;
+  int bIsArray;
+  bIsArray = 0;
+
+  if (strcmp(key, "@name") == 0)
+  {
+    *privKey = 0;
+  }
+  else if (strcmp(key, "@speed") == 0)
+  {
+    *privKey = 1;
+  }
+  else if (strcmp(key, "@count") == 0)
+  {
+    *privKey = 2;
+  }
+  else if (strcmp(key, "@array_data_int") == 0)
+  {
+    bIsArray = 1;
+    *privKey = 3;
+  }
+  else if (strcmp(key, "@array_data_dbl") == 0)
+  {
+    bIsArray = 1;
+    *privKey = 4;
+  }
+  else if (strcmp(key, "@array_data_string") == 0)
+  {
+    bIsArray = 1;
+    *privKey = 5;
+  }
+  else
+  {
+    r = 0;
+  }
+
+  if (isArray != NULL)
+  {
+    *isArray = bIsArray;
+  }
+
+
+  return r;
+}
+
+J_STATUS p_get(int32_t privKey, jinjac_parameter* param)
+{
+  J_STATUS s;
+  s = J_OK;
+
+  switch (privKey)
+  {
+    case 0: //@name
+      param->type = TYPE_STRING;
+      param->value.type_string = "Tyrion";
+      break;
+    case 1: //@speed
+      param->type = TYPE_DOUBLE;
+      param->value.type_double = 125.58;
+      break;
+    case 2: //@count
+      param->type = TYPE_INT;
+      param->value.type_int = 5684;
+      break;
+
+    default:
+      s = J_ERROR;
+      break;
+  }
+
+  return s;
+}
+
+int p_array_getProperties(int32_t privKey, jinjac_parameter_type* type, int32_t* nbItem)
+{
+  int s;
+  int32_t nItems;
+  s = 1;
+  nItems = 0;
+
+  switch (privKey)
+  {
+    case 3:
+      *type = TYPE_INT;
+      nItems = 5;
+      break;
+
+    case 4:
+      *type = TYPE_DOUBLE;
+      nItems = 10;
+      break;
+
+    case 5:
+      *type = TYPE_STRING;
+      nItems = 3;
+      break;
+
+    default:
+      s = 0;
+
+      break;
+  }
+
+  if (nbItem != NULL)
+  {
+    *nbItem = nItems;
+  }
+
+  return s;
+}
+
+static int32_t array_data_int[5] =
+{ 5, 8, -159, 68, 156 };
+
+static double array_data_dbl[10] =
+{ 2.0, 598.1, 14.89, 144.117, 0.215, -159.178, 0, 157, 0.12984, 159618.19 };
+
+static char* array_data_string[3] =
+{ "good", "bad", "ugly" };
+
+
+J_STATUS p_array_getValue(int32_t privKey, int32_t offset, jinjac_parameter_value* v)
+{
+  J_STATUS s;
+  s = J_ERROR;
+
+  switch (privKey)
+  {
+    case 3: // @array_data_int
+      if (offset < 5)
+      {
+        v->type_int = array_data_int[offset];
+        s = J_OK;
+      }
+      break;
+
+    case 4: // @array_data_dbl
+      if (offset < 10)
+      {
+        v->type_double = array_data_dbl[offset];
+        s = J_OK;
+      }
+      break;
+
+    case 5: // @array_data_string
+      if (offset < 3)
+      {
+        v->type_string = array_data_string[offset];
+        s = J_OK;
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  return s;
+}
 
