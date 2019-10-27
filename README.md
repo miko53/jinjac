@@ -58,7 +58,7 @@ Hello from jinjac John !
 
 end template
 ```
-It can be possible to user an other variable management, by implementing the parameter callback as indicated in this example
+It can be possible to use an other variable management, by implementing the parameter callback as indicated in this example
 ```c
 // map search and get callback 
 jinjac_parameter_callback jinjac_specific_search_cb =
@@ -74,6 +74,7 @@ jinjac_parameter_registerUserParameter(&jinjac_specific_search_cb);
 
 ```
 See example in file jinjac_test_app.c
+Then after, the library will use the indicated functions to search and retrieve parameters.
 
 
 ## list of implemented features
@@ -85,7 +86,7 @@ See example in file jinjac_test_app.c
 - for statement
 - if statement
 - strip whitespace (with minus characters in statement)
-- possibly to manage variables from other management system 
+- possibly to manage variables without store them into jinjac library
 
 
 ## TODO
