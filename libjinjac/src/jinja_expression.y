@@ -244,14 +244,14 @@ jinja_primary_expr:
                       }
 
 condition_expr:
- condition_or 
+ condition_and 
  |
- condition_expr AND condition_or { dbg_print("and condition\n"); }
+ condition_expr OR condition_and { dbg_print("or condition\n");ast_do_logical_condition(AST_OR); }
 
-condition_or:
+condition_and:
  condition_equal
  |
- condition_or OR condition_equal { dbg_print("or condition\n"); }
+ condition_and AND condition_equal { dbg_print("and condition\n");ast_do_logical_condition(AST_AND); }
 
 condition_equal:
   condition_comparaison
@@ -279,7 +279,7 @@ condition_unary:
   |
   '(' condition_expr ')' { dbg_print("condition with parenthese\n"); }
   |
-  NOT postfix_expression { dbg_print("NOT condition \n"); }
+  NOT postfix_expression { dbg_print("NOT condition \n");ast_do_logical_condition(AST_NOT); }
   
 %%
 

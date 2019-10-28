@@ -83,6 +83,7 @@ extern BOOL ast_forStmtIsLineToBeIgnored(void);
 
 //expression
 extern J_STATUS ast_do_condition(jobject_condition condition);
+extern J_STATUS ast_do_logical_condition(jobject_logical_condition condition);
 extern J_STATUS ast_convert_to_condition(void);
 extern J_STATUS ast_create_if_stmt(void);
 extern J_STATUS ast_create_else_stmt(void);

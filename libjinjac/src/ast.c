@@ -456,6 +456,74 @@ J_STATUS ast_do_condition(jobject_condition condition)
   return rc;
 }
 
+
+J_STATUS ast_do_logical_condition(jobject_logical_condition condition)
+{
+  J_STATUS rc;
+  JObject* pResult;
+  BOOL bResult;
+
+  rc = J_ERROR;
+
+  if (condition != AST_NOT)
+  {
+    if (ast_root.ast_nb_object >= 2)
+    {
+      JObject* op1 = ast_root.ast_list[ast_root.ast_nb_object - 2];
+      JObject* op2 = ast_root.ast_list[ast_root.ast_nb_object - 1];
+
+      switch (condition)
+      {
+        case AST_AND:
+          bResult = JObject_toBoolean(op1) && JObject_toBoolean(op2);
+          break;
+
+        case AST_OR:
+          bResult = JObject_toBoolean(op1) || JObject_toBoolean(op2);
+          break;
+
+        default:
+          ASSERT(FALSE);
+          break;
+      }
+
+      pResult = JBoolean_new(bResult);
+      if (pResult != NULL)
+      {
+        ast_remove_last(TRUE);
+        ast_remove_last(TRUE);
+        ast_insert(pResult);
+        rc = J_OK;
+      }
+    }
+    else
+    {
+      trace("not possible\n");
+      ASSERT(FALSE);
+    }
+  }
+  else if (condition == AST_NOT)
+  {
+    if (ast_root.ast_nb_object >= 1)
+    {
+      JObject* op1 = ast_root.ast_list[ast_root.ast_nb_object - 1];
+      bResult = !JObject_toBoolean(op1);
+      pResult = JBoolean_new(bResult);
+      ast_remove_last(TRUE);
+      ast_insert(pResult);
+      rc = J_OK;
+    }
+    else
+    {
+      trace("not possible\n");
+      ASSERT(FALSE);
+    }
+  }
+
+  return rc;
+}
+
+
 //used with only one condition
 J_STATUS ast_convert_to_condition(void)
 {

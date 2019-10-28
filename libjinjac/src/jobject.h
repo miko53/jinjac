@@ -64,9 +64,15 @@ typedef enum
   AST_HIGH_THAN,
   AST_LOWER_AND_EQUAL_THAN,
   AST_LOWER_THAN,
-  AST_IS
 } jobject_condition;
 
+typedef enum
+{
+  AST_OR,
+  AST_AND,
+  AST_NOT,
+  AST_IS
+} jobject_logical_condition;
 
 typedef struct JObjects
 {
