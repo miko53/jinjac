@@ -256,9 +256,9 @@ condition_or:
 condition_equal:
   condition_comparaison
   |
-  condition_equal EQUAL condition_comparaison { dbg_print("equal expression\n"); ast_do_condition(AST_EQUAL); }
+  condition_equal EQUAL condition_comparaison { dbg_print("equal expression\n");ast_do_condition(AST_EQUAL); }
   |
-  condition_equal DIFFERENT condition_comparaison { dbg_print("different expression\n"); /*ast_do_condition(AST_EQUAL);*/ }
+  condition_equal DIFFERENT condition_comparaison { dbg_print("different expression\n");ast_do_condition(AST_DIFFERENT); }
 
 condition_comparaison:
   condition_unary
@@ -273,9 +273,9 @@ condition_comparaison:
 
   
 condition_unary:
-  postfix_expression { dbg_print("postfix expression in condition\n");/*ast_convert_to_condition();*/ } //TODO
+  postfix_expression { dbg_print("postfix expression in condition\n");}
   |
-  function_expression { dbg_print("alone fct expression\n"); /*ast_convert_to_condition();*/ } //TODO
+  function_expression { dbg_print("alone fct expression\n"); } //TODO
   |
   '(' condition_expr ')' { dbg_print("condition with parenthese\n"); }
   |

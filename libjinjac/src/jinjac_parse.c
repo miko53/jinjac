@@ -121,11 +121,26 @@ void jinjac_dbg_parse_string(char* string)
       break;
 
     case FOR_STATEMENT:
-      trace("For stmt\n");
+      trace("FOR stmt\n");
       break;
 
     case IF_STATEMENT:
-      trace("If stmt\n");
+      trace("IF stmt\n");
+      if (!ast_ifStmtIsLineToBeIgnored())
+      {
+        trace("active condition\n");
+      }
+      else
+      {
+        trace("inactive condition\n");
+      }
+      break;
+    case END_IF_STATEMENT:
+      trace("END IF\n");
+      break;
+
+    case ELSE_STATEMENT:
+      trace("ELSE\n");
       break;
 
     default:

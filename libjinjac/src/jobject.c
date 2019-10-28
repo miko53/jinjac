@@ -104,7 +104,7 @@ BOOL JIdentifier_getValue(struct JObjects* pObject, jinjac_parameter* param)
       bOk = TRUE;
       param->value.type_string = parameter_convertArrayToString(privKey);
       param->type = TYPE_STRING;
-      trace("array ==> %s\n", param->value.type_string);
+      //trace("array ==> %s\n", param->value.type_string);
     }
     else
     {
@@ -917,6 +917,7 @@ JObject* JObject_execComparison(JObject* op1, JObject* op2, jobject_condition co
   }
   else if ((paramOp1.type == TYPE_STRING) || (paramOp2.type == TYPE_STRING))
   {
+    //trace("one of the two operation is a string ==> FALSE\n");
     pObjectResult = JBoolean_new(FALSE);
   }
   else

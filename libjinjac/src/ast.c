@@ -580,22 +580,35 @@ J_STATUS ast_create_if_stmt(void)
 {
   J_STATUS rc;
   JObject* o;
+  JObject* pResult;
+  BOOL bResult;
 
   rc = J_ERROR;
 
-  ASSERT(ast_root.ast_nb_object >= 1);
-  if (ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_BOOLEAN)
+  ASSERT(ast_root.ast_nb_object >= 1); //normally assured by the grammar
+  JObject* pObj = ast_root.ast_list[ast_root.ast_nb_object - 1];
+
+  if (ast_root.ast_list[ast_root.ast_nb_object - 1]->type != J_BOOLEAN)
   {
-    o = JIF_new(ast_root.ast_list[ast_root.ast_nb_object - 1]);
-    if (o != NULL)
-    {
-      ast_remove_last(FALSE);
-      rc = ast_insert(o);
-    }
+    bResult = JObject_toBoolean(pObj);
+    pResult = JBoolean_new(bResult);
+    pObj = pResult;
+    ast_remove_last(TRUE);
+  }
+  else
+  {
+    ast_remove_last(FALSE); //not delete because inserted with the IF statement
+  }
+
+  o = JIF_new(pObj);
+  if (o != NULL)
+  {
+    rc = ast_insert(o);
   }
 
   return rc;
 }
+
 
 BOOL ast_ifStmtIsLineToBeIgnored(void)
 {
@@ -760,6 +773,10 @@ char* ast_getTypeString(jobject_type type)
 
     case J_END_IF:
       s = "End If";
+      break;
+
+    case J_ELSE:
+      s = "Else";
       break;
 
     case J_LIST:
