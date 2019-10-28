@@ -138,10 +138,10 @@ postfix_expression:
                                       dbg_print("an array %s \n", $1); 
                                       ast_create_array_on_top($1);
                                    } 
-   | IDENTIFIER  '.' IDENTIFIER {
+  /* | IDENTIFIER  '.' IDENTIFIER {
                                    //TODO: Check id IDENTIFIER --> postfix_expression
                                    dbg_print("a dot- identifier (%s)\n", $1);
-                                }
+                                }*/
    | array                      { dbg_print("array-(biis)\n"); }
    
    
@@ -244,27 +244,42 @@ jinja_primary_expr:
                       }
 
 condition_expr:
-  postfix_expression { dbg_print("alone expression\n"); ast_convert_to_condition(); }
+ condition_or 
+ |
+ condition_expr AND condition_or { dbg_print("and condition\n"); }
+
+condition_or:
+ condition_equal
+ |
+ condition_or OR condition_equal { dbg_print("or condition\n"); }
+
+condition_equal:
+  condition_comparaison
+  |
+  condition_equal EQUAL condition_comparaison { dbg_print("equal expression\n"); ast_do_condition(AST_EQUAL); }
+  |
+  condition_equal DIFFERENT condition_comparaison { dbg_print("different expression\n"); /*ast_do_condition(AST_EQUAL);*/ }
+
+condition_comparaison:
+  condition_unary
+  |
+  condition_comparaison HIGH_AND_EQUAL_THAN condition_unary { dbg_print("'>=' expression\n");ast_do_condition(AST_HIGH_AND_EQUAL_THAN);}
+  |
+  condition_comparaison HIGHER_THAN condition_unary { dbg_print("'>' expression\n");ast_do_condition(AST_HIGH_THAN);}
+  |
+  condition_comparaison LOWER_AND_EQUAL_THAN condition_unary { dbg_print("'<=' expression\n");ast_do_condition(AST_LOWER_AND_EQUAL_THAN); }
+  |
+  condition_comparaison LOWER_THAN condition_unary { dbg_print("'<' expression\n");ast_do_condition(AST_LOWER_THAN);}
+
+  
+condition_unary:
+  postfix_expression { dbg_print("postfix expression in condition\n");/*ast_convert_to_condition();*/ } //TODO
   |
   function_expression { dbg_print("alone fct expression\n"); /*ast_convert_to_condition();*/ } //TODO
   |
-  postfix_expression EQUAL postfix_expression { dbg_print("equal expression\n"); ast_do_condition(AST_EQUAL); }
-  |
-  postfix_expression DIFFERENT postfix_expression { dbg_print("diff expression\n"); ast_do_condition(AST_DIFFERENT);}
-  |
-  postfix_expression HIGH_AND_EQUAL_THAN postfix_expression { dbg_print(">= expression\n"); ast_do_condition(AST_HIGH_AND_EQUAL_THAN);}
-  |
-  postfix_expression HIGHER_THAN postfix_expression { dbg_print("> expression\n");  ast_do_condition(AST_HIGH_THAN);}
-  |
-  postfix_expression LOWER_AND_EQUAL_THAN postfix_expression { dbg_print("<= expression\n"); ast_do_condition(AST_LOWER_AND_EQUAL_THAN); }
-  |
-  postfix_expression LOWER_THAN postfix_expression { dbg_print("< expression\n"); ast_do_condition(AST_LOWER_THAN);}
-  |
-  postfix_expression IS function_expression { dbg_print("IS expression with fct\n"); }
-  | 
-  postfix_expression IS IDENTIFIER { dbg_print("IS expression with id\n"); }
-  |
   '(' condition_expr ')' { dbg_print("condition with parenthese\n"); }
+  |
+  NOT postfix_expression { dbg_print("NOT condition \n"); }
   
 %%
 

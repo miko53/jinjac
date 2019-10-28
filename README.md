@@ -96,7 +96,7 @@ Then after, the library will use the indicated functions to search and retrieve 
 Here we are the list of limitation.
 (or the aim of this library some of thems are not really necessary)
 
-- missing function of previous table
+- missing build-in function (see table at the end)
 - in if statement
   * logical are not completed (not, and, or, is, ...)
 - whitespace control (with '+' characters)
