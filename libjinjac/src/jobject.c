@@ -906,7 +906,8 @@ JObject* JObject_execComparison(JObject* op1, JObject* op2, jobject_condition co
 
   if ((paramOp1.type == TYPE_STRING) && (paramOp2.type == TYPE_STRING))
   {
-    if (strcmp(paramOp1.value.type_string, paramOp2.value.type_string) == 0)
+    if (((condition == AST_EQUAL) && (strcmp(paramOp1.value.type_string, paramOp2.value.type_string) == 0)) ||
+        ((condition == AST_DIFFERENT) && (strcmp(paramOp1.value.type_string, paramOp2.value.type_string) != 0)))
     {
       pObjectResult = JBoolean_new(TRUE);
     }
@@ -914,11 +915,15 @@ JObject* JObject_execComparison(JObject* op1, JObject* op2, jobject_condition co
     {
       pObjectResult = JBoolean_new(FALSE);
     }
+    param_delete(&paramOp1);
+    param_delete(&paramOp2);
   }
   else if ((paramOp1.type == TYPE_STRING) || (paramOp2.type == TYPE_STRING))
   {
     //trace("one of the two operation is a string ==> FALSE\n");
     pObjectResult = JBoolean_new(FALSE);
+    param_delete(&paramOp1);
+    param_delete(&paramOp2);
   }
   else
   {

@@ -1,0 +1,22 @@
+{% if users and name %}
+ -- condition 1 ok --
+{% endif %}
+{% if not users and not name %}
+-- not possible  --
+{% else %}
+--> condition 2 ok --
+{% endif %}
+{% if name == @name %}
+-- not possible 2 --
+{% else %}
+--> condition 3 ok -->
+{% endif %}
+{% if name != @name %}
+--> condition 4 ok -->
+{% endif %}
+{% if gre == 547 or myNiceDouble < 0 %}
+--> condition 5 ok -->
+{% endif %}
+{% if myNiceDouble < 0 or offset_array == 2 %}
+--> condition 6 ok -->
+{% endif %}

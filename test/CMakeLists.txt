@@ -44,7 +44,8 @@ set(TEST_LIST
   "test_22" ;
   "test_22a" ;
   "test_22b" ;
-  "test_23" 
+  "test_23" ;
+  "test_24" 
   )
   
 set(TEST_TITLE 
@@ -83,7 +84,8 @@ set(TEST_TITLE
   "22_join_buildin_function" ;
   "22a_join_with_iterable_string_int_double" ;
   "22b_join_with_no_iterable_items" ;
-  "23_test_use_user_callback_for_get_param"
+  "23_test_use_user_callback_for_get_param" ;
+  "24_logical_condition_expression"
   )
   
 set(INDEX 0)
