@@ -97,8 +97,8 @@ Here we are the list of limitation.
 (or the aim of this library some of thems are not really necessary)
 
 - missing build-in function (see table at the end)
-- in if statement
-  * logical are not completed (not, and, or, is, ...)
+- in if statement 'is' is not managed
+- negative value (-X) not managed in expression
 - whitespace control (with '+' characters)
   * in fact it has the default behavior and you can control whitespace strip with '-'
 - raw statement
