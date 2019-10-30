@@ -55,6 +55,7 @@ extern void ast_removeLastResultItem(void);
 extern void ast_setInError(char* errorString);
 
 extern ast_status ast_getStatus(void);
+extern char* ast_getErrorDetails(void);
 
 extern char* ast_getStringResult(void);
 

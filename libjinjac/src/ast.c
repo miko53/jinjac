@@ -43,6 +43,7 @@ typedef struct
 {
   BOOL inError;
   char* currentStringValue;
+  char* error;
   uint32_t ast_nb_object;
   JObject* ast_list[MAX_OBJECT];
 } ast;
@@ -81,9 +82,20 @@ void ast_clean()
 
 void ast_setInError(char* errorString)
 {
-  (void) errorString;
+  ast_root.error = errorString;
   ast_root.inError = TRUE;
 }
+
+char* ast_getErrorDetails()
+{
+  if (ast_root.error != NULL)
+  {
+    return ast_root.error;
+  }
+
+  return "";
+}
+
 
 ast_status ast_getStatus(void)
 {
@@ -127,12 +139,6 @@ ast_status ast_getStatus(void)
   }
 
   return status;
-}
-
-
-BOOL ast_getInError(void)
-{
-  return ast_root.inError;
 }
 
 BOOL ast_setBeginOfForStatement(int64_t offset, int32_t noLine, BOOL bStripWhiteSpace)

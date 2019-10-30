@@ -117,7 +117,7 @@ void jinjac_dbg_parse_string(char* string)
       break;
 
     case IN_ERROR:
-      trace( "in Error\n");
+      error(ERROR_LEVEL, "error: %s\n", ast_getErrorDetails());
       break;
 
     case FOR_STATEMENT:
@@ -467,7 +467,7 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
     switch (parserStatus)
     {
       case IN_ERROR:
-        trace("parsing error\n");
+        error(ERROR_LEVEL, "parsing error: %s\n", ast_getErrorDetails());
         inError = TRUE;
         break;
 
@@ -612,7 +612,7 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
         break;
 
       case IN_ERROR:
-        error(ERROR_LEVEL, "parsing error\n");
+        error(ERROR_LEVEL, "parsing error: %s\n", ast_getErrorDetails());
         inError = TRUE;
         break;
 
