@@ -269,17 +269,18 @@ J_STATUS ast_execute_function()
 
   if (ast_root.ast_nb_object >= 1)
   {
-    ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FUNCTION);//TODO check error instead ...
-
-    JFunction* f = (JFunction*) ast_root.ast_list[ast_root.ast_nb_object - 1];
-    JObject* resultObj;
-
-    resultObj = JFunction_execute(f, NULL);
-    if (resultObj != NULL)
+    if (ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FUNCTION)
     {
-      ast_remove_last(TRUE);
-      ast_insert(resultObj);
-      rc = J_OK;
+      JFunction* f = (JFunction*) ast_root.ast_list[ast_root.ast_nb_object - 1];
+      JObject* resultObj;
+
+      resultObj = JFunction_execute(f, NULL);
+      if (resultObj != NULL)
+      {
+        ast_remove_last(TRUE);
+        ast_insert(resultObj);
+        rc = J_OK;
+      }
     }
   }
 
@@ -299,22 +300,23 @@ J_STATUS ast_execute_filtered_function(void)
   {
     pConcernedObject = ast_root.ast_list[ast_root.ast_nb_object - 2];
 
-    ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FUNCTION);//TODO check error instead ...
-
-    JFunction* f = (JFunction*) ast_root.ast_list[ast_root.ast_nb_object - 1];
-    JObject* resultObj;
-
-    resultObj = JFunction_execute(f, pConcernedObject);
-    if (resultObj != NULL)
+    if (ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FUNCTION)
     {
-      if (pConcernedObject != NULL)
-      {
-        ast_remove_last(TRUE);
-      }
+      JFunction* f = (JFunction*) ast_root.ast_list[ast_root.ast_nb_object - 1];
+      JObject* resultObj;
 
-      ast_remove_last(TRUE);
-      ast_insert(resultObj);
-      rc = J_OK;
+      resultObj = JFunction_execute(f, pConcernedObject);
+      if (resultObj != NULL)
+      {
+        if (pConcernedObject != NULL)
+        {
+          ast_remove_last(TRUE);
+        }
+
+        ast_remove_last(TRUE);
+        ast_insert(resultObj);
+        rc = J_OK;
+      }
     }
   }
 
@@ -391,7 +393,7 @@ J_STATUS ast_insert_function_args()
   ASSERT(ast_root.ast_nb_object >= 2);
   arg = ast_root.ast_list[ast_root.ast_nb_object - 1];
 
-  ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 2]->type == J_FUNCTION_ARGS);
+  ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 2]->type == J_FUNCTION_ARGS); // normally assured by parser
   JArgs* args = (JArgs*) ast_root.ast_list[ast_root.ast_nb_object - 2];
   ast_remove_last(FALSE); // top object will be inserted in JArgs object that's why not deleted
 
@@ -589,13 +591,17 @@ J_STATUS ast_create_for_stmt(char* identifierName)
 
 BOOL ast_forStmtIsLineToBeIgnored(void)
 {
-  ASSERT(ast_root.ast_nb_object >= 1);
-  ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FOR);
   BOOL bLineNeedToBeIgnored;
+  bLineNeedToBeIgnored = FALSE;
 
-  JFor* pFor = (JFor*) (ast_root.ast_list[ast_root.ast_nb_object - 1]);
+  if (ast_root.ast_nb_object >= 1)
+  {
+    ASSERT(ast_root.ast_list[ast_root.ast_nb_object - 1]->type == J_FOR);
 
-  bLineNeedToBeIgnored = JFor_isDone(pFor);
+    JFor* pFor = (JFor*) (ast_root.ast_list[ast_root.ast_nb_object - 1]);
+
+    bLineNeedToBeIgnored = JFor_isDone(pFor);
+  }
 
   return bLineNeedToBeIgnored;
 }
