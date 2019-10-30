@@ -470,6 +470,7 @@ J_STATUS ast_do_logical_condition(jobject_logical_condition condition)
   JObject* pResult;
   BOOL bResult;
 
+  bResult = FALSE;
   rc = J_ERROR;
 
   if (condition != AST_NOT)
@@ -884,6 +885,7 @@ void display_function_args(JArgs* argsObj)
 
 void display_range(JRange* range)
 {
+  (void) range;
   trace( "--> object associed (%p)\n", range->sequencedObject);
   trace( "--> current index (%d)\n", range->currentIndex);
   trace( "--> start (%d), stop (%d), step(%d)\n", range->start, range->stop, range->step);

@@ -602,8 +602,8 @@ char* format(char* origin, int32_t nbParameters, jinjac_parameter* param)
 {
   int32_t currentParameterIndex = 0;
   char* src;
-  char* pModifierBegin;
-  char* pModifierEnd;
+  char* pModifierBegin = NULL;
+  char* pModifierEnd = NULL;
   str_obj dst;
 
   str_obj_create(&dst, 10);

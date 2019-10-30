@@ -199,6 +199,7 @@ int32_t calcul_iii(int32_t i1, int32_t i2, char operation)
 BOOL compare_ddd(double d1, double d2, jobject_condition condition)
 {
   BOOL r;
+  r = FALSE;
 
   switch (condition)
   {
@@ -237,6 +238,7 @@ BOOL compare_ddd(double d1, double d2, jobject_condition condition)
 BOOL compare_did(double d1, int32_t i2, jobject_condition condition)
 {
   BOOL r;
+  r = FALSE;
 
   switch (condition)
   {
@@ -275,6 +277,7 @@ BOOL compare_did(double d1, int32_t i2, jobject_condition condition)
 BOOL compare_idd(int32_t i1, double d2, jobject_condition condition)
 {
   BOOL r;
+  r = FALSE;
 
   switch (condition)
   {
@@ -313,6 +316,7 @@ BOOL compare_idd(int32_t i1, double d2, jobject_condition condition)
 BOOL compare_iii(int32_t i1, int32_t i2, jobject_condition condition)
 {
   BOOL r;
+  r = FALSE;
 
   switch (condition)
   {

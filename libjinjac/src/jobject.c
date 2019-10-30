@@ -606,8 +606,14 @@ BOOL JRange_step(JRange* obj, char* indexIdentifierName)
           if ((bOk) && (bIsArray))
           {
             J_STATUS status = parameter_array_getValue(privKey, obj->currentIndex, &paramValue);
-            ASSERT(status == J_OK);
-            parameter_update(indexIdentifierName, paramValue);
+            if (status == J_OK)
+            {
+              parameter_update(indexIdentifierName, paramValue);
+            }
+            else
+            {
+              ASSERT(FALSE);
+            }
           }
           break;
 

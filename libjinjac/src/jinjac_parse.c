@@ -189,7 +189,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
   BOOL bInError = FALSE;
   char current;
   char previous;
-  char stringChar;
+  char stringChar = ' ';
   parse_file_mode mode;
 
   str_obj_create(&parse_context.string, 128);
@@ -432,8 +432,11 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
   BOOL inError;
   BOOL bBlockActive = FALSE;
   BOOL bConditionActive = FALSE;
-  BOOL wsCtrlBegin, wsCtrlEnd;
+  BOOL wsCtrlBegin;
+  BOOL wsCtrlEnd;
 
+  wsCtrlBegin = FALSE;
+  wsCtrlEnd = FALSE;
   ASSERT(context != NULL);
   ASSERT(context->in != NULL);
   ASSERT(context->out != NULL);

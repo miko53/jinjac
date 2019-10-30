@@ -261,6 +261,7 @@ JObject* JFunction_execute(JFunction* f, JObject* pCurrentObject)
       {
         int32_t minNbArgs = 0;
         void* a[1];
+        a[0] = NULL;
 
         if (f->argList != NULL)
         {
