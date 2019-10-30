@@ -40,8 +40,7 @@
 #include "flex_decl.h"
 #include "jinjac_parse.h"
 #include "jinjac_stream.h"
-
-#define LINE_SIZE   (1024)
+#include "str_obj.h"
 
 typedef enum
 {
@@ -57,7 +56,7 @@ typedef enum
 
 typedef struct
 {
-  char* string;
+  str_obj string;
   jinjac_stream* out;
   jinjac_stream* in;
   BOOL bIgnoreLine;
@@ -85,7 +84,6 @@ STATIC void jinja_parse_incrNoLine(void)
 {
   no_line++;
 }
-
 
 void jinjac_init(void)
 {
@@ -188,18 +186,13 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
   ASSERT(out != NULL);
 
   jinjac_parse_context parse_context;
-
-  char bufferJinja[LINE_SIZE];
-  int32_t bufferIndex = 0;
-
   BOOL bInError = FALSE;
-
   char current;
   char previous;
   char stringChar;
   parse_file_mode mode;
 
-  parse_context.string = bufferJinja;
+  str_obj_create(&parse_context.string, 128);
   parse_context.in = in;
   parse_context.out = out;
   parse_context.wsCtrlStripFromEnd = FALSE;
@@ -217,8 +210,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
     if (current == '\n')
     {
       jinja_parse_incrNoLine();
-      //clear buffer
-      bufferIndex = 0;
+      str_obj_clear(&parse_context.string);
       if (mode != IN_JINJA_COMMENT)
       {
         if (mode != IN_TEXT)
@@ -288,7 +280,7 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
               mode = IN_TEXT;
               out->ops.fputc(out, previous);
               out->ops.fputc(out, current);
-              bufferIndex = 0;
+              str_obj_clear(&parse_context.string);
               break;
           }
           break;
@@ -322,14 +314,14 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
             case '\'':
             case '\"':
               stringChar = current;
-              bufferJinja[bufferIndex++] = current;
+              str_obj_insertChar(&parse_context.string, current);
               parse_context.previousMode = IN_JINJA_STATEMENT;
               mode = IN_JINJA_SCRIPT_STRING;
               break;
 
             default:
               // no change of state
-              bufferJinja[bufferIndex++] = current;
+              str_obj_insertChar(&parse_context.string, current);
               break;
           }
 
@@ -346,14 +338,14 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
             case '\'':
             case '\"':
               stringChar = current;
-              bufferJinja[bufferIndex++] = current;
+              str_obj_insertChar(&parse_context.string, current);
               parse_context.previousMode = IN_JINJA_EXPRESSION;
               mode = IN_JINJA_SCRIPT_STRING;
               break;
 
             default:
               // no change of state
-              bufferJinja[bufferIndex++] = current;
+              str_obj_insertChar(&parse_context.string, current);
               break;
           }
           break;
@@ -364,22 +356,21 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
             mode = parse_context.previousMode;
           }
 
-          bufferJinja[bufferIndex++] = current;
+          str_obj_insertChar(&parse_context.string, current);
           break;
 
         case DETECTION_STOP_DELIMITER:
           if (current == '}')
           {
             //launch parsing
-            bufferJinja[bufferIndex++] = '\0';
             bInError = jinjac_parse_line(&parse_context);
             mode = IN_TEXT;
-            bufferIndex = 0;
+            str_obj_clear(&parse_context.string);
           }
           else
           {
-            bufferJinja[bufferIndex++] = previous;
-            bufferJinja[bufferIndex++] = current;
+            str_obj_insertChar(&parse_context.string, previous);
+            str_obj_insertChar(&parse_context.string, current);
             mode = parse_context.previousMode;
           }
           break;
@@ -399,29 +390,32 @@ STATIC void jinjac_parse_stream(jinjac_stream* in, jinjac_stream* out)
   {
     error(ERROR_LEVEL, "parsing error\n");
   }
+
+  str_obj_free(&parse_context.string);
 }
 
-STATIC void jinjac_check_ws_control(char* string, BOOL* bWsCtrlBegin, BOOL* bWsCtrlEnd)
+STATIC void jinjac_check_ws_control(str_obj* string, BOOL* bWsCtrlBegin, BOOL* bWsCtrlEnd)
 {
   int32_t len;
-  len = strlen(string);
+  char* s = string->s;
+  len = str_obj_len(string);
 
   if (len > 0)
   {
-    if (string[0] == '-')
+    if (s[0] == '-')
     {
       *bWsCtrlBegin = TRUE;
-      string[0] = ' ';
+      s[0] = ' ';
     }
     else
     {
       *bWsCtrlBegin = FALSE;
     }
 
-    if (string[len - 1] == '-')
+    if (s[len - 1] == '-')
     {
       *bWsCtrlEnd = TRUE;
-      string[len - 1] = ' ';
+      s[len - 1] = ' ';
     }
     else
     {
@@ -441,7 +435,6 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
   BOOL wsCtrlBegin, wsCtrlEnd;
 
   ASSERT(context != NULL);
-  ASSERT(context->string != NULL);
   ASSERT(context->in != NULL);
   ASSERT(context->out != NULL);
   jinjac_stream* out = context->out;
@@ -451,13 +444,13 @@ STATIC BOOL jinjac_parse_line(jinjac_parse_context* context)
 
   if (context->previousMode == IN_JINJA_STATEMENT)
   {
-    jinjac_check_ws_control(context->string, &wsCtrlBegin, &wsCtrlEnd);
+    jinjac_check_ws_control(&context->string, &wsCtrlBegin, &wsCtrlEnd);
   }
 
   trace("line %d: string to parse = \"%s\"\n", jinja_parse_getNoLine(), context->string);
   trace("Previous mode = %d\n", context->previousMode);
 
-  buffer = yy_scan_string ( context->string );
+  buffer = yy_scan_string (context->string.s);
   yyparse();
 
   parserStatus = ast_getStatus();

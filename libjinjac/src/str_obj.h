@@ -44,7 +44,9 @@ typedef struct
 } str_obj;
 
 extern void str_obj_create(str_obj* obj, int32_t minToAllocate);
+extern void str_obj_clear(str_obj* obj);
 extern void str_obj_free(str_obj* obj);
+extern int32_t str_obj_len(str_obj* obj);
 extern void str_obj_insertChar(str_obj* obj, char src);
 extern void str_obj_insert(str_obj* obj, char* src);
 

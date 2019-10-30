@@ -122,10 +122,6 @@ Here we are the list of limitation.
 
 Search of parameter could be improved by using a hash table on variable name
 
-- robustness
-
-error and limit management (currently some limit in stack of token is not managed)
-
 - object management
 
 Separate parameter and ast object and add a object form for parameter (design improvement)

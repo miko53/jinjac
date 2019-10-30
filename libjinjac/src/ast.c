@@ -57,7 +57,6 @@ void ast_removeLastResultItem(void)
   ast_remove_last(TRUE);
 }
 
-
 void ast_init()
 {
   ast_clean();
@@ -510,7 +509,7 @@ J_STATUS ast_do_logical_condition(jobject_logical_condition condition)
       ASSERT(FALSE);
     }
   }
-  else if (condition == AST_NOT)
+  else
   {
     if (ast_root.ast_nb_object >= 1)
     {

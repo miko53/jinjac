@@ -49,6 +49,20 @@ void str_obj_create(str_obj* obj, int32_t minToAllocate)
   obj->size = 0;
 }
 
+void str_obj_clear(str_obj* obj)
+{
+  ASSERT(obj != NULL);
+  ASSERT(obj->s != NULL);
+  obj->s[0] = '\0';
+  obj->size = 0;
+}
+
+int32_t str_obj_len(str_obj* obj)
+{
+  ASSERT(obj != NULL);
+  return obj->size;
+}
+
 void str_obj_free(str_obj* obj)
 {
   if (obj->s)
