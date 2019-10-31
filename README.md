@@ -72,6 +72,45 @@ jinjac_parameter_callback jinjac_specific_search_cb =
 //after initialisation register it
 jinjac_parameter_register(&jinjac_specific_search_cb);
 
+//callback implementation
+int p_search(char* key, int32_t* privKey, int* isArray)
+{
+  //simulate another array of data to test
+  int founded = 0;
+  int bIsArray;
+  bIsArray = 0;
+
+  if (strcmp(key, "@name") == 0)
+  {
+    *privKey = 0;
+    founded = 1;
+    if (isArray != NULL)
+      *isArray = 0;
+  }
+  
+  return founded;
+}
+
+J_STATUS p_get(int32_t privKey, jinjac_parameter* param)
+{
+  J_STATUS s;
+  s = J_OK;
+
+  switch (privKey)
+  {
+    case 0: //@name
+      param->type = TYPE_STRING;
+      param->value.type_string = "Tyrion";
+      break;
+      
+    default:
+      s = J_ERROR; //not found
+    break;
+  }
+  
+  return s;
+}
+
 ```
 See example in file jinjac_test_app.c
 Then after, the library will use the indicated functions to search and retrieve parameters.
