@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
   }
 
   jinjac_init();
-  jinjac_parameter_registerUserParameter(&jinjac_specific_search_cb);
+  jinjac_parameter_register(&jinjac_specific_search_cb);
   create_example_parameter();
 
   if (test_string != NULL)

@@ -58,7 +58,7 @@ Hello from jinjac John !
 
 end template
 ```
-It can be possible to use an other variable management, by implementing the parameter callback as indicated in this example
+It can be possible to use an other variable management, by implementing the parameter search and get callbacks as indicated in this example
 ```c
 // map search and get callback 
 jinjac_parameter_callback jinjac_specific_search_cb =
@@ -70,7 +70,7 @@ jinjac_parameter_callback jinjac_specific_search_cb =
 };
 
 //after initialisation register it
-jinjac_parameter_registerUserParameter(&jinjac_specific_search_cb);
+jinjac_parameter_register(&jinjac_specific_search_cb);
 
 ```
 See example in file jinjac_test_app.c
