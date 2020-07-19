@@ -1,0 +1,85 @@
+-------------------------------
+
+
+And here x is < 5 --> x = 0
+
+
+
+And here x is < 5 --> x = 1
+
+
+
+And here x is < 5 --> x = 2
+
+
+
+And here x is < 5 --> x = 3
+
+
+
+And here x is < 5 --> x = 4
+
+
+
+And here x is < 5 --> x = 5
+
+
+
+Here x is > 5 --> x = 6
+
+
+
+Here x is > 5 --> x = 7
+
+
+
+Here x is > 5 --> x = 8
+
+
+
+Here x is > 5 --> x = 9
+
+
+------------------------------
+
+
+user exists ==> dana
+
+
+
+user exists ==> bob
+
+
+
+user exists ==> john
+
+
+
+no users
+
+
+
+no users
+
+
+
+no users
+
+
+
+no users
+
+
+
+no users
+
+
+
+no users
+
+
+
+no users
+
+
+-- end of test --
