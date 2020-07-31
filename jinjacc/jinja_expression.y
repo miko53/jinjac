@@ -399,7 +399,7 @@ condition_unary:
 
 void yyerror(const char *s) 
 {
-  verbose_print(1, "line %d: error: '%s'\n", jinjac_getCompiler()->getNoLine(), s);
+  fprintf(stderr, "line %d: error: '%s'\n", jinjac_getCompiler()->getNoLine(), s);
   jinjac_getCompiler()->setParsingInError("Parsing Error");
 }
 
