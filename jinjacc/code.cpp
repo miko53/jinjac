@@ -136,8 +136,10 @@ uint32_t Code::insertStatement(VM_BYTE_CODE opcode, ...)
 {
   va_list args;
   va_start(args, opcode);
-
-  return insertvStatement(opcode, args);
+  uint32_t rc;
+  rc =  insertvStatement(opcode, args);
+  va_end(args);
+  return rc;
 }
 
 uint32_t Code::replaceStatement(uint32_t offset, VM_BYTE_CODE opcode, ...)
