@@ -3,7 +3,6 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include "trace.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,12 +26,12 @@ extern "C" {
 
 #define STATIC      static
 
-typedef enum 
+typedef enum
 {
   J_OK,
   J_ERROR
 } J_STATUS;
-  
+
 #ifdef __cplusplus
 }
 #endif

@@ -8,7 +8,7 @@ JinjacCompiler::JinjacCompiler(std::ifstream* in, std::ofstream* out)
 {
   ASSERT(in != nullptr);
   ASSERT(out != nullptr);
-  
+
   m_inFile = in;
   m_outFile = out;
   m_inError = false;
@@ -19,16 +19,18 @@ JinjacCompiler::JinjacCompiler(std::ifstream* in, std::ofstream* out)
 JinjacCompiler::~JinjacCompiler()
 {
   if (m_root)
+  {
     delete m_root;
+  }
 }
 
 J_STATUS JinjacCompiler::doCompile()
 {
   J_STATUS status;
   status = J_ERROR;
-  
+
   parseInputFile();
-  
+
   return status;
 }
 
@@ -55,14 +57,14 @@ void JinjacCompiler::parseInputFile()
   parse_file_state previousState;
   std::string currentText;
   std::string script;
-  
+
   previousState = IN_TEXT;
   parsingState = IN_TEXT;
-  
+
   bInError = false;
   m_noLine = 1;
   previous = '\0';
-  
+
   while (m_inFile->get(current) && (!bInError))
   {
     if (current == '\n')
@@ -81,7 +83,6 @@ void JinjacCompiler::parseInputFile()
           if (current == '{')
           {
             parsingState = DETECTION_START_DELIMITER;
-            //parse_context.wsCtrlStripFromEnd = FALSE;
           }
           else
           {
@@ -96,17 +97,17 @@ void JinjacCompiler::parseInputFile()
               parsingState = IN_JINJA_STATEMENT;
               {
                 insertAstTextNode(currentText);
-                 currentText.clear();
+                currentText.clear();
               }
 
               break;
 
             case '{':
-                parsingState = IN_JINJA_EXPRESSION;
-                {
-                  insertAstTextNode(currentText);
-                  currentText.clear();
-                }
+              parsingState = IN_JINJA_EXPRESSION;
+              {
+                insertAstTextNode(currentText);
+                currentText.clear();
+              }
               break;
 
             case '#':
@@ -206,8 +207,8 @@ void JinjacCompiler::parseInputFile()
           }
           else
           {
-              script += previous;
-              script += current;
+            script += previous;
+            script += current;
             parsingState = previousState;
           }
           break;
@@ -219,10 +220,15 @@ void JinjacCompiler::parseInputFile()
     }
     previous = current;
   }
-    
+
   insertAstTextNode(currentText);
-   
-  m_root->print();
+
+  bool verbose = true;
+  if (verbose)
+  {
+    m_root->print();
+  }
+
   m_root->printAsm(*this);
   buildOutputFile();
 }
@@ -241,37 +247,37 @@ bool JinjacCompiler::parseJinjaLang(std::string& scriptText)
   YY_BUFFER_STATE buffer;
   m_bStripBeginOfBlock = false;
   m_bStripEndOfBlock = false;
-  
-  trace("script : '%s'\n", scriptText.c_str());
-  
+
+  dbg_print("script : '%s'\n", scriptText.c_str());
+
   if (scriptText.front() == '-')
   {
     //dbg_print("m_bStripEndOfBlock= true\n");
-    m_bStripEndOfBlock= true;
+    m_bStripEndOfBlock = true;
     scriptText[0] = ' ';
   }
-  
+
   if (scriptText.back() == '-')
   {
     //dbg_print("m_bStripBeginOfBlock = true\n");
     m_bStripBeginOfBlock = true;
-    scriptText[scriptText.size()-1] = ' ';
+    scriptText[scriptText.size() - 1] = ' ';
   }
-  
+
   buffer = yy_scan_string(scriptText.c_str());
   yyparse();
 
   if (m_inError == true)
   {
-    error(ERROR_LEVEL, "parsing error: %s\n", m_errorDetails.c_str());
+    std::cerr << "error while parsing: " << m_errorDetails << std::endl;
   }
-  
+
   yy_delete_buffer(buffer);
   yylex_destroy();
-  
+
   return m_inError;
 }
- 
+
 void JinjacCompiler::buildOutputFile()
 {
   buildHeader();
@@ -287,30 +293,30 @@ void JinjacCompiler::buildHeader()
   uint32_t dataSize;
   uint32_t codeAbsOffset;
   uint32_t codeSize;
-  
+
   m_outFile->write("JOBJ", 4);
-    
+
   version = htobe16(0x0100);
   m_outFile->write((const char*) &version, sizeof(uint16_t));
-  
+
   pad = htobe16(pad);
   m_outFile->write((const char*) &pad, sizeof(uint16_t));
 
   dataAbsOffset = 24;
   dataAbsOffset = htobe32(dataAbsOffset);
   m_outFile->write((const char*) &dataAbsOffset, sizeof(uint32_t));
-  
+
   dataSize = m_staticData.getSize();
   dataSize = htobe32(dataSize);
   m_outFile->write((const char*) &dataSize, sizeof(uint32_t));
-  
+
   codeAbsOffset = 24 + m_staticData.getSize();
   codeAbsOffset = htobe32(codeAbsOffset);
   m_outFile->write((const char*) &codeAbsOffset, sizeof(uint32_t));
-  
+
   codeSize = m_code.getSize();
   codeSize = htobe32(codeSize);
   m_outFile->write((const char*) &codeSize, sizeof(uint32_t));
-  
+
 }
 

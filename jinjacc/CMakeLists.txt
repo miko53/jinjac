@@ -20,7 +20,7 @@ set(JINJACC_SRCS jinjacc.cpp
                  ast/asttext.cpp ast/aststatement.cpp ast/astvariable.cpp ast/astnumber.cpp ast/astboolean.cpp ast/aststringliteral.cpp ast/astvariablearray.cpp ast/astfunction.cpp ast/astarray.cpp
                  ast/astcompute.cpp ast/astcondition.cpp
                  ast/astjinjaexpr.cpp
-                 trace.cpp jinjac_compiler.cpp
+                 jinjac_compiler.cpp
                 ${BISON_JinjacBison_OUTPUTS} ${FLEX_JinjacFlex_OUTPUTS}
                 staticdata.cpp buffer.cpp 
                 code.cpp
