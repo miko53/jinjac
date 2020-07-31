@@ -25,6 +25,7 @@ set(JINJACC_SRCS jinjacc.cpp
                 staticdata.cpp buffer.cpp 
                 code.cpp
                 verbose.cpp
+                string_ext.cpp
    )
 
 add_executable(jinjacc ${JINJACC_SRCS})
