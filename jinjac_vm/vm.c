@@ -12,6 +12,7 @@
 #include "j_array.h"
 #include "param.h"
 #include "trace.h"
+#include "fatal.h"
 
 static vm_desc vm_state;
 
@@ -405,7 +406,7 @@ J_STATUS vm_exe(FILE* fOutputStream)
   }
   else
   {
-    trace("vm executable failed at PC = %d\n", vm_state.PC);
+    fatal("vm executable failed at PC = %d\n", vm_state.PC);
   }
 
   stack_destroy(&vm_state.stack);

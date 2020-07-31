@@ -99,6 +99,8 @@ BOOL j_object_getValue(j_object* pObject, j_value* value)
   else
   {
     trace("can't obtain value\n");
+    value->type = J_INT;
+    value->value.type_int = 0;
   }
   return FALSE;
 }
