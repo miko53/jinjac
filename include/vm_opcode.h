@@ -7,19 +7,10 @@ extern "C" {
 
 typedef enum
 {
-  FCT_CAPITALIZE,
-  FCT_CENTER,
-  FCT_FORMAT,
-  FCT_JOIN,
-  FCT_LOWER,
-  FCT_UPPER,
-  FCT_RANGE,
-  FCT_TITLE,
-  FCT_TRIM,
-  FCT_TRUNCATE
+#define BUILDIN(x, r) FCT_## x,
+#include "buildin.h"
+#undef BUILDIN
 } buildin_fct_id;
-
-extern const char* vm_buildin_fct[];
 
 typedef enum
 {

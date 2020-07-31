@@ -2,6 +2,7 @@
 #include <iostream>
 #include <assert.h>
 #include "jinjac_compiler.h"
+#include "string_ext.h"
 
 AstFunction::AstFunction(std::string& name, const AstNode* pObj, const AstNode* param)
 {
@@ -12,8 +13,8 @@ AstFunction::AstFunction(std::string& name, const AstNode* pObj, const AstNode* 
 
 AstFunction::~AstFunction()
 {
-//   if (m_paramList)
-//     delete m_paramList;
+  //   if (m_paramList)
+  //     delete m_paramList;
 }
 
 
@@ -42,36 +43,31 @@ void AstFunction::push(const AstNode* node) const
     m_obj = node;
   }
   else
+  {
     assert(false);
+  }
 }
 
 const char* vm_buildin_fct[]
 {
-  "capitalize", 
-  "center",
-  "format", 
-  "join", 
-  "lower", 
-  "upper", 
-  "range", 
-  "title",
-  "trim", 
-  "truncate",
+#define BUILDIN(x,y) #y,
+#include "buildin.h"
+#undef BUILDIN
 };
 
 buildin_fct_id AstFunction::getBuildinFctId(void) const
 {
   int32_t r = -1;
-  
-  for(uint32_t i=0; i < sizeof(vm_buildin_fct)/sizeof(const char*); i++)
+
+  for (uint32_t i = 0; i < sizeof(vm_buildin_fct) / sizeof(const char*); i++)
   {
-    if (m_name == vm_buildin_fct[i])
+    if (m_name == (vm_buildin_fct[i]))
     {
       r = i;
       break;
     }
   }
-  
+
   return (buildin_fct_id) r;
 }
 
@@ -84,15 +80,15 @@ void AstFunction::printAsm(JinjacCompiler& compiler) const
   int32_t nbArgs;
   const AstFunctionArgument* pArgs = dynamic_cast<const AstFunctionArgument*>(m_paramList);
   nbArgs = 0;
-  
-//   if (m_paramList)
-//   {
-//     m_paramList->printAsm(compiler);
-//   }
-  
+
+  //   if (m_paramList)
+  //   {
+  //     m_paramList->printAsm(compiler);
+  //   }
+
   buildin_fct_id fctIndex;
   fctIndex = getBuildinFctId();
-  if (fctIndex == (buildin_fct_id) -1)
+  if (fctIndex == (buildin_fct_id) - 1)
   {
     std::cerr << "Unknown function " << m_name << std::endl;
     exit(EXIT_FAILURE);
@@ -100,7 +96,7 @@ void AstFunction::printAsm(JinjacCompiler& compiler) const
   else
   {
     //check if all default argument are correctly pushed before to continue
-    switch(fctIndex)
+    switch (fctIndex)
     {
       case FCT_CAPITALIZE:
       case FCT_LOWER:
@@ -113,7 +109,7 @@ void AstFunction::printAsm(JinjacCompiler& compiler) const
           exit(EXIT_FAILURE);
         }
         break;
-        
+
       case FCT_TRUNCATE:
         //insert default argument if not present
         switch (pArgs->nbArgs())
@@ -125,27 +121,27 @@ void AstFunction::printAsm(JinjacCompiler& compiler) const
             pCodeContainer->insertStatement(OP_LOAD_INTEGER, 0); //killWord = FALSE
             pCodeContainer->insertStatement(OP_LOAD_INTEGER, 255); //lenght = 255
             break;
-            
+
           case 1:
             pCodeContainer->insertStatement(OP_LOAD_INTEGER, 0); //tolerateMargin
             offset = pDataContainer->insertString("...");
             pCodeContainer->insertStatement(OP_PUSH_STRING, offset); //end with "..."
             pCodeContainer->insertStatement(OP_LOAD_INTEGER, 0); //killWord = FALSE
             break;
-            
+
           case 2:
             pCodeContainer->insertStatement(OP_LOAD_INTEGER, 0); //tolerateMargin
             offset = pDataContainer->insertString("...");
             pCodeContainer->insertStatement(OP_PUSH_STRING, offset); //end with "..."
             break;
-            
+
           case 3:
             pCodeContainer->insertStatement(OP_LOAD_INTEGER, 0); //tolerateMargin
             break;
-            
+
           case 4:
             break;
-            
+
           default:
             std::cerr << "error: no argument that 4 args is expected for truncate function" << m_name << std::endl;
             exit(EXIT_FAILURE);
@@ -154,7 +150,7 @@ void AstFunction::printAsm(JinjacCompiler& compiler) const
         nbArgs = 4;
         m_paramList->printAsm(compiler);
         break;
-        
+
       case FCT_CENTER:
         switch (pArgs->nbArgs())
         {
@@ -163,7 +159,7 @@ void AstFunction::printAsm(JinjacCompiler& compiler) const
             break;
           case 1:
             break;
-            
+
           default:
             std::cerr << "error: no argument that 1 arg is expected for center function" << m_name << std::endl;
             exit(EXIT_FAILURE);
@@ -172,12 +168,12 @@ void AstFunction::printAsm(JinjacCompiler& compiler) const
         nbArgs = 1;
         m_paramList->printAsm(compiler);
         break;
-        
+
       case FCT_FORMAT:
         nbArgs = pArgs->nbArgs();
         m_paramList->printAsm(compiler);
-      break;
-      
+        break;
+
       case FCT_RANGE:
         switch (pArgs->nbArgs())
         {
@@ -186,23 +182,23 @@ void AstFunction::printAsm(JinjacCompiler& compiler) const
             exit(EXIT_FAILURE);
             break;
           case 1:
-            pCodeContainer->insertStatement(OP_LOAD_INTEGER, 1); // step            
-            m_paramList->printAsm(compiler); 
+            pCodeContainer->insertStatement(OP_LOAD_INTEGER, 1); // step
+            m_paramList->printAsm(compiler);
             pCodeContainer->insertStatement(OP_LOAD_INTEGER, 0); // start
             break;
-            
+
           case 2:
-            pCodeContainer->insertStatement(OP_LOAD_INTEGER, 1); // step            
+            pCodeContainer->insertStatement(OP_LOAD_INTEGER, 1); // step
             m_paramList->printAsm(compiler);
             break;
-            
+
           default:
             m_paramList->printAsm(compiler);
             break;
         }
         nbArgs = 3;
         break;
-        
+
       case FCT_JOIN:
         if (pArgs->nbArgs() == 0)
         {
@@ -218,14 +214,14 @@ void AstFunction::printAsm(JinjacCompiler& compiler) const
           std::cerr << "error: no argument that 1 arg is expected for join() function" << m_name << std::endl;
           exit(EXIT_FAILURE);
         }
-        nbArgs=1;
+        nbArgs = 1;
         break;
 
       default:
         assert(false);
         break;
     }
-    
+
     if (m_obj)
     {
       m_obj->printAsm(compiler);
@@ -234,29 +230,31 @@ void AstFunction::printAsm(JinjacCompiler& compiler) const
     {
       pCodeContainer->insertStatement(OP_PUSH_NIL); //???
     }
-    
+
     nbArgs++;
     pCodeContainer->insertStatement(OP_CALL_BUILDIN_FCT, fctIndex, nbArgs);
-  }  
+  }
 }
 
 
 AstFunctionArgument::AstFunctionArgument(const AstNode* first)
 {
   if (first != nullptr)
+  {
     m_argumentList.push_back(first);
+  }
 }
 
 
 AstFunctionArgument::~AstFunctionArgument()
 {
-  
+
 }
 
 
 void AstFunctionArgument::print() const
 {
-  for(uint32_t i = 0 ;i < m_argumentList.size(); i++)
+  for (uint32_t i = 0 ; i < m_argumentList.size(); i++)
   {
     m_argumentList[i]->print();
   }
@@ -271,7 +269,7 @@ void AstFunctionArgument::printAsm(JinjacCompiler& compiler) const
 {
   if (m_argumentList.size() != 0)
   {
-    for(int32_t i = m_argumentList.size()-1 ;i >= 0; i--)
+    for (int32_t i = m_argumentList.size() - 1 ; i >= 0; i--)
     {
       m_argumentList[i]->printAsm(compiler);
     }
