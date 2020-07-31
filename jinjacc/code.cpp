@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdarg>
 #include <cassert>
+#include "verbose.h"
 
 Code::Code()
 {
@@ -26,13 +27,15 @@ uint32_t Code::insertvStatement(VM_BYTE_CODE opcode, va_list args)
   double arg2;
   uint32_t offset;
 
-  std::cout << vm_byte_code[opcode] << "  ";
+  //std::cout << vm_byte_code[opcode] << "  ";
+  verbose_print(1, "%s ", vm_byte_code[opcode]);
   offset = m_bytecode.insert((int8_t) opcode);
   switch (opcode)
   {
     case OP_COPY_STRING:
       arg1 = va_arg(args, int32_t);
-      std::cout << arg1;
+      //std::cout << arg1;
+      verbose_print(1, "%d", arg1);
       m_bytecode.insert(arg1);
       break;
 
@@ -67,7 +70,8 @@ uint32_t Code::insertvStatement(VM_BYTE_CODE opcode, va_list args)
 
     case OP_PUSH_STRING:
       arg1 = va_arg(args, int32_t);
-      std::cout << arg1;
+      //       std::cout << arg1;
+      verbose_print(1, "%d", arg1);
       m_bytecode.insert(arg1);
       break;
 
@@ -76,7 +80,8 @@ uint32_t Code::insertvStatement(VM_BYTE_CODE opcode, va_list args)
         int32_t nbArgs;
         arg1 = va_arg(args, int32_t);
         nbArgs = va_arg(args, int32_t);
-        std::cout << arg1 << " " << nbArgs;
+        //         std::cout << arg1 << " " << nbArgs;
+        verbose_print(1, "%d %d", arg1, nbArgs);
         m_bytecode.insert(arg1);
         m_bytecode.insert(nbArgs);
       }
@@ -84,32 +89,37 @@ uint32_t Code::insertvStatement(VM_BYTE_CODE opcode, va_list args)
 
     case OP_LOAD_SYMBOL:
       arg1 = va_arg(args, int32_t);
-      std::cout << arg1;
+      //       std::cout << arg1;
+      verbose_print(1, "%d", arg1);
       m_bytecode.insert(arg1);
       break;
 
     case OP_LOAD_INTEGER:
       arg1 = va_arg(args, int32_t);
-      std::cout << arg1;
+      //       std::cout << arg1;
+      verbose_print(1, "%d", arg1);
       m_bytecode.insert(arg1);
       break;
 
     case OP_LOAD_DOUBLE:
       arg2 = va_arg(args, double);
-      std::cout << arg2;
+      //       std::cout << arg2;
+      verbose_print(1, "%f", arg2);
       m_bytecode.insert(arg2);
       break;
 
     case OP_CREATE_SYMBOL:
     case OP_DELETE_SYMBOL:
       arg1 = va_arg(args, int32_t);
-      std::cout << arg1;
+      //       std::cout << arg1;
+      verbose_print(1, "%d", arg1);
       m_bytecode.insert(arg1);
       break;
 
     case OP_SET_SYMBOL:
       arg1 = va_arg(args, int32_t);
-      std::cout << arg1;
+      //       std::cout << arg1;
+      verbose_print(1, "%d", arg1);
       m_bytecode.insert(arg1);
       break;
 
@@ -117,7 +127,8 @@ uint32_t Code::insertvStatement(VM_BYTE_CODE opcode, va_list args)
     case OP_JUMP:
     case OP_B_FALSE:
       arg1 = va_arg(args, int32_t);
-      std::cout << arg1;
+      //       std::cout << arg1;
+      verbose_print(1, "%d", arg1);
       m_bytecode.insert(arg1);
       break;
 
@@ -126,7 +137,8 @@ uint32_t Code::insertvStatement(VM_BYTE_CODE opcode, va_list args)
       break;
   }
 
-  std::cout << std::endl;
+  verbose_print(1, "\n");
+  //   std::cout << std::endl;
 
   va_end(args);
   return offset;

@@ -2,13 +2,16 @@
 #include "flex_decl.h"
 #include <iostream>
 #include <endian.h>
+#include <cassert>
 #include "asttext.h"
+#include "verbose.h"
 
 JinjacCompiler::JinjacCompiler(std::ifstream* in, std::ofstream* out)
 {
-  ASSERT(in != nullptr);
-  ASSERT(out != nullptr);
+  assert(in != nullptr);
+  assert(out != nullptr);
 
+  m_isAstToBePrinted = false;
   m_inFile = in;
   m_outFile = out;
   m_inError = false;
@@ -24,14 +27,9 @@ JinjacCompiler::~JinjacCompiler()
   }
 }
 
-J_STATUS JinjacCompiler::doCompile()
+void JinjacCompiler::doCompile()
 {
-  J_STATUS status;
-  status = J_ERROR;
-
   parseInputFile();
-
-  return status;
 }
 
 typedef enum
@@ -214,7 +212,7 @@ void JinjacCompiler::parseInputFile()
           break;
 
         default:
-          ASSERT(false);
+          assert(false);
           break;
       }
     }
@@ -223,8 +221,7 @@ void JinjacCompiler::parseInputFile()
 
   insertAstTextNode(currentText);
 
-  bool verbose = true;
-  if (verbose)
+  if (m_isAstToBePrinted)
   {
     m_root->print();
   }
@@ -248,18 +245,18 @@ bool JinjacCompiler::parseJinjaLang(std::string& scriptText)
   m_bStripBeginOfBlock = false;
   m_bStripEndOfBlock = false;
 
-  dbg_print("script : '%s'\n", scriptText.c_str());
+  verbose_print(1, "script : '%s'\n", scriptText.c_str());
 
   if (scriptText.front() == '-')
   {
-    //dbg_print("m_bStripEndOfBlock= true\n");
+    //verbose_print(2, "m_bStripEndOfBlock= true\n");
     m_bStripEndOfBlock = true;
     scriptText[0] = ' ';
   }
 
   if (scriptText.back() == '-')
   {
-    //dbg_print("m_bStripBeginOfBlock = true\n");
+    //verbose_print(2, "m_bStripBeginOfBlock = true\n");
     m_bStripBeginOfBlock = true;
     scriptText[scriptText.size() - 1] = ' ';
   }

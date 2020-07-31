@@ -24,6 +24,7 @@ set(JINJACC_SRCS jinjacc.cpp
                 ${BISON_JinjacBison_OUTPUTS} ${FLEX_JinjacFlex_OUTPUTS}
                 staticdata.cpp buffer.cpp 
                 code.cpp
+                verbose.cpp
    )
 
 add_executable(jinjacc ${JINJACC_SRCS})
