@@ -4,8 +4,9 @@
 #include <string.h>
 #include "convert.h"
 #include "param.h"
+#include "trace.h"
 
-char * j_object_toString(j_object* pObject)
+char* j_object_toString(j_object* pObject)
 {
   j_value param;
   BOOL bOk;
@@ -83,7 +84,7 @@ BOOL j_object_toBoolean(j_object* pObject)
   }
   else
   {
-    fprintf(stderr, "can't convert to boolean\n");
+    trace("can't convert to boolean\n");
   }
   return FALSE;
 }
@@ -97,7 +98,7 @@ BOOL j_object_getValue(j_object* pObject, j_value* value)
   }
   else
   {
-    fprintf(stderr, "can't obtain value\n");
+    trace("can't obtain value\n");
   }
   return FALSE;
 }
@@ -110,13 +111,13 @@ uint32_t j_object_getCount(j_object* pObject)
   }
   else
   {
-    fprintf(stderr, "getCount: not possible\n");
+    trace("getCount: not possible\n");
   }
-  
+
   return 0;
 }
 
-j_object * j_object_clone(j_object* pObject)
+j_object* j_object_clone(j_object* pObject)
 {
   if (pObject->clone != NULL)
   {
@@ -124,14 +125,14 @@ j_object * j_object_clone(j_object* pObject)
   }
   else
   {
-    fprintf(stderr, "clone : not possible\n");
+    trace("clone : not possible\n");
   }
-  
+
   return NULL;
 }
 
 
-j_object * j_object_getAtIndex(j_object* pObject, int32_t offset)
+j_object* j_object_getAtIndex(j_object* pObject, int32_t offset)
 {
   if (pObject->getAtIndex != NULL)
   {
@@ -139,10 +140,10 @@ j_object * j_object_getAtIndex(j_object* pObject, int32_t offset)
   }
   else
   {
-    fprintf(stderr, "getAtIndex: not possible\n");
+    trace("getAtIndex: not possible\n");
     j_object_display(pObject);
   }
-  
+
   return (j_object*) j_object_string_new(strdup(""));
 }
 
@@ -154,10 +155,10 @@ BOOL j_object_isEndSequenceReached(j_object* pObject, int32_t currentIndex)
   }
   else
   {
-    fprintf(stderr, "isEndSequenceReached: not possible\n");
+    trace("isEndSequenceReached: not possible\n");
     j_object_display(pObject);
   }
-  
+
   return TRUE;
 }
 
@@ -165,7 +166,7 @@ void j_object_delete(j_object* pObject)
 {
   if (pObject->delete != NULL)
   {
-    pObject->delete(pObject);
+    pObject->delete (pObject);
   }
   free(pObject);
 }
@@ -203,12 +204,13 @@ BOOL j_object_boolean_getValue(j_object* pObject, j_value* value)
 
 BOOL j_object_double_getValue(j_object* pObject, j_value* value)
 {
-  value->value.type_double= (((j_object_double*) pObject)->floatingNumber);
+  value->value.type_double = (((j_object_double*) pObject)->floatingNumber);
   value->type = J_DOUBLE;
   return TRUE;
 }
 
-BOOL j_object_identifier_getValue(j_object* pObject, j_value* param) //struct JObjects* pObject, jinjac_parameter* param)
+BOOL j_object_identifier_getValue(j_object* pObject,
+                                  j_value* param) //struct JObjects* pObject, jinjac_parameter* param)
 {
   BOOL bOk;
   j_value_list* pParam;
@@ -307,7 +309,9 @@ BOOL j_object_identifier_toBoolean(j_object* pObject)
   if (bOk)
   {
     if (pParam == NULL) //special case, value create but not initialised --> nil value
+    {
       bOk = FALSE;
+    }
     else
     {
       if (pParam->next == NULL)
@@ -340,18 +344,18 @@ BOOL j_object_identifier_toBoolean(j_object* pObject)
             break;
         }
       }
-      else 
+      else
       {
         //in case of array return TRUE
         ;
       }
     }
   }
-  
+
   return bOk;
 }
 
-j_object * j_object_identifier_getAtIndex(j_object* pObject, int32_t offset)
+j_object* j_object_identifier_getAtIndex(j_object* pObject, int32_t offset)
 {
   BOOL bOk;
   j_object* ret = NULL;
@@ -368,7 +372,7 @@ j_object * j_object_identifier_getAtIndex(j_object* pObject, int32_t offset)
   }
   else
   {
-    j_value* vResult;  
+    j_value* vResult;
     uint32_t count;
     count = param_getCount(pParam);
     if ((count == 1) && (pParam->value.type == J_STRING))
@@ -393,25 +397,27 @@ j_object * j_object_identifier_getAtIndex(j_object* pObject, int32_t offset)
           case J_INT:
             ret = (j_object*) j_object_integer_new(vResult->value.type_int);
             break;
-            
+
           case J_DOUBLE:
             ret = (j_object*) j_object_double_new(vResult->value.type_double);
             break;
-            
+
           case J_STRING:
             ret = (j_object*) j_object_string_new(strdup(vResult->value.type_string));
             break;
-            
+
           default:
             ASSERT(FALSE);
             break;
         }
       }
       else
+      {
         ret = (j_object*) j_object_string_new(strdup(""));
+      }
     }
   }
-  
+
   return ret;
 }
 
@@ -421,7 +427,7 @@ uint32_t j_object_identifier_getCount(j_object* pObject)
   uint32_t count;
   BOOL bOk;
   j_value_list* pParam;
-  
+
   bOk = param_get(pIdent->identifier, &pParam);
   if (!bOk)
   {
@@ -433,21 +439,25 @@ uint32_t j_object_identifier_getCount(j_object* pObject)
     if (count == 1)
     {
       if (pParam->value.type == J_STRING)
+      {
         count = strlen(pParam->value.value.type_string);
+      }
       else
-        count = 0; //In this case it is not iterable so return 0
+      {
+        count = 0;  //In this case it is not iterable so return 0
+      }
     }
   }
-  
+
   return count;
 }
 
-j_object * j_object_string_getAtIndex(j_object* pObject, int32_t offset)
+j_object* j_object_string_getAtIndex(j_object* pObject, int32_t offset)
 {
   j_object_string* p = (j_object_string*) pObject;
   j_object_string* ret = NULL;
   char v[2];
-  
+
   v[1] = '\0';
   v[0] = p->s[offset];
   ret = j_object_string_new(strdup(v));
@@ -465,7 +475,7 @@ j_object* j_object_integer_clone(j_object* pObject)
   return (j_object*) j_object_integer_new(((j_object_integer*) pObject)->integer);
 }
 
-j_object_integer * j_object_integer_new(uint32_t v)
+j_object_integer* j_object_integer_new(uint32_t v)
 {
   j_object_integer* pObject = NEW(j_object_integer);
   pObject->base.type = INTEGER;
@@ -485,7 +495,7 @@ j_object* j_object_double_clone(j_object* pObject)
   return (j_object*) j_object_double_new(((j_object_double*) pObject)->floatingNumber);
 }
 
-j_object_double * j_object_double_new(double v)
+j_object_double* j_object_double_new(double v)
 {
   j_object_double* pObject = NEW(j_object_double);
   pObject->base.type = DOUBLE;
@@ -505,7 +515,7 @@ j_object* j_object_string_clone(j_object* pObject)
   return (j_object*) j_object_string_new(strdup(((j_object_string*) pObject)->s));
 }
 
-j_object_string * j_object_string_new(char* s)
+j_object_string* j_object_string_new(char* s)
 {
   j_object_string* pObject = NEW(j_object_string);
   pObject->base.type = STRING;
@@ -528,7 +538,7 @@ BOOL j_object_identifier_isEndSequenceReached(j_object* pObject, int32_t index)
   j_value_list* pParam;
   BOOL isOutOfRange;
   isOutOfRange = FALSE;
-  
+
   bOk = param_get(pIdent->identifier, &pParam);
   if (!bOk)
   {
@@ -539,11 +549,13 @@ BOOL j_object_identifier_isEndSequenceReached(j_object* pObject, int32_t index)
   {
     uint32_t count;
     count = param_getCount(pParam);
-    //fprintf(stderr, "count = %d index = %d\n", count, index);
+    //trace("count = %d index = %d\n", count, index);
     if (index >= (int32_t) count)
+    {
       isOutOfRange = TRUE;
+    }
   }
-  
+
   return isOutOfRange;
 }
 
@@ -553,7 +565,7 @@ j_object* j_object_identifier_clone(j_object* pObject)
 }
 
 
-j_object_identifier * j_object_identifier_new(char* name)
+j_object_identifier* j_object_identifier_new(char* name)
 {
   j_object_identifier* pObject = NEW(j_object_identifier);
   pObject->base.type = IDENTIFIER;
@@ -565,7 +577,7 @@ j_object_identifier * j_object_identifier_new(char* name)
   pObject->base.getAtIndex = j_object_identifier_getAtIndex;
   pObject->base.isEndSequenceReached = j_object_identifier_isEndSequenceReached;
   pObject->identifier = name;
-  
+
   return pObject;
 }
 
@@ -575,7 +587,7 @@ j_object* j_object_boolean_clone(j_object* pObject)
 }
 
 
-j_object_boolean * j_object_boolean_new(BOOL b)
+j_object_boolean* j_object_boolean_new(BOOL b)
 {
   j_object_boolean* pObject = NEW(j_object_boolean);
   pObject->base.type = BOOLEAN;
@@ -591,7 +603,7 @@ j_object_boolean * j_object_boolean_new(BOOL b)
 }
 
 
-j_object * j_object_range_getAtIndex(j_object* pObject, int32_t offset)
+j_object* j_object_range_getAtIndex(j_object* pObject, int32_t offset)
 {
   int32_t value;
   j_object_range* p = (j_object_range*) pObject;
@@ -606,16 +618,18 @@ BOOL j_object_range_isEndSequenceReached (j_object* pObject, int32_t index)
   int32_t value;
   BOOL isOutOfRange;
   isOutOfRange = FALSE;
-  
+
   value =  p->start + index * p->step;
-  
+
   if (value >= p->stop)
+  {
     isOutOfRange = TRUE;
-  
+  }
+
   return isOutOfRange;
 }
 
-j_object_range * j_object_range_new(int32_t start, int32_t stop, int32_t step)
+j_object_range* j_object_range_new(int32_t start, int32_t stop, int32_t step)
 {
   j_object_range* pObject = NEW(j_object_range);
   pObject->base.type = RANGE;
@@ -629,11 +643,11 @@ j_object_range * j_object_range_new(int32_t start, int32_t stop, int32_t step)
   pObject->start = start;
   pObject->stop = stop;
   pObject->step = step;
-  
+
   return pObject;
 }
 
-j_object_iterator * j_object_iterator_new(j_object* pSequencedObj)
+j_object_iterator* j_object_iterator_new(j_object* pSequencedObj)
 {
   j_object_iterator* pObject = NEW(j_object_iterator);
   pObject->base.type = ITERATOR;
@@ -648,19 +662,19 @@ j_object_iterator * j_object_iterator_new(j_object* pSequencedObj)
   return pObject;
 }
 
-j_object * j_object_iterator_get_first(j_object_iterator* pObject)
+j_object* j_object_iterator_get_first(j_object_iterator* pObject)
 {
   j_object* pResult = NULL;
-  
+
   pObject->current = 0;
   pResult = j_object_getAtIndex(pObject->pSequencedObj, pObject->current);
   return pResult;
 }
 
-j_object * j_object_iterator_get_next(j_object_iterator* pObject)
+j_object* j_object_iterator_get_next(j_object_iterator* pObject)
 {
   j_object* pResult = NULL;
-  
+
   pResult = j_object_getAtIndex(pObject->pSequencedObj, pObject->current);
   return pResult;
 }
@@ -806,7 +820,7 @@ j_object* j_object_doOperation(j_object* op1, j_object* op2, char mathOperation)
   return pObjResult;
 }
 
-j_object * j_object_doCondition(j_object* op1, j_object* op2, j_condition condition)
+j_object* j_object_doCondition(j_object* op1, j_object* op2, j_condition condition)
 {
   j_object* pObjectResult;
   pObjectResult = NULL;
@@ -833,7 +847,7 @@ j_object * j_object_doCondition(j_object* op1, j_object* op2, j_condition condit
     j_value_destroy(&paramOp1);
     j_value_destroy(&paramOp2);
   }
-  else if ((paramOp1.type == J_STRING) || (paramOp2.type ==J_STRING))
+  else if ((paramOp1.type == J_STRING) || (paramOp2.type == J_STRING))
   {
     //trace("one of the two operation is a string ==> FALSE\n");
     pObjectResult = (j_object*) j_object_boolean_new(FALSE);
@@ -878,39 +892,39 @@ void j_object_display(j_object* pObject)
   switch (pObject->type)
   {
     case STRING:
-      fprintf(stderr, "STRING");
+      trace("STRING");
       break;
-      
+
     case INTEGER:
-      fprintf(stderr, "INTEGER");
+      trace("INTEGER");
       break;
-      
+
     case DOUBLE:
-      fprintf(stderr, "DOUBLE");
+      trace("DOUBLE");
       break;
-      
+
     case BOOLEAN:
-      fprintf(stderr, "BOOLEAN");
+      trace("BOOLEAN");
       break;
-      
+
     case IDENTIFIER:
-      fprintf(stderr, "IDENTIFIER");
+      trace("IDENTIFIER");
       {
         j_object_identifier* p = (j_object_identifier*) pObject;
-        fprintf(stderr, " '%s'\n", p->identifier);
+        trace(" '%s'\n", p->identifier);
       }
       break;
-      
+
     case RANGE:
-      fprintf(stderr, "RANGE");
+      trace("RANGE");
       break;
-      
+
     case ITERATOR:
-      fprintf(stderr, "ITERATOR");
+      trace("ITERATOR");
       break;
-      
+
     default:
-      fprintf(stderr, "unknow object type %d\n", pObject->type);
+      trace("unknow object type %d\n", pObject->type);
       break;
   }
 }

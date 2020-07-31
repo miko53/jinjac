@@ -7,6 +7,7 @@
 #include "stack.h"
 #include "common.h"
 #include "str_obj.h"
+#include "trace.h"
 
 static char* upper(char* s);
 static char* lower(char* s);
@@ -32,13 +33,13 @@ int32_t buildin_execute(vm_desc* pVM, buildin_fct_id fctId, uint32_t nbArgs)
   j_object* pResult;
   pResult = NULL;
 
-  for(uint32_t i = 0; i < nbArgs; i++)
+  for (uint32_t i = 0; i < nbArgs; i++)
   {
     args[i] = stack_top_n(&pVM->stack, 0 - i);
     if (args[i] == NULL)
     {
       rc = J_ERROR;
-      for(uint32_t j = 0; j < i; j++)
+      for (uint32_t j = 0; j < i; j++)
       {
         j_object_delete(args[j]);
       }
@@ -47,7 +48,7 @@ int32_t buildin_execute(vm_desc* pVM, buildin_fct_id fctId, uint32_t nbArgs)
   }
 
   //do execution here
-  switch(fctId)
+  switch (fctId)
   {
     case FCT_CAPITALIZE:
     case FCT_LOWER:
@@ -56,38 +57,40 @@ int32_t buildin_execute(vm_desc* pVM, buildin_fct_id fctId, uint32_t nbArgs)
     case FCT_TRIM:
       pResult = vm_exe_1arg(pVM, fctId, args[0]);
       break;
-      
+
     case FCT_CENTER:
       pResult = vm_exe_center(pVM, args);
       break;
-      
+
     case FCT_JOIN:
       pResult = vm_exe_join(pVM, args);
       break;
-      
+
     case FCT_FORMAT:
       pResult = vm_exe_format(pVM, nbArgs, args);
       break;
-      
+
     case FCT_RANGE:
       pResult = vm_exe_range(pVM, nbArgs, args);
       break;
-      
+
     case FCT_TRUNCATE:
       if (nbArgs >= 5)
+      {
         pResult = vm_exe_truncate(pVM, args);
+      }
       break;
-      
+
     default:
       break;
   }
 
-  for(uint32_t i = 0; i < nbArgs; i++)
+  for (uint32_t i = 0; i < nbArgs; i++)
   {
     j_object_delete(args[i]);
     stack_pop(&pVM->stack);
   }
-  
+
   if (pResult != NULL)
   {
     rc = J_OK;
@@ -102,7 +105,7 @@ j_object* vm_exe_1arg(vm_desc* pVM, buildin_fct_id fctId, j_object* args)
   char* pOut;
   j_object* pResult;
   (void) pVM;
-  
+
   switch (fctId)
   {
     case FCT_CAPITALIZE:
@@ -110,36 +113,36 @@ j_object* vm_exe_1arg(vm_desc* pVM, buildin_fct_id fctId, j_object* args)
       pOut = capitalize(pIn);
       pResult = (j_object*) j_object_string_new(pOut);
       break;
-      
+
     case FCT_LOWER:
       pIn = j_object_toString(args);
       pOut = lower(pIn);
       pResult = (j_object*) j_object_string_new(pOut);
       break;
-      
+
     case FCT_UPPER:
       pIn = j_object_toString(args);
       pOut = upper(pIn);
       pResult = (j_object*) j_object_string_new(pOut);
       break;
-      
+
     case FCT_TITLE:
       pIn = j_object_toString(args);
       pOut = title(pIn);
       pResult = (j_object*) j_object_string_new(pOut);
       break;
-      
+
     case FCT_TRIM:
       pIn = j_object_toString(args);
       pOut = trim(pIn);
       pResult = (j_object*) j_object_string_new(pOut);
       break;
-      
+
     default:
       ASSERT(FALSE);
       break;
   }
-  
+
   return pResult;
 }
 
@@ -149,23 +152,23 @@ j_object* vm_exe_truncate(vm_desc* pVM, j_object* args[])
   BOOL killwords;
   char* endSentence;
   uint32_t tolerateMargin;
-  
+
   UNUSED(pVM);
-  
+
   j_object* pObject = args[0];
-  j_object* pObjectTruncSize= args[1];
+  j_object* pObjectTruncSize = args[1];
   j_object* pObjectKillWords = args[2];
   j_object* pObjectendSentence = args[3];
   j_object* pObjectTolerateMargin = args[4];
-  
+
   j_object_string* pResult = NULL;
   char* s;
   char* o;
-  
+
   if ((pObject != NULL) &&
       (pObjectTruncSize != NULL) &&
-      (pObjectKillWords != NULL) && 
-      (pObjectendSentence != NULL) && 
+      (pObjectKillWords != NULL) &&
+      (pObjectendSentence != NULL) &&
       (pObjectTolerateMargin != NULL))
   {
     o = j_object_toString(pObject);
@@ -173,28 +176,28 @@ j_object* vm_exe_truncate(vm_desc* pVM, j_object* args[])
     killwords = j_object_toInteger(pObjectKillWords);
     endSentence = j_object_toString(pObjectendSentence);
     tolerateMargin = j_object_toInteger(pObjectTolerateMargin);
-    
+
     s = truncate(o, truncSize, killwords, endSentence, tolerateMargin);
     free(o);
     free(endSentence);
     pResult = j_object_string_new(s);
   }
-  
+
   return (j_object*) pResult;
 }
 
 
-j_object * vm_exe_center(vm_desc* pVM, j_object *args[])
+j_object* vm_exe_center(vm_desc* pVM, j_object* args[])
 {
   uint32_t width;
   j_object* pObject = args[0];
-  j_object* pObjectWidth= args[1];
+  j_object* pObjectWidth = args[1];
   j_object_string* pResult = NULL;
   char* s;
   char* o;
-  
+
   UNUSED(pVM);
-  
+
   if ((pObject != NULL) &&
       (pObjectWidth != NULL))
   {
@@ -204,11 +207,11 @@ j_object * vm_exe_center(vm_desc* pVM, j_object *args[])
     free(o);
     pResult = j_object_string_new(s);
   }
-  
+
   return (j_object*) pResult;
 }
 
-j_object * vm_exe_format(vm_desc* pVM, uint32_t nbArgs, j_object * args[])
+j_object* vm_exe_format(vm_desc* pVM, uint32_t nbArgs, j_object* args[])
 {
   j_value value[nbArgs];
   //BOOL b;
@@ -216,82 +219,84 @@ j_object * vm_exe_format(vm_desc* pVM, uint32_t nbArgs, j_object * args[])
   char* o;
   j_object_string* pResult = NULL;
   j_object* pObject = args[0];
-  
+
   UNUSED(pVM);
-  
-  for(uint32_t i = 1; i < nbArgs; i++)
+
+  for (uint32_t i = 1; i < nbArgs; i++)
   {
-    /*b = */j_object_getValue(args[i], &value[i-1]);
+    /*b = */j_object_getValue(args[i], &value[i - 1]);
   }
-    
+
   o = j_object_toString(pObject);
-  
-  pS= format(o, nbArgs-1, value);
+
+  pS = format(o, nbArgs - 1, value);
   pResult = j_object_string_new(pS);
-  
-  for(uint32_t i = 0; i < nbArgs-1; i++)
+
+  for (uint32_t i = 0; i < nbArgs - 1; i++)
   {
     j_value_destroy(&value[i]);
-  }  
+  }
   return (j_object*) pResult;
 }
 
 
-j_object * vm_exe_join(vm_desc* pVM, j_object * args[])
+j_object* vm_exe_join(vm_desc* pVM, j_object* args[])
 {
   str_obj strResult;
   j_object* pObject = args[0];
-  j_object* pObjectJoin= args[1];
+  j_object* pObjectJoin = args[1];
   j_object* pItem;
-  
+
   j_object_string* pResult = NULL;
-  
+
   UNUSED(pVM);
-  
+
   char* pTemp;
   char* separator;
   str_obj_create(&strResult, 0);
 
   uint32_t index;
   uint32_t count;
-  
+
   separator = j_object_toString(pObjectJoin);
   count = j_object_getCount(pObject);
-  fprintf(stderr, "count = %d\n", count);
-  for(index = 0; index < count; index++)
+  trace("count = %d\n", count);
+  for (index = 0; index < count; index++)
   {
     pItem = j_object_getAtIndex(pObject, index);
     pTemp = j_object_toString(pItem);
     str_obj_insert(&strResult, pTemp);
     free(pTemp);
     j_object_delete(pItem);
-    
-    if (index != (count-1))
+
+    if (index != (count - 1))
+    {
       str_obj_insert(&strResult, separator);
+    }
   }
-  
+
   free(separator);
 
   pResult = j_object_string_new(strResult.s);
   return (j_object*) pResult;
 }
 
-j_object * vm_exe_range(vm_desc* pVM, uint32_t nbArgs, j_object* args[])
+j_object* vm_exe_range(vm_desc* pVM, uint32_t nbArgs, j_object* args[])
 {
   int32_t value[3];
   j_object_range* pResult = NULL;
-  
+
   UNUSED(pVM);
   //first argument if impacted object it is null in case of range
-  //it can be changed to set iterator with it ? (directly into the compiler) 
+  //it can be changed to set iterator with it ? (directly into the compiler)
   if (nbArgs == 4)
   {
-    value[0] =j_object_toInteger(args[1]);
-    value[1] =j_object_toInteger(args[2]);
-    value[2] =j_object_toInteger(args[3]);
+    value[0] = j_object_toInteger(args[1]);
+    value[1] = j_object_toInteger(args[2]);
+    value[2] = j_object_toInteger(args[3]);
     pResult = j_object_range_new(value[0],  value[1], value[2]);
   }
-  
+
   return (j_object*) pResult;
 }
 
@@ -470,7 +475,9 @@ char* center(char* origin, uint32_t width)
     memcpy(r + offset, origin, lenString);
   }
   else
+  {
     r = strdup(origin);
+  }
 
   return r;
 }
@@ -865,7 +872,7 @@ char* join_withString(char* s, char* separator)
 
   return strResult.s;
 }
-#endif 
+#endif
 
 char* format(char* origin, int32_t nbParameters, j_value* param)
 {

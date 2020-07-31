@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
+#include "trace.h"
 
 static J_STATUS stack_reallocate(vm_stack* pStack);
 
@@ -10,7 +11,7 @@ J_STATUS stack_initialize(vm_stack* pStack, uint32_t initialAllocation)
 {
   J_STATUS rc;
   rc = J_ERROR;
-  
+
   pStack->stack = calloc(initialAllocation, sizeof(j_object*));
   if (pStack->stack != NULL)
   {
@@ -19,7 +20,7 @@ J_STATUS stack_initialize(vm_stack* pStack, uint32_t initialAllocation)
     pStack->growCapacity = initialAllocation;
     pStack->top = 0;
   }
-  
+
   return rc;
 }
 
@@ -33,12 +34,12 @@ J_STATUS stack_push(vm_stack* pStack, j_object* jValue)
 {
   J_STATUS rc;
   rc = J_OK;
-  
+
   if (pStack->top >= pStack->capacity)
   {
     rc = stack_reallocate(pStack);
   }
-  
+
   if (rc == 0)
   {
     pStack->stack[pStack->top] = jValue;
@@ -46,7 +47,7 @@ J_STATUS stack_push(vm_stack* pStack, j_object* jValue)
   }
   else
   {
-    fprintf(stderr, "stack: no more memory\n");
+    trace("stack: no more memory\n");
     rc = J_ERROR;
   }
 
@@ -65,29 +66,31 @@ static J_STATUS stack_reallocate(vm_stack* pStack)
     rc = J_OK;
   }
   else
+  {
     rc = J_ERROR;
-  
+  }
+
   return rc;
 }
 
 
-j_object * stack_top(vm_stack* pStack)
+j_object* stack_top(vm_stack* pStack)
 {
-  j_object * pv;
-  
+  j_object* pv;
+
   pv = NULL;
   if (pStack->top != 0)
   {
     pv = pStack->stack[pStack->top - 1];
   }
-  
+
   return pv;
 }
 
-j_object * stack_top_n(vm_stack* pStack, int32_t offset)
+j_object* stack_top_n(vm_stack* pStack, int32_t offset)
 {
-  j_object * pv;
-  
+  j_object* pv;
+
   pv = NULL;
   if ((pStack->top != 0) && ((((int32_t) pStack->top - 1 + offset) >= 0)))
   {
@@ -97,7 +100,7 @@ j_object * stack_top_n(vm_stack* pStack, int32_t offset)
   {
     //assert(FALSE);
   }
-  
+
   return pv;
 }
 
@@ -105,8 +108,12 @@ j_object * stack_top_n(vm_stack* pStack, int32_t offset)
 void stack_pop(vm_stack* pStack)
 {
   if (pStack->top != 0)
+  {
     pStack->top--;
+  }
   else
+  {
     assert(FALSE);
+  }
 }
 
