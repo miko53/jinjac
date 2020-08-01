@@ -19,7 +19,7 @@ typedef struct param_list_s
   struct param_list_s* next;
 } param_node;
 
-static int32_t param_add(char* name, j_value_list* pData);
+static void param_add(char* name, j_value_list* pData);
 
 #define PARAM_HASH_TABLE_DEFAULT_SIZE     (50)
 
@@ -78,11 +78,9 @@ j_value_list* param_search(char* name, param_node* root)
 }
 
 
-static int32_t param_add(char* name, j_value_list* pData)
+static void param_add(char* name, j_value_list* pData)
 {
-  J_STATUS rc;
   int32_t hash;
-  rc = J_ERROR;
   hash = hash_string(name) % param_nbItem;
 
   param_node* pNode = NEW(param_node);
@@ -91,31 +89,9 @@ static int32_t param_add(char* name, j_value_list* pData)
   {
     pNode->data.name = name;
     pNode->data.value = pData;
-    //insert at the begining of list
-    /*if (param_hash[hash] != NULL)
-    {
-      trace("info: collision on param entry at hash = %d for %s\n", hash, name);
-      //check for identical name
-      if (param_search(name, param_hash[hash]) != NULL)
-      {
-        trace("unable to insert same value\n");
-        free(pNode);
-      }
-      else
-      {
-        rc = J_OK;
-      }
-    }
-    else*/
-    rc = J_OK;
-
-    if (rc == 0)
-    {
-      pNode->next = param_hash[hash];
-      param_hash[hash] = pNode;
-    }
+    pNode->next = param_hash[hash];
+    param_hash[hash] = pNode;
   }
-  return rc;
 }
 
 int32_t param_insert(char* name, j_value_type type, int32_t nbItems, ...)
@@ -178,14 +154,9 @@ int32_t param_insert(char* name, j_value_type type, int32_t nbItems, ...)
   if (pName != NULL)
   {
     rc = J_OK;
+    param_add(pName, first);
   }
-
-  if (rc == 0)
-  {
-    rc = param_add(pName, first);
-  }
-
-  if (rc == -1)
+  else
   {
     //delete all list
     while (first != NULL)
