@@ -1,6 +1,0 @@
-TEST BUILD-IN FUNCTION
-=> capitalize
- Tocapitalize must be displayed to " Tocapitalize"
-lower data must be displayed "lower data"
--- test with trim
-'data with space in begin and end' must be equal to 'data with space in begin and end'
