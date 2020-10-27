@@ -13,11 +13,13 @@ option(COVERAGE "to active coverage" OFF)
 option(TRACE "to active trace" OFF)
 
 if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
+  set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DJINJAC_DEBUG") 
   set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DJINJAC_DEBUG") 
 endif() 
 
 if (TRACE)
-  set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DTRACE") 
+  set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DINSERT_TRACE") 
+  set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DINSERT_TRACE") 
 endif() 
 
 message(STATUS "COVERAGE: ${COVERAGE}")
@@ -25,18 +27,21 @@ message(STATUS "TRACE: ${TRACE}")
 
 set (COVERAGE_OPTIONS "--coverage -UJINJAC_DEBUG")
 
+include (CTest)
 enable_testing()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -D_GNU_SOURCE -W -Wall -Wno-aggregate-return -Wno-suggest-attribute=format -Wno-undef -fms-extensions -fstack-protector-all -Wstack-protector -fno-omit-frame-pointer")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -W -Wall -fexceptions -fstack-protector-strong")
 
 if (COVERAGE)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COVERAGE_OPTIONS}")
 endif()
 
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 ")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 ")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 
-add_subdirectory(libjinjac)
-add_subdirectory(jinjac_test_app)
-add_subdirectory(test)
-#add_subdirectory(example)
+include_directories(include)
+
+add_subdirectory(jinjacc)
+add_subdirectory(jinjac_vm)
+add_subdirectory(tests)

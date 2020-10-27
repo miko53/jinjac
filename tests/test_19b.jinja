@@ -1,0 +1,17 @@
+-------------------------------
+{% for x in range(0,10,1) %}
+{% if x > 5 %}
+Here x is > 5 --> x = {{x}}
+{% else %}
+And here x is < 5 --> x = {{x}}
+{% endif %}
+{% endfor %}
+------------------------------
+{% for y in range(0,10) %}
+{% if users[y] %}
+user exists ==> {{ users[y] }}
+{% else %}
+no users
+{% endif %}
+{% endfor %}
+-- end of test --
